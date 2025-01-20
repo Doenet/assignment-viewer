@@ -1,0 +1,31 @@
+{
+    "title": "My second assignment",
+    "content": [
+        {
+            "type": "description",
+            "document": "<p>This is how these questions work</p>"
+        },
+        {
+            "type": "question",
+            "documents": [
+                "<question>Question 1A <graph><point/></graph></question>",
+                "<question>Question 1B <select>a b c</select></question>",
+                "<question>Question 1C <selectFromSequence /></question>",
+                "<question>Question 1D <selectFromSequence length=\"42\" /></question>"
+            ]
+        },
+        {
+            "type": "question",
+            "documents": [
+                "<question>Question 2 <select>a b c d e f</select><graph><point>(2,2)</point></graph></question>"
+            ],
+            "weight": 2
+        },
+        {
+            "type": "question",
+            "documents": [
+                "<question>Question 3<graph><point>(-3,-3)</point></graph></question>"
+            ]
+        }
+    ]
+}
