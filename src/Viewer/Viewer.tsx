@@ -272,10 +272,12 @@ export function Viewer({
         }
     }
 
+    let questionNumber = 0;
     const viewersByItem = source.content.map((item, qInd) => {
         const itemHidden = paginate && qInd !== currentItem - 1;
 
         if (item.type === "question") {
+            questionNumber++;
             return (
                 <div
                     key={qInd}
@@ -283,20 +285,16 @@ export function Viewer({
                     style={{ height: "1000px" }}
                 >
                     {item.documents.map((d, dInd) => {
-                        const rendered =
+                        const render =
                             itemsToRender.has(qInd) &&
                             selectedItemDocs[qInd] === dInd;
 
                         return (
-                            <div
-                                key={dInd}
-                                hidden={!rendered}
-                                style={{ height: "1000px" }}
-                            >
+                            <div key={dInd} hidden={!render}>
                                 <DoenetViewer
                                     key={`${qInd.toString()}_${dInd.toString()}`}
                                     doenetML={d}
-                                    rendered={rendered}
+                                    render={render}
                                     requestedVariantIndex={
                                         selectedItemDocVariants[qInd]
                                     }
@@ -314,6 +312,9 @@ export function Viewer({
                                     darkMode={darkMode}
                                     showAnswerTitles={showAnswerTitles}
                                     addVirtualKeyboard={false}
+                                    initializeCounters={{
+                                        question: questionNumber,
+                                    }}
                                 />
                             </div>
                         );
@@ -322,15 +323,11 @@ export function Viewer({
             );
         } else {
             return (
-                <div
-                    key={qInd}
-                    hidden={itemHidden}
-                    style={{ height: "1000px" }}
-                >
+                <div key={qInd} hidden={itemHidden}>
                     <DoenetViewer
                         key={qInd}
                         doenetML={item.document}
-                        rendered={itemsToRender.has(qInd)}
+                        render={itemsToRender.has(qInd)}
                         requestedVariantIndex={selectedItemDocVariants[qInd]}
                         flags={flags}
                         activityId={assignmentId}
