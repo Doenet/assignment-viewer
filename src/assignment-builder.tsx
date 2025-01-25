@@ -35,6 +35,7 @@ export function AssignmentViewer({
     flags: specifiedFlags = {},
     shuffle = false,
     assignmentId = "a",
+    userId,
     attemptNumber = 1,
     requestedVariantIndex,
     maxAttemptsAllowed = Infinity,
@@ -57,6 +58,7 @@ export function AssignmentViewer({
     flags?: DoenetMLFlagsSubset;
     shuffle?: boolean;
     assignmentId?: string;
+    userId?: string;
     attemptNumber?: number;
     requestedVariantIndex?: number;
     maxAttemptsAllowed?: number;
@@ -124,14 +126,13 @@ export function AssignmentViewer({
         return null;
     }
 
-    console.log({ flags, variantIndex, includeVariantSelector });
-
     return (
         <Viewer
             source={source}
             flags={flags}
             shuffle={shuffle}
             assignmentId={assignmentId}
+            userId={userId}
             attemptNumber={attemptNumber}
             variantIndex={variantIndex}
             maxAttemptsAllowed={maxAttemptsAllowed}

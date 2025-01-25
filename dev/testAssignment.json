@@ -1,30 +1,67 @@
 {
     "title": "My second assignment",
-    "content": [
+    "items": [
         {
             "type": "description",
-            "document": "<p>This is how these questions work</p>"
+            "id": "intro1",
+            "document": {
+                "id": "intro1",
+                "doenetML": "<p>This is how these questions work</p>"
+            }
         },
         {
             "type": "question",
+            "id": "1",
             "documents": [
-                "<question>Question 1A <graph><point/></graph></question>",
-                "<question>Question 1B <select>a b c</select></question>",
-                "<question>Question 1C <selectFromSequence /></question>",
-                "<question>Question 1D <selectFromSequence length=\"42\" /></question>"
+                {
+                    "id": "1a",
+                    "doenetML": "<question>Question 1A <graph><point name='P'/></graph><answer><award><when>$P.x > 0</when></award></answer></question>"
+                },
+                {
+                    "id": "1b",
+                    "doenetML": "<question>Question 1B <p>Enter: <select assignNames='a'>a b c</select>. <answer>$a</answer></p></question>"
+                },
+                {
+                    "id": "1c",
+                    "doenetML": "<question>Question 1C <p>Enter: <selectFromSequence assignNames='a' />. <answer>$a</answer></p></question>"
+                },
+                {
+                    "id": "1d",
+                    "doenetML": "<question>Question 1D <p>Enter: <selectFromSequence assignNames='a' length=\"42\" />.  <answer>$a</answer></p></question>"
+                }
             ]
         },
         {
+            "type": "description",
+            "id": "intro2",
+            "document": {
+                "id": "intro2",
+                "doenetML": "<p>More information on next questions.</p>"
+            }
+        },
+        {
             "type": "question",
+            "id": "2",
             "documents": [
-                "<question>Question 2 <select>a b c d e f</select><graph><point>(2,2)</point></graph></question>"
+                {
+                    "id": "2a",
+                    "doenetML": "<question>Question 2A <p>Enter <select name='a'>a b c d e f</select>. <answer>$a</answer></p><graph><point>(2,2)</point></graph></question>"
+                },
+                {
+                    "id": "2b",
+                    "doenetML": "<question>Question 2B <p>Enter <select name='a'>g h i</select>. <answer>$a</answer></p><graph><point>(-2,2)</point></graph></question>"
+                }
             ],
             "weight": 2
         },
         {
             "type": "question",
+            "id": "3",
             "documents": [
-                "<question>Question 3<graph><point>(-3,-3)</point></graph></question>"
+                {
+                    "id": "3",
+                    "doenetML": "<problem>Question 3<p>1+1=<answer>2</answer></p><graph showNavigation='false'><point>(-3,-3)</point></graph></problem>"
+                }
             ]
         }
     ]
