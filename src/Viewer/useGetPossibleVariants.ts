@@ -77,7 +77,8 @@ export function useGetPossibleVariants({
         [assignmentId],
     );
 
-    // When `source` has been changed, reset all variant/selected item variables
+    // When `assignmentId` has been changed (which will change variantListener),
+    // reset all variant/selected item variables
     // and add a listener for the events that the number of variants have been calculated
     useEffect(() => {
         setNumVariantsByItemDoc({});

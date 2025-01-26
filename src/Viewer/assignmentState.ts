@@ -7,9 +7,12 @@ import { prng_alea } from "esm-seedrandom";
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const rngClass = prng_alea;
 
+const largePrime = 51187309;
+
 export type ItemAttemptState = {
     docId: DocId;
-    variant: number;
+    docVariant: number;
+    itemVariant: number;
     docState: unknown;
     creditAchieved: number;
 };
@@ -29,6 +32,8 @@ export type AssignmentAttemptState = {
 /** @see {isAssignmentState} ts-auto-guard:type-guard */
 export type AssignmentState = {
     assignmentAttemptNumber: number;
+    initialVariantIndex: number;
+    currentVariantIndex: number;
     creditAchieved: number;
     attempts: AssignmentAttemptState[];
 };
@@ -40,8 +45,9 @@ type GenerateAssignmentAttemptAction = {
     type: "generateNewAssignmentAttempt";
     source: AssignmentSource;
     numVariantsByItemDoc: Record<ItemId, Record<DocId, number>>;
-    variantIndex: number;
     shuffle: boolean;
+    flags: DoenetMLFlags;
+    assignmentId: string;
 };
 
 type GenerateItemAttemptAction = {
@@ -49,7 +55,6 @@ type GenerateItemAttemptAction = {
     source: AssignmentSource;
     itemIdx: number;
     numVariantsPerDoc: Record<DocId, number>;
-    variantIndex: number;
 };
 
 type UpdateItemStateAction = {
@@ -65,10 +70,8 @@ type UpdateItemStateAction = {
 };
 
 export type AssignmentStateAction =
-    | {
-          type: "set";
-          state: AssignmentState;
-      }
+    | { type: "reinitialize" }
+    | { type: "set"; state: AssignmentState }
     | GenerateAssignmentAttemptAction
     | GenerateItemAttemptAction
     | UpdateItemStateAction;
@@ -78,30 +81,60 @@ export function assignmentStateReducer(
     action: AssignmentStateAction,
 ): AssignmentState {
     switch (action.type) {
+        case "reinitialize": {
+            return {
+                assignmentAttemptNumber: 0,
+                initialVariantIndex: state.initialVariantIndex,
+                currentVariantIndex: state.initialVariantIndex,
+                creditAchieved: 0,
+                attempts: [],
+            };
+        }
         case "set": {
             return action.state;
         }
         case "generateNewAssignmentAttempt": {
             const newAttemptNumber = state.assignmentAttemptNumber + 1;
-            const newAttempt = generateNewAssignmentAttempt(
-                action,
-                newAttemptNumber,
-            );
+            const { newVariantIndex, newAttempt } =
+                generateNewAssignmentAttempt(
+                    action,
+                    newAttemptNumber,
+                    state.initialVariantIndex,
+                );
 
-            return {
+            const newAssignmentState: AssignmentState = {
                 assignmentAttemptNumber: newAttemptNumber,
+                initialVariantIndex: state.initialVariantIndex,
+                currentVariantIndex: newVariantIndex,
                 creditAchieved: state.creditAchieved,
                 attempts: [...state.attempts, newAttempt],
             };
+
+            if (action.flags.allowSaveState) {
+                window.postMessage({
+                    state: newAssignmentState,
+                    score: newAssignmentState.creditAchieved,
+                    subject: "SPLICE.reportScoreAndState",
+                    assignmentId: action.assignmentId,
+                });
+            }
+
+            return newAssignmentState;
         }
         case "generateNewItemAttempt": {
             const lastAssignmentAttempt =
                 state.attempts[state.assignmentAttemptNumber - 1];
             const itemState = lastAssignmentAttempt.items[action.itemIdx];
             const newItemAttemptNumber = itemState.itemAttemptNumber + 1;
+            const previousItemVariants = itemState.attempts.map(
+                (a) => a.itemVariant,
+            );
             const newItemAttempt = generateNewItemAttempt(
                 action,
                 newItemAttemptNumber,
+                previousItemVariants,
+                state.currentVariantIndex,
+                itemState.itemId,
             );
 
             const newItemState: ItemState = {
@@ -141,15 +174,18 @@ export function assignmentStateReducer(
 /**
  * Randomly generates a new assignment attempt, generating new attempts for each item.
  *
- * The random generator is seeded by the `action.variantIndex` and `attemptNumber`.
+ * The random generator is seeded by adding `(actionNumber-1)*largePrime` to `initialVariantIndex`.
  *
- * The new assignment state returned by this function should be appended to the `attempts` field
- * of the assignment state and the `assignmentAttemptNumber` should be set to `attemptNumber`.
+ * @returns
+ * - newAttempt: the assignment attempt state to be appended to the `attempts` field
+ *   of the assignment state (and the `assignmentAttemptNumber` field should be set to the `attemptNumber` input parameter)
+ * - newVariantIndex: the variant index of this attempt (the `currentVariantIndex` field should be set to this)
  */
 function generateNewAssignmentAttempt(
     action: GenerateAssignmentAttemptAction,
     attemptNumber: number,
-): AssignmentAttemptState {
+    initialVariantIndex: number,
+): { newVariantIndex: number; newAttempt: AssignmentAttemptState } {
     /** Total number of variants of all the documents in the item */
     const numVariantsPerItem: Record<ItemId, number> = {};
     for (const itemId in action.numVariantsByItemDoc) {
@@ -158,8 +194,10 @@ function generateNewAssignmentAttempt(
         ).reduce((a, c) => a + c, 0);
     }
 
-    const rngSeed =
-        action.variantIndex.toString() + "|" + attemptNumber.toString();
+    const newVariantIndex =
+        initialVariantIndex + (attemptNumber - 1) * largePrime;
+
+    const rngSeed = newVariantIndex.toString();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
@@ -224,29 +262,42 @@ function generateNewAssignmentAttempt(
     }
 
     /** The docId selected for each `itemId` */
-    const qDocs: Record<ItemId, DocId> = {};
+    const selectedDocIds: Record<ItemId, DocId> = {};
     /** The variant selected from the chosen document for `itemId` */
-    const qDocVariants: Record<ItemId, number> = {};
+    const selectedDocVariants: Record<ItemId, number> = {};
 
     // Determine for each value of `selectedItemVariants` the doc and variant to select.
-    // eslint-disable-next-line prefer-const
-    for (let [itemId, variantIdx] of Object.entries(selectedItemVariants)) {
+    for (const [itemId, itemVariantIdx] of Object.entries(
+        selectedItemVariants,
+    )) {
         if (itemId in action.numVariantsByItemDoc) {
-            for (const [docId, numVars] of Object.entries(
-                action.numVariantsByItemDoc[itemId],
-            )) {
-                if (variantIdx <= numVars) {
-                    qDocs[itemId] = docId;
-                    qDocVariants[itemId] = variantIdx;
-                    break;
-                } else {
-                    variantIdx -= numVars;
+            const sourceItem = sourceItems.find((si) => si.id === itemId);
+            if (sourceItem?.type === "description") {
+                // have just a single document
+                selectedDocIds[itemId] = sourceItem.document.id;
+                selectedDocVariants[itemId] = itemVariantIdx;
+            } else if (sourceItem?.type === "question") {
+                // get items in order from source
+                let docVariantIdx = itemVariantIdx;
+                for (const docId of sourceItem.documents.map((d) => d.id)) {
+                    // map item's variant index to
+                    // selected document and that document's variant index
+                    const numVars = action.numVariantsByItemDoc[itemId][docId];
+                    if (docVariantIdx <= numVars) {
+                        selectedDocIds[itemId] = docId;
+                        selectedDocVariants[itemId] = docVariantIdx;
+                        break;
+                    } else {
+                        // shift docVariantIdx so first index not matched by this document
+                        // becomes index 1 of the next document
+                        docVariantIdx -= numVars;
+                    }
                 }
             }
         }
     }
 
-    return {
+    const newAttempt: AssignmentAttemptState = {
         creditAchieved: 0,
         items: itemOrder.map((origItemIdx) => ({
             itemId: sourceItems[origItemIdx].id,
@@ -255,35 +306,51 @@ function generateNewAssignmentAttempt(
 
             attempts: [
                 {
-                    docId: qDocs[sourceItems[origItemIdx].id],
-                    variant: qDocVariants[sourceItems[origItemIdx].id],
+                    docId: selectedDocIds[sourceItems[origItemIdx].id],
+                    docVariant:
+                        selectedDocVariants[sourceItems[origItemIdx].id],
+                    itemVariant:
+                        selectedItemVariants[sourceItems[origItemIdx].id],
                     creditAchieved: 0,
                     docState: null,
                 },
             ],
         })),
     };
+
+    return { newVariantIndex, newAttempt };
 }
 
 /**
  * Randomly generates a new attempt for an item.
  *
- * The random generators is seeded based on `action.variantIndex`, `action.itemIdx` and `attemptNumber`.
+ * The random generators is seeded based on `assignmentVariantIndex`, `action.itemIdx` and `attemptNumber`.
  *
- * The new item attempt state returned by this function should be appended to the `attempts` of the item state
- * and the `itemAttemptNumber` should be set to `attemptNumber`.
+ * @returns
+ * the item attempt state to be appended to the `attempts` field of the item state
+ * (and the `itemAttemptNumber` field should be set to the `attemptNumber` input parameter)
  */
 function generateNewItemAttempt(
     action: GenerateItemAttemptAction,
     attemptNumber: number,
+    previousItemVariants: number[],
+    assignmentVariantIndex: number,
+    itemId: string,
 ): ItemAttemptState {
     const numVariantsForItem = Object.values(action.numVariantsPerDoc).reduce(
         (a, c) => a + c,
         0,
     );
 
+    const numPrevVariants = previousItemVariants.length;
+    const numVariantsToExclude = numPrevVariants % numVariantsForItem;
+    const numVariantOptions = numVariantsForItem - numVariantsToExclude;
+    const variantsToExclude = previousItemVariants
+        .slice(numPrevVariants - numVariantsToExclude, numPrevVariants)
+        .sort((a, b) => a - b);
+
     const rngSeed =
-        action.variantIndex.toString() +
+        assignmentVariantIndex.toString() +
         "|" +
         action.itemIdx.toString() +
         "|" +
@@ -292,25 +359,46 @@ function generateNewItemAttempt(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const selectedItemVariant = Math.floor(rng() * numVariantsForItem) + 1;
+    let selectedItemVariant = Math.floor(rng() * numVariantOptions) + 1;
+    for (const excludedVariant of variantsToExclude) {
+        if (selectedItemVariant === excludedVariant) {
+            selectedItemVariant++;
+        }
+    }
 
-    let qDocId: DocId = "";
-    let qDocVariant = -1;
+    /** The docId selected for this item */
+    let selectedDocId: DocId = "";
+    /** The variant selected from the chosen document for this item */
+    let selectedDocVariant = -1;
 
-    let variantIdx = selectedItemVariant;
-    for (const [docId, numVars] of Object.entries(action.numVariantsPerDoc)) {
-        if (variantIdx <= numVars) {
-            qDocId = docId;
-            qDocVariant = variantIdx;
-            break;
-        } else {
-            variantIdx -= numVars;
+    const sourceItem = action.source.items.find((si) => si.id === itemId);
+    if (sourceItem?.type === "description") {
+        // have just a single document
+        selectedDocId = sourceItem.document.id;
+        selectedDocVariant = selectedItemVariant;
+    } else if (sourceItem?.type === "question") {
+        // get items in order from source
+        let docVariantIdx = selectedItemVariant;
+        for (const docId of sourceItem.documents.map((d) => d.id)) {
+            // map item's variant index to
+            // selected document and that document's variant index
+            const numVars = action.numVariantsPerDoc[docId];
+            if (docVariantIdx <= numVars) {
+                selectedDocId = docId;
+                selectedDocVariant = docVariantIdx;
+                break;
+            } else {
+                // shift docVariantIdx so first index not matched by this document
+                // becomes index 1 of the next document
+                docVariantIdx -= numVars;
+            }
         }
     }
 
     return {
-        docId: qDocId,
-        variant: qDocVariant,
+        docId: selectedDocId,
+        docVariant: selectedDocVariant,
+        itemVariant: selectedItemVariant,
         creditAchieved: 0,
         docState: null,
     };

@@ -23,10 +23,10 @@ export function Viewer({
     assignmentId,
     userId,
     attemptNumber: _attemptNumber = 1,
-    variantIndex,
+    variantIndex: initialVariantIndex,
     maxAttemptsAllowed: _maxAttemptsAllowed = Infinity,
-    questionLevelAttempts: _questionLevelAttempts = false,
-    assignmentLevelAttempts: _assignmentLevelAttempts = false,
+    questionLevelAttempts = false,
+    assignmentLevelAttempts = false,
     paginate = false,
     showFinishButton: _showFinishButton = false,
     forceDisable = false,
@@ -75,6 +75,8 @@ export function Viewer({
         assignmentStateReducer,
         {
             assignmentAttemptNumber: 0,
+            initialVariantIndex,
+            currentVariantIndex: initialVariantIndex,
             creditAchieved: 0,
             attempts: [],
         },
@@ -98,31 +100,33 @@ export function Viewer({
         }
     }, [assignmentState, source.items, numItems]);
 
-    const selectedItemDocs: Record<ItemId, { docId: DocId; variant: number }> =
-        useMemo(() => {
-            if (assignmentState.assignmentAttemptNumber === 0) {
-                return {};
-            }
+    const selectedItemDocs: Record<
+        ItemId,
+        { docId: DocId; docVariant: number }
+    > = useMemo(() => {
+        if (assignmentState.assignmentAttemptNumber === 0) {
+            return {};
+        }
 
-            const lastAssignmentAttempt =
-                assignmentState.attempts[
-                    assignmentState.assignmentAttemptNumber - 1
+        const lastAssignmentAttempt =
+            assignmentState.attempts[
+                assignmentState.assignmentAttemptNumber - 1
+            ];
+
+        return Object.fromEntries(
+            lastAssignmentAttempt.items.map((item) => {
+                const lastItemAttempt =
+                    item.attempts[item.itemAttemptNumber - 1];
+                return [
+                    item.itemId,
+                    {
+                        docId: lastItemAttempt.docId,
+                        docVariant: lastItemAttempt.docVariant,
+                    },
                 ];
-
-            return Object.fromEntries(
-                lastAssignmentAttempt.items.map((item) => {
-                    const lastItemAttempt =
-                        item.attempts[item.itemAttemptNumber - 1];
-                    return [
-                        item.itemId,
-                        {
-                            docId: lastItemAttempt.docId,
-                            variant: lastItemAttempt.variant,
-                        },
-                    ];
-                }),
-            );
-        }, [assignmentState]);
+            }),
+        );
+    }, [assignmentState]);
 
     // The index of the current item
     const [currentItemIdx, setCurrentItemIdx] = useState(0);
@@ -152,6 +156,10 @@ export function Viewer({
 
         return [idToIdx, weights, numDocsTotal];
     }, [source]);
+
+    useEffect(() => {
+        assignmentStateDispatch({ type: "reinitialize" });
+    }, [assignmentId]);
 
     const { numVariantsByItemDoc, allVariantsCalculated } =
         useGetPossibleVariants({ assignmentId, numDocsTotal });
@@ -258,8 +266,9 @@ export function Viewer({
                 type: "generateNewAssignmentAttempt",
                 source,
                 numVariantsByItemDoc,
-                variantIndex,
                 shuffle,
+                flags,
+                assignmentId,
             });
             setNeedNewAssignmentState(false);
             setNeedNewGetStateListeners(true);
@@ -269,8 +278,9 @@ export function Viewer({
         allVariantsCalculated,
         source,
         numVariantsByItemDoc,
-        variantIndex,
         shuffle,
+        flags,
+        assignmentId,
     ]);
 
     useEffect(() => {
@@ -281,6 +291,10 @@ export function Viewer({
                     assignmentState.attempts[
                         assignmentState.assignmentAttemptNumber - 1
                     ];
+
+                if (!lastAssignmentAttempt) {
+                    return;
+                }
 
                 for (const item of lastAssignmentAttempt.items) {
                     const itemId = item.itemId;
@@ -402,6 +416,46 @@ export function Viewer({
         }
     }
 
+    function createNewAssignmentAttempt() {
+        if (allVariantsCalculated) {
+            setItemsRendered(new Set());
+            assignmentStateDispatch({
+                type: "generateNewAssignmentAttempt",
+                source,
+                numVariantsByItemDoc,
+                shuffle,
+                assignmentId,
+                flags,
+            });
+            setCurrentItemIdx(0);
+        } else {
+            console.error(
+                "Cannot generate new assignment attempt until all variants are calculated",
+            );
+        }
+    }
+
+    function createNewItemAttempt(itemIdx: number) {
+        if (allVariantsCalculated) {
+            const itemId = itemOrder[itemIdx].id;
+            setItemsRendered((was) => {
+                const obj = new Set(was);
+                obj.delete(itemId);
+                return obj;
+            });
+            assignmentStateDispatch({
+                type: "generateNewItemAttempt",
+                itemIdx,
+                source,
+                numVariantsPerDoc: numVariantsByItemDoc[itemId],
+            });
+        } else {
+            console.error(
+                "Cannot generate new item attempt until all variants are calculated",
+            );
+        }
+    }
+
     function clickNext() {
         setCurrentItemIdx((was) => Math.min(numItems - 1, was + 1));
     }
@@ -452,6 +506,9 @@ export function Viewer({
         }
     }
 
+    const lastAssignmentAttempt =
+        assignmentState.attempts[assignmentState.assignmentAttemptNumber - 1];
+
     // We include a `<DoenetViewer>` for every document in the assignment even though they may not all be rendered.
     // Having this rendered in the render loop is needed so that each document will send the
     // `SPLICE.allPossibleVariants` message that the `useGetPossibleVariants` hook need to calculate all variants.
@@ -464,22 +521,48 @@ export function Viewer({
             if (item.type === "question") {
                 questionNumber++;
                 return (
-                    <div key={item.id} hidden={itemHidden}>
-                        {item.id}
+                    <div
+                        key={
+                            assignmentId +
+                            "|" +
+                            item.id +
+                            "|" +
+                            lastAssignmentAttempt?.items[
+                                shuffledItemIdx
+                            ]?.itemAttemptNumber.toString()
+                        }
+                        hidden={itemHidden}
+                    >
+                        <div
+                            style={{ marginLeft: "20px" }}
+                            hidden={
+                                itemsToRender.has(item.id) &&
+                                item.id in selectedItemDocs
+                            }
+                        >
+                            Initializing...
+                        </div>
                         {item.documents.map((d) => {
                             const render =
                                 itemsToRender.has(item.id) &&
-                                selectedItemDocs[item.id].docId === d.id;
+                                selectedItemDocs[item.id]?.docId === d.id;
 
                             return (
                                 <div key={d.id} hidden={!render}>
-                                    {d.id}
+                                    <div
+                                        style={{ marginLeft: "20px" }}
+                                        hidden={itemsRendered.has(
+                                            currentItemId,
+                                        )}
+                                    >
+                                        Initializing...
+                                    </div>
                                     <DoenetViewer
                                         doenetML={d.doenetML}
                                         render={render}
                                         requestedVariantIndex={
                                             selectedItemDocs[item.id]
-                                                ?.variant ?? 1
+                                                ?.docVariant ?? 1
                                         }
                                         flags={flags}
                                         activityId={assignmentId}
@@ -505,16 +588,38 @@ export function Viewer({
                                 </div>
                             );
                         })}
+                        <p>
+                            {questionLevelAttempts ? (
+                                <button
+                                    style={{ marginLeft: "20px" }}
+                                    onClick={() => {
+                                        createNewItemAttempt(currentItemIdx);
+                                    }}
+                                    disabled={!allVariantsCalculated}
+                                >
+                                    New question attempt
+                                </button>
+                            ) : null}
+                        </p>
                     </div>
                 );
             } else {
                 return (
-                    <div key={item.id} hidden={itemHidden}>
+                    <div key={assignmentId + "|" + item.id} hidden={itemHidden}>
+                        <div
+                            style={{ marginLeft: "20px" }}
+                            hidden={
+                                itemsToRender.has(item.id) &&
+                                item.id in selectedItemDocs
+                            }
+                        >
+                            Initializing...
+                        </div>
                         <DoenetViewer
                             doenetML={item.document.doenetML}
                             render={itemsToRender.has(item.id)}
                             requestedVariantIndex={
-                                selectedItemDocs[item.id]?.variant ?? 1
+                                selectedItemDocs[item.id]?.docVariant ?? 1
                             }
                             flags={flags}
                             activityId={assignmentId}
@@ -538,27 +643,25 @@ export function Viewer({
     return (
         <div>
             <h2>{source.title}</h2>
+
             <div>
-                <button onClick={clickPrevious}>Previous</button>
-                <button onClick={clickNext}>Next</button>
+                <button onClick={clickPrevious} style={{ marginLeft: "20px" }}>
+                    Previous
+                </button>
+                <button onClick={clickNext} style={{ marginLeft: "20px" }}>
+                    Next
+                </button>
+                {assignmentLevelAttempts ? (
+                    <button
+                        onClick={createNewAssignmentAttempt}
+                        disabled={!allVariantsCalculated}
+                        style={{ marginLeft: "20px" }}
+                    >
+                        New attempt
+                    </button>
+                ) : null}
             </div>
-            <div>Assignment credit: {assignmentState.creditAchieved}</div>
-            <div>
-                Credit by item, latest attempt:
-                <ol>
-                    {assignmentState.attempts[
-                        assignmentState.assignmentAttemptNumber - 1
-                    ]?.items
-                        .filter(
-                            (item) =>
-                                source.items[itemIdToOrigItemIdx[item.itemId]]
-                                    .type === "question",
-                        )
-                        .map((item) => (
-                            <li key={item.itemId}>{item.creditAchieved}</li>
-                        ))}
-                </ol>
-            </div>
+
             {viewersByItem}
         </div>
     );

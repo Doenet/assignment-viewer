@@ -11,6 +11,8 @@ export function isAssignmentState(obj: unknown): obj is AssignmentState {
             typeof typedObj === "object" ||
             typeof typedObj === "function") &&
         typeof typedObj["assignmentAttemptNumber"] === "number" &&
+        typeof typedObj["initialVariantIndex"] === "number" &&
+        typeof typedObj["currentVariantIndex"] === "number" &&
         typeof typedObj["creditAchieved"] === "number" &&
         Array.isArray(typedObj["attempts"]) &&
         typedObj["attempts"].every((e: any) =>
@@ -32,7 +34,8 @@ export function isAssignmentState(obj: unknown): obj is AssignmentState {
                         typeof e === "object" ||
                         typeof e === "function") &&
                     typeof e["docId"] === "string" &&
-                    typeof e["variant"] === "number" &&
+                    typeof e["docVariant"] === "number" &&
+                    typeof e["itemVariant"] === "number" &&
                     typeof e["creditAchieved"] === "number"
                 )
             )
