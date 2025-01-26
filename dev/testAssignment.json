@@ -6,7 +6,8 @@
             "id": "intro1",
             "document": {
                 "id": "intro1",
-                "doenetML": "<p>This is how these questions work</p>"
+                "doenetML": "<p>This is how these questions work</p>",
+                "version": "0.7.0-alpha29"
             }
         },
         {
@@ -15,19 +16,23 @@
             "documents": [
                 {
                     "id": "1a",
-                    "doenetML": "<question>Question 1A <graph><point name='P'/></graph><answer><award><when>$P.x > 0</when></award></answer></question>"
+                    "doenetML": "<question>Question 1A <graph><point name='P'/></graph><answer><award><when>$P.x > 0</when></award></answer></question>",
+                    "version": "0.7.0-alpha29"
                 },
                 {
                     "id": "1b",
-                    "doenetML": "<question>Question 1B <p>Enter: <select assignNames='a'>a b c</select>. <answer>$a</answer></p></question>"
+                    "doenetML": "<question>Question 1B <p>Enter: <select assignNames='a'>a b c</select>. <answer>$a</answer></p></question>",
+                    "version": "0.7.0-alpha29"
                 },
                 {
                     "id": "1c",
-                    "doenetML": "<question>Question 1C <p>Enter: <selectFromSequence assignNames='a' />. <answer>$a</answer></p></question>"
+                    "doenetML": "<question>Question 1C <p>Enter: <selectFromSequence assignNames='a' />. <answer>$a</answer></p></question>",
+                    "version": "0.7.0-alpha29"
                 },
                 {
                     "id": "1d",
-                    "doenetML": "<question>Question 1D <p>Enter: <selectFromSequence assignNames='a' length=\"42\" />.  <answer>$a</answer></p></question>"
+                    "doenetML": "<question>Question 1D <p>Enter: <selectFromSequence assignNames='a' length=\"42\" />.  <answer>$a</answer></p></question>",
+                    "version": "0.7.0-alpha29"
                 }
             ]
         },
@@ -36,7 +41,8 @@
             "id": "intro2",
             "document": {
                 "id": "intro2",
-                "doenetML": "<p>More information on next questions.</p>"
+                "doenetML": "<p>More information on next questions.</p>",
+                "version": "0.7.0-alpha29"
             }
         },
         {
@@ -45,11 +51,13 @@
             "documents": [
                 {
                     "id": "2a",
-                    "doenetML": "<question>Question 2A <p>Enter <select name='a'>a b c d e f</select>. <answer>$a</answer></p><graph><point>(2,2)</point></graph></question>"
+                    "doenetML": "<question>Question 2A <p>Enter <select name='a'>a b c d e f</select>. <answer>$a</answer></p><graph><point>(2,2)</point></graph></question>",
+                    "version": "0.7.0-alpha29"
                 },
                 {
                     "id": "2b",
-                    "doenetML": "<question>Question 2B <p>Enter <select name='a'>g h i</select>. <answer>$a</answer></p><graph><point>(-2,2)</point></graph></question>"
+                    "doenetML": "<question>Question 2B <p>Enter <select name='a'>g h i</select>. <answer>$a</answer></p><graph><point>(-2,2)</point></graph></question>",
+                    "version": "0.7.0-alpha29"
                 }
             ],
             "weight": 2
@@ -60,7 +68,8 @@
             "documents": [
                 {
                     "id": "3",
-                    "doenetML": "<problem>Question 3<p>1+1=<answer>2</answer></p><graph showNavigation='false'><point>(-3,-3)</point></graph></problem>"
+                    "doenetML": "<problem>Question 3<p>1+1=<answer>2</answer></p><graph showNavigation='false'><point>(-3,-3)</point></graph></problem>",
+                    "version": "0.7.0-alpha29"
                 }
             ]
         }

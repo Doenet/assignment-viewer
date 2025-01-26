@@ -559,6 +559,7 @@ export function Viewer({
                                     </div>
                                     <DoenetViewer
                                         doenetML={d.doenetML}
+                                        doenetmlVersion={d.version}
                                         render={render}
                                         requestedVariantIndex={
                                             selectedItemDocs[item.id]
@@ -617,6 +618,7 @@ export function Viewer({
                         </div>
                         <DoenetViewer
                             doenetML={item.document.doenetML}
+                            doenetmlVersion={item.document.version}
                             render={itemsToRender.has(item.id)}
                             requestedVariantIndex={
                                 selectedItemDocs[item.id]?.docVariant ?? 1

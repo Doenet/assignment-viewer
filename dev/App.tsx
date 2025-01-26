@@ -5,7 +5,11 @@ import { AssignmentSource } from "../src/types";
 import assignmentSource from "./testAssignment.json";
 
 import initialAssignmentState from "./testInitialState.json";
-import { AssignmentState, ItemId } from "../src/Viewer/assignmentState";
+import {
+    AssignmentAttemptState,
+    AssignmentState,
+    ItemId,
+} from "../src/Viewer/assignmentState";
 
 function App() {
     const defaultTestSettings: {
@@ -59,6 +63,12 @@ function App() {
                         onClick={() => {
                             setTestSettings(defaultTestSettings);
                             setUpdateNumber((was) => was + 1);
+                        }}
+                        style={{
+                            padding: "2px",
+                            marginLeft: "12px",
+                            width: "80px",
+                            height: "30px",
                         }}
                     >
                         Reset
@@ -254,8 +264,9 @@ function App() {
 
     console.log({ score, assignmentState });
 
-    const lastestAssignmentAttempt =
-        assignmentState.attempts[assignmentState.assignmentAttemptNumber - 1];
+    const lastAssignmentAttempt = assignmentState.attempts[
+        assignmentState.assignmentAttemptNumber - 1
+    ] as AssignmentAttemptState | null;
 
     return (
         <>
@@ -263,8 +274,7 @@ function App() {
                 style={{
                     backgroundColor: "lightGray",
                     width: "800px",
-                    marginLeft: "20px",
-                    padding: "10px",
+                    padding: "20px",
                 }}
             >
                 <h3>
@@ -274,7 +284,12 @@ function App() {
                             onClick={() => {
                                 setControlsVisible((was) => !was);
                             }}
-                            style={{ marginLeft: "12px" }}
+                            style={{
+                                padding: "2px",
+                                marginLeft: "12px",
+                                width: "160px",
+                                height: "30px",
+                            }}
                         >
                             {buttonText + " controls"}
                         </button>
@@ -282,13 +297,13 @@ function App() {
                 </h3>
                 {controls}
 
-                <div>Assignment credit: {assignmentState.creditAchieved}</div>
+                <div>
+                    Assignment credit: {assignmentState.creditAchieved * 100}%
+                </div>
                 <div>
                     Credit by item, latest attempt:
                     <ol>
-                        {assignmentState.attempts[
-                            assignmentState.assignmentAttemptNumber - 1
-                        ]?.items
+                        {lastAssignmentAttempt?.items
                             .filter(
                                 (item) =>
                                     assignmentSource.items[
@@ -296,7 +311,9 @@ function App() {
                                     ].type === "question",
                             )
                             .map((item) => (
-                                <li key={item.itemId}>{item.creditAchieved}</li>
+                                <li key={item.itemId}>
+                                    {item.creditAchieved * 100}%
+                                </li>
                             ))}
                     </ol>
                 </div>
@@ -307,6 +324,7 @@ function App() {
             </div>
 
             <AssignmentViewer
+                key={"viewer" + updateNumber.toString()}
                 source={assignmentSource as AssignmentSource}
                 flags={{
                     showCorrectness,

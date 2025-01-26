@@ -8,6 +8,7 @@ export type Question = {
 export type Document = {
     id: string;
     doenetML: string;
+    version: string;
 };
 
 export type Description = {
