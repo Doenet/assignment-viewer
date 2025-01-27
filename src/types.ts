@@ -1,18 +1,26 @@
 export type Question = {
     type: "question";
+    id: "string";
     weight?: number;
-    documents: string[];
+    documents: Document[];
+};
+
+export type Document = {
+    id: string;
+    doenetML: string;
+    version: string;
 };
 
 export type Description = {
     type: "description";
-    document: string;
+    id: "string";
+    document: Document;
 };
 
 export type AssignmentSource = {
     title: string;
     numVariants?: number;
-    content: (Question | Description)[];
+    items: (Question | Description)[];
 };
 
 export type DoenetMLFlags = {

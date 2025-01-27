@@ -1,3 +1,3 @@
-# Doenet assignment builder
+# Doenet assignment viewer
 
-Build and view assignments from questions written in DoenetML
+View assignments from questions written in DoenetML

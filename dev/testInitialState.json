@@ -1,0 +1,92 @@
+{
+    "assignmentAttemptNumber": 1,
+    "initialVariantIndex": 339839,
+    "currentVariantIndex": 339839,
+    "creditAchieved": 0.25,
+    "attempts": [
+        {
+            "creditAchieved": 0.25,
+            "items": [
+                {
+                    "itemId": "intro1",
+                    "itemAttemptNumber": 1,
+                    "creditAchieved": 0,
+                    "attempts": [
+                        {
+                            "docId": "intro1",
+                            "docVariant": 1,
+                            "itemVariant": 1,
+                            "creditAchieved": 0,
+                            "docState": null
+                        }
+                    ]
+                },
+                {
+                    "itemId": "1",
+                    "itemAttemptNumber": 1,
+                    "creditAchieved": 0,
+                    "attempts": [
+                        {
+                            "docId": "1d",
+                            "docVariant": 36,
+                            "itemVariant": 50,
+                            "creditAchieved": 0,
+                            "docState": null
+                        }
+                    ]
+                },
+                {
+                    "itemId": "intro2",
+                    "itemAttemptNumber": 1,
+                    "creditAchieved": 0,
+                    "attempts": [
+                        {
+                            "docId": "intro2",
+                            "docVariant": 1,
+                            "itemVariant": 1,
+                            "creditAchieved": 0,
+                            "docState": null
+                        }
+                    ]
+                },
+                {
+                    "itemId": "3",
+                    "itemAttemptNumber": 1,
+                    "creditAchieved": 1,
+                    "attempts": [
+                        {
+                            "docId": "3",
+                            "docVariant": 1,
+                            "itemVariant": 1,
+                            "creditAchieved": 1,
+                            "docState": {
+                                "cid": "bafkreibm2pw3kor4pxodltho3hrjop4xfr66th4v6epverekxmudp6yzo4",
+                                "coreInfo": "{\"generatedVariantString\":\"{\\\"index\\\":1,\\\"name\\\":\\\"a\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_document1\\\"},\\\"subvariants\\\":[{\\\"index\\\":1,\\\"name\\\":\\\"a\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_problem1\\\"},\\\"subvariants\\\":[]}]}\",\"allPossibleVariants\":[\"a\"],\"rendererTypesInDocument\":[\"section\",\"p\",\"answer\",\"mathInput\",\"vector\",\"math\",\"graph\",\"point\"],\"documentToRender\":{\"componentName\":\"/_document1\",\"effectiveName\":\"/_document1\",\"componentType\":\"document\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_document1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_document1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_document1\"}}}}",
+                                "coreState": "{\"/__math_9K7BoBC_Ym\":{\"expressionWithCodes\":3.5254897173713236,\"__def_primitive_ignore_0\":\"3.5254897173713236\"},\"/__math_xeTkjUiD1T\":{\"expressionWithCodes\":2.9816995059742646,\"__def_primitive_ignore_0\":\"2.9816995059742646\"},\"/__mathinput_KXh6glTyP5\":{\"rawRendererValue\":\"2\",\"lastValueForDisplay\":2,\"immediateValue\":2,\"immediateValueChanged\":true,\"dontUpdateRawValueInDefinition\":false,\"valueChanged\":true,\"value\":2},\"/__math_d9bmzOvKly\":{\"expressionWithCodes\":2},\"/_answer1\":{\"justSubmitted\":true,\"hasBeenCorrect\":true,\"creditAchieved\":1,\"responseHasBeenSubmitted\":true,\"numSubmittedResponses\":1,\"submittedResponses\":{\"0\":2,\"mergeObject\":true},\"submittedResponsesComponentType\":[\"math\"],\"creditAchievedDependenciesAtSubmit\":\"Ncm42RSF50zDvL5OtpGCrMsaOVA=\",\"numSubmissions\":1},\"/_document1\":{\"theme\":\"light\"},\"/__award_XTZPmlFGuS\":{\"awarded\":true,\"creditAchieved\":1,\"fractionSatisfied\":1}}",
+                                "rendererState": "{\"__componentNeedingUpdateValue\":null,\"/__mathinput_KXh6glTyP5\":{\"stateValues\":{\"minWidth\":50,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"includeCheckWork\":true,\"suppressCheckwork\":false,\"creditAchieved\":1,\"valueHasBeenValidated\":true,\"showCorrectness\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"label\":\"\",\"labelHasLatex\":false,\"labelForGraph\":\"\",\"valueForDisplay\":2,\"rawRendererValue\":\"2\"},\"childrenInstructions\":[]},\"/_answer1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"fixed\":false,\"fixLocation\":false,\"disabledOriginal\":false,\"showCorrectness\":true,\"inputChildren\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\"}],\"inputChildrenWithValues\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\",\"stateValues\":{\"value\":2}}],\"suppressCheckwork\":false,\"delegateCheckWork\":true,\"creditAchieved\":1,\"justSubmitted\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"disabled\":false},\"childrenInstructions\":[{\"componentName\":\"/__mathinput_KXh6glTyP5\",\"effectiveName\":\"/__mathinput_KXh6glTyP5\",\"componentType\":\"mathInput\",\"rendererType\":\"mathInput\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateRawValue\":{\"actionName\":\"updateRawValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateValue\":{\"actionName\":\"updateValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}}]},\"/_p1\":{\"stateValues\":{\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false},\"childrenInstructions\":[\"1+1=\",{\"componentName\":\"/_answer1\",\"effectiveName\":\"/_answer1\",\"componentType\":\"answer\",\"rendererType\":\"answer\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_answer1\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}}]},\"/_point1\":{\"stateValues\":{\"applyStyleToLabel\":false,\"layer\":0,\"draggable\":true,\"labelPosition\":\"upperright\",\"showCoordsWhenDragging\":true,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"selectedStyle\":{\"lineColor\":\"#648FFF\",\"lineColorWord\":\"blue\",\"lineColorDarkMode\":\"#648FFF\",\"lineColorWordDarkMode\":\"blue\",\"lineOpacity\":0.7,\"lineWidth\":4,\"lineWidthWord\":\"thick\",\"lineStyle\":\"solid\",\"lineStyleWord\":\"\",\"markerColor\":\"#648FFF\",\"markerColorWord\":\"blue\",\"markerColorDarkMode\":\"#648FFF\",\"markerColorWordDarkMode\":\"blue\",\"markerOpacity\":0.7,\"markerStyle\":\"circle\",\"markerStyleWord\":\"point\",\"markerSize\":5,\"fillColor\":\"#648FFF\",\"fillColorWord\":\"blue\",\"fillColorDarkMode\":\"#648FFF\",\"fillColorWordDarkMode\":\"blue\",\"fillOpacity\":0.3,\"textColor\":\"black\",\"textColorWord\":\"black\",\"textColorDarkMode\":\"white\",\"textColorWordDarkMode\":\"white\"},\"label\":\"\",\"labelHasLatex\":false,\"labelForGraph\":\"\",\"hideOffGraphIndicator\":false,\"latex\":\"\\\\left( 3.53, 2.98 \\\\right)\",\"numericalXs\":[3.5254897173713236,2.9816995059742646]},\"childrenInstructions\":[]},\"/_graph1\":{\"stateValues\":{\"displayMode\":\"block\",\"horizontalAlign\":\"center\",\"displayXAxis\":true,\"displayYAxis\":true,\"displayXAxisTickLabels\":true,\"displayYAxisTickLabels\":true,\"xlabelPosition\":\"right\",\"xTickScaleFactor\":null,\"ylabelPosition\":\"top\",\"ylabelAlignment\":\"left\",\"yTickScaleFactor\":null,\"showNavigation\":false,\"fixAxes\":false,\"showBorder\":true,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"xlabel\":\"\",\"xlabelHasLatex\":false,\"ylabel\":\"\",\"ylabelHasLatex\":false,\"graphicalDescendants\":[{\"componentType\":\"point\",\"componentName\":\"/_point1\"}],\"width\":{\"isAbsolute\":true,\"size\":425},\"aspectRatio\":1,\"haveGraphParent\":false,\"xmin\":-10,\"xmax\":10,\"ymin\":-10,\"ymax\":10,\"boundingbox\":[-10,10,10,-10],\"grid\":\"none\"},\"childrenInstructions\":[{\"componentName\":\"/_point1\",\"effectiveName\":\"/_point1\",\"componentType\":\"point\",\"rendererType\":\"point\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_point1\"},\"movePoint\":{\"actionName\":\"movePoint\",\"componentName\":\"/_point1\"},\"switchPoint\":{\"actionName\":\"switchPoint\",\"componentName\":\"/_point1\"},\"pointClicked\":{\"actionName\":\"pointClicked\",\"componentName\":\"/_point1\"},\"pointFocused\":{\"actionName\":\"pointFocused\",\"componentName\":\"/_point1\"}}}]},\"/_problem1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"boxed\":false,\"asList\":false,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"inAList\":false,\"titleChildName\":null,\"title\":\"Problem 2\",\"titlePrefix\":\"Problem 2\",\"containerTag\":\"article\",\"level\":1,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":1,\"collapsible\":false,\"open\":true,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false},\"childrenInstructions\":[\"Question 3\",{\"componentName\":\"/_p1\",\"effectiveName\":\"/_p1\",\"componentType\":\"p\",\"rendererType\":\"p\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_p1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_p1\"}}},{\"componentName\":\"/_graph1\",\"effectiveName\":\"/_graph1\",\"componentType\":\"graph\",\"rendererType\":\"graph\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_graph1\"},\"changeAxisLimits\":{\"actionName\":\"changeAxisLimits\",\"componentName\":\"/_graph1\"},\"addChildren\":{\"actionName\":\"addChildren\",\"componentName\":\"/_graph1\"},\"deleteChildren\":{\"actionName\":\"deleteChildren\",\"componentName\":\"/_graph1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_graph1\"}}}]},\"/_document1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"disabled\":false,\"fixed\":null,\"fixLocation\":false,\"titleChildName\":null,\"title\":\"\",\"level\":0,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":1,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"containerTag\":\"div\"},\"childrenInstructions\":[{\"componentName\":\"/_problem1\",\"effectiveName\":\"/_problem1\",\"componentType\":\"problem\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_problem1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_problem1\"},\"revealSection\":{\"actionName\":\"revealSection\",\"componentName\":\"/_problem1\"},\"closeSection\":{\"actionName\":\"closeSection\",\"componentName\":\"/_problem1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_problem1\"}}}]}}",
+                                "docId": "3|3",
+                                "attemptNumber": 1,
+                                "activityId": "apple",
+                                "onSubmission": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "itemId": "2",
+                    "itemAttemptNumber": 1,
+                    "creditAchieved": 0,
+                    "attempts": [
+                        {
+                            "docId": "2b",
+                            "docVariant": 2,
+                            "itemVariant": 8,
+                            "creditAchieved": 0,
+                            "docState": null
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
