@@ -9,7 +9,7 @@ import {
 } from "../types";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { nanoid } from "nanoid";
 import { MdError } from "react-icons/md";
 import { isAssignmentState } from "./assignmentState.guard";
@@ -27,7 +27,7 @@ export function Viewer({
     maxAttemptsAllowed: _maxAttemptsAllowed = Infinity,
     questionLevelAttempts = false,
     assignmentLevelAttempts = false,
-    paginate = false,
+    paginate = true,
     showFinishButton: _showFinishButton = false,
     forceDisable = false,
     forceShowCorrectness = false,
@@ -67,9 +67,17 @@ export function Viewer({
     // The items that have been designated to be rendered
     const [itemsToRender, setItemsToRender] = useState<Set<ItemId>>(new Set());
 
+    const itemRefs = useRef<Record<string, HTMLDivElement>>({});
+
+    const [itemsVisible, setItemsVisible] = useState<Set<ItemId>>(new Set());
+
     const [needNewAssignmentState, setNeedNewAssignmentState] = useState(false);
     const [needNewGetStateListeners, setNeedNewGetStateListeners] =
         useState(false);
+
+    const [extraItemAttempts, setExtraItemAttempts] = useState<
+        Record<ItemId, number>
+    >({});
 
     const [assignmentState, assignmentStateDispatch] = useReducer(
         assignmentStateReducer,
@@ -406,6 +414,39 @@ export function Viewer({
         };
     }, [assignmentId, itemIdToOrigItemIdx, itemWeights, itemOrder, flags]);
 
+    useEffect(() => {
+        if (!paginate) {
+            const observersAdded: IntersectionObserver[] = [];
+
+            for (const id in itemRefs.current) {
+                const observer = new IntersectionObserver(
+                    ([entry]) => {
+                        setItemsVisible((was) => {
+                            const newObj = new Set(was);
+                            if (entry.isIntersecting) {
+                                newObj.add(id);
+                            } else {
+                                newObj.delete(id);
+                            }
+
+                            return newObj;
+                        });
+                    },
+                    { rootMargin: "200px 200px 200px 200px" },
+                );
+
+                observer.observe(itemRefs.current[id]);
+                observersAdded.push(observer);
+            }
+
+            return () => {
+                for (const observer of observersAdded) {
+                    observer.disconnect();
+                }
+            };
+        }
+    }, [paginate, source, extraItemAttempts]);
+
     function addItemToRender(itemId: ItemId) {
         if (!itemsToRender.has(itemId)) {
             setItemsToRender((was) => {
@@ -435,9 +476,9 @@ export function Viewer({
         }
     }
 
-    function createNewItemAttempt(itemIdx: number) {
+    function createNewItemAttempt(itemId: string) {
         if (allVariantsCalculated) {
-            const itemId = itemOrder[itemIdx].id;
+            const itemIdx = itemOrder.findIndex((io) => io.id === itemId);
             setItemsRendered((was) => {
                 const obj = new Set(was);
                 obj.delete(itemId);
@@ -448,6 +489,11 @@ export function Viewer({
                 itemIdx,
                 source,
                 numVariantsPerDoc: numVariantsByItemDoc[itemId],
+            });
+            setExtraItemAttempts((was) => {
+                const obj = { ...was };
+                obj[itemId] = (obj[itemId] ?? 0) + 1;
+                return obj;
             });
         } else {
             console.error(
@@ -503,11 +549,15 @@ export function Viewer({
                     }
                 }
             }
+        } else {
+            for (const item of source.items) {
+                if (!itemsRendered.has(item.id) && itemsVisible.has(item.id)) {
+                    addItemToRender(item.id);
+                    break;
+                }
+            }
         }
     }
-
-    const lastAssignmentAttempt =
-        assignmentState.attempts[assignmentState.assignmentAttemptNumber - 1];
 
     // We include a `<DoenetViewer>` for every document in the assignment even though they may not all be rendered.
     // Having this rendered in the render loop is needed so that each document will send the
@@ -527,11 +577,16 @@ export function Viewer({
                             "|" +
                             item.id +
                             "|" +
-                            lastAssignmentAttempt?.items[
-                                shuffledItemIdx
-                            ]?.itemAttemptNumber.toString()
+                            (extraItemAttempts[item.id] ?? 0).toString()
                         }
                         hidden={itemHidden}
+                        ref={(element) => {
+                            if (element) {
+                                itemRefs.current[item.id] = element;
+                            }
+                        }}
+                        id={item.id + "|" + origItemIdx.toString()}
+                        style={{ borderBottom: "solid 2px lightgray" }}
                     >
                         <div
                             style={{ marginLeft: "20px" }}
@@ -551,9 +606,7 @@ export function Viewer({
                                 <div key={d.id} hidden={!render}>
                                     <div
                                         style={{ marginLeft: "20px" }}
-                                        hidden={itemsRendered.has(
-                                            currentItemId,
-                                        )}
+                                        hidden={itemsRendered.has(item.id)}
                                     >
                                         Initializing...
                                     </div>
@@ -594,7 +647,7 @@ export function Viewer({
                                 <button
                                     style={{ marginLeft: "20px" }}
                                     onClick={() => {
-                                        createNewItemAttempt(currentItemIdx);
+                                        createNewItemAttempt(item.id);
                                     }}
                                     disabled={!allVariantsCalculated}
                                 >
@@ -606,7 +659,17 @@ export function Viewer({
                 );
             } else {
                 return (
-                    <div key={assignmentId + "|" + item.id} hidden={itemHidden}>
+                    <div
+                        key={assignmentId + "|" + item.id}
+                        hidden={itemHidden}
+                        ref={(element) => {
+                            if (element) {
+                                itemRefs.current[item.id] = element;
+                            }
+                        }}
+                        id={item.id + "|" + origItemIdx.toString()}
+                        style={{ borderBottom: "solid 2px lightgray" }}
+                    >
                         <div
                             style={{ marginLeft: "20px" }}
                             hidden={
@@ -647,12 +710,17 @@ export function Viewer({
             <h2>{source.title}</h2>
 
             <div>
-                <button onClick={clickPrevious} style={{ marginLeft: "20px" }}>
-                    Previous
-                </button>
-                <button onClick={clickNext} style={{ marginLeft: "20px" }}>
-                    Next
-                </button>
+                <div hidden={!paginate}>
+                    <button
+                        onClick={clickPrevious}
+                        style={{ marginLeft: "20px" }}
+                    >
+                        Previous
+                    </button>
+                    <button onClick={clickNext} style={{ marginLeft: "20px" }}>
+                        Next
+                    </button>
+                </div>
                 {assignmentLevelAttempts ? (
                     <button
                         onClick={createNewAssignmentAttempt}

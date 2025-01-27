@@ -21,6 +21,7 @@ function App() {
         questionLevelAttempts: boolean;
         assignmentLevelAttempts: boolean;
         shuffle: boolean;
+        paginate: boolean;
     } = {
         requestedVariantIndex: 1,
         showCorrectness: true,
@@ -30,6 +31,7 @@ function App() {
         questionLevelAttempts: true,
         assignmentLevelAttempts: true,
         shuffle: false,
+        paginate: false,
     };
 
     const [controlsVisible, setControlsVisible] = useState(false);
@@ -45,6 +47,7 @@ function App() {
         questionLevelAttempts,
         assignmentLevelAttempts,
         shuffle,
+        paginate,
     } = testSettings;
 
     let controls = null;
@@ -180,6 +183,7 @@ function App() {
                                         !was.assignmentLevelAttempts;
                                     return newObj;
                                 });
+                                setUpdateNumber((was) => was + 1);
                             }}
                         />
                         Assignment level attempts
@@ -197,9 +201,28 @@ function App() {
                                     newObj.shuffle = !was.shuffle;
                                     return newObj;
                                 });
+                                setUpdateNumber((was) => was + 1);
                             }}
                         />
                         Shuffle question order
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        {" "}
+                        <input
+                            type="checkbox"
+                            checked={paginate}
+                            onChange={() => {
+                                setTestSettings((was) => {
+                                    const newObj = { ...was };
+                                    newObj.paginate = !was.paginate;
+                                    return newObj;
+                                });
+                                setUpdateNumber((was) => was + 1);
+                            }}
+                        />
+                        Paginate
                     </label>
                 </div>
             </div>
@@ -336,6 +359,7 @@ function App() {
                     allowLoadState: true,
                 }}
                 shuffle={true}
+                paginate={paginate}
                 assignmentId={assignmentId}
                 questionLevelAttempts={questionLevelAttempts}
                 assignmentLevelAttempts={assignmentLevelAttempts}
