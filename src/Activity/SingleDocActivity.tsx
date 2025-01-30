@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DoenetMLFlags } from "../types";
 import { DoenetViewer } from "@doenet/doenetml-iframe";
 import { SingleDocState } from "./singleDocState";
-import { extendedId } from "./activityState";
+import { ActivityState, extendedId } from "./activityState";
 
 export function SingleDocActivity({
     flags,
@@ -17,9 +17,13 @@ export function SingleDocActivity({
     state,
     reportScoreAndStateCallback,
     documentStructureCallback,
-    render = true,
+    checkRender,
+    checkHidden,
     allowItemAttemptButtons = false,
     generateNewItemAttempt,
+    hasRenderedCallback,
+    reportVisibility = false,
+    reportVisibilityCallback,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -33,12 +37,16 @@ export function SingleDocActivity({
     state: SingleDocState;
     reportScoreAndStateCallback: (args: unknown) => void;
     documentStructureCallback: (args: unknown) => void;
-    render?: boolean;
+    checkRender: (state: ActivityState) => boolean;
+    checkHidden: (state: ActivityState) => boolean;
     allowItemAttemptButtons?: boolean;
     generateNewItemAttempt?: (
         id: string,
         initialQuestionCounter: number,
     ) => void;
+    hasRenderedCallback: (id: string) => void;
+    reportVisibility?: boolean;
+    reportVisibilityCallback: (id: string, isVisible: boolean) => void;
 }) {
     const [_rendered, setRendered] = useState(false);
 
@@ -56,6 +64,27 @@ export function SingleDocActivity({
     const [requestedVariantIndex, setRequestedVariantIndex] = useState(
         latestAttempt ? latestAttempt.variant : state.initialVariant,
     );
+
+    const docId = extendedId(state);
+
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (reportVisibility && ref.current) {
+            const observer = new IntersectionObserver(
+                ([entry]) => {
+                    reportVisibilityCallback(docId, entry.isIntersecting);
+                },
+                { rootMargin: "1000px 1000px 1000px 1000px" },
+            );
+
+            observer.observe(ref.current);
+
+            return () => {
+                observer.disconnect();
+            };
+        }
+    }, [reportVisibility, ref, docId, reportVisibilityCallback]);
 
     // Note: given the way the `<DoenetViewer>` iframe is set up, any changes in props
     // will reinitialize the activity. Hence, we make sure that no props change
@@ -90,54 +119,58 @@ export function SingleDocActivity({
         generateNewItemAttempt !== undefined &&
         !source.isDescription;
 
-    const docId = extendedId(state);
+    const render = checkRender(state);
+    const hidden = checkHidden(state);
 
     return (
-        <div hidden={!render} style={{ minHeight: "100px" }}>
-            {/* <div style={{ marginLeft: "20px" }} hidden={rendered}>
+        <div ref={ref}>
+            <div hidden={!render || hidden} style={{ minHeight: "100px" }}>
+                {/* <div style={{ marginLeft: "20px" }} hidden={rendered}>
                 Initializing...
             </div> */}
-            <DoenetViewer
-                key={state.attempts.length}
-                doenetML={source.doenetML}
-                doenetmlVersion={source.version}
-                render={render}
-                requestedVariantIndex={requestedVariantIndex}
-                flags={flags}
-                activityId={baseId}
-                prefixForIds={docId}
-                docId={docId}
-                forceDisable={forceDisable}
-                forceShowCorrectness={forceShowCorrectness}
-                forceShowSolution={forceShowSolution}
-                forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                linkSettings={linkSettings}
-                darkMode={darkMode}
-                showAnswerTitles={showAnswerTitles}
-                addVirtualKeyboard={false}
-                initialState={initialDoenetState}
-                initializeCounters={initialCounters}
-                reportScoreAndStateCallback={reportScoreAndStateCallback}
-                documentStructureCallback={(args: unknown) => {
-                    documentStructureCallback(args);
-                }}
-                initializedCallback={() => {
-                    setRendered(true);
-                }}
-            />
-            {showAttemptButton ? (
-                <button
-                    onClick={() => {
-                        generateNewItemAttempt(
-                            docId,
-                            latestAttempt?.initialQuestionCounter ?? 1,
-                        );
+                <DoenetViewer
+                    key={state.attempts.length}
+                    doenetML={source.doenetML}
+                    doenetmlVersion={source.version}
+                    render={render}
+                    requestedVariantIndex={requestedVariantIndex}
+                    flags={flags}
+                    activityId={baseId}
+                    prefixForIds={docId}
+                    docId={docId}
+                    forceDisable={forceDisable}
+                    forceShowCorrectness={forceShowCorrectness}
+                    forceShowSolution={forceShowSolution}
+                    forceUnsuppressCheckwork={forceUnsuppressCheckwork}
+                    linkSettings={linkSettings}
+                    darkMode={darkMode}
+                    showAnswerTitles={showAnswerTitles}
+                    addVirtualKeyboard={false}
+                    initialState={initialDoenetState}
+                    initializeCounters={initialCounters}
+                    reportScoreAndStateCallback={reportScoreAndStateCallback}
+                    documentStructureCallback={(args: unknown) => {
+                        documentStructureCallback(args);
                     }}
-                    style={{ marginLeft: "20px" }}
-                >
-                    New question attempt
-                </button>
-            ) : null}
+                    initializedCallback={() => {
+                        setRendered(true);
+                        hasRenderedCallback(docId);
+                    }}
+                />
+                {showAttemptButton ? (
+                    <button
+                        onClick={() => {
+                            generateNewItemAttempt(
+                                docId,
+                                latestAttempt?.initialQuestionCounter ?? 1,
+                            );
+                        }}
+                        style={{ marginLeft: "20px" }}
+                    >
+                        New question attempt
+                    </button>
+                ) : null}
+            </div>
         </div>
     );
 }

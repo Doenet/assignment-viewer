@@ -2,6 +2,7 @@ import { ReactElement } from "react";
 import type { DoenetMLFlags } from "../types";
 import { Activity } from "./Activity";
 import { SequenceState } from "./sequenceState";
+import { ActivityState } from "./activityState";
 
 export function SequenceActivity({
     flags,
@@ -16,9 +17,13 @@ export function SequenceActivity({
     state,
     reportScoreAndStateCallback,
     documentStructureCallback,
-    render = true,
+    checkRender,
+    checkHidden,
     allowItemAttemptButtons = false,
     generateNewItemAttempt,
+    hasRenderedCallback,
+    reportVisibility = false,
+    reportVisibilityCallback,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -32,12 +37,16 @@ export function SequenceActivity({
     state: SequenceState;
     reportScoreAndStateCallback: (args: unknown) => void;
     documentStructureCallback: (args: unknown) => void;
-    render?: boolean;
+    checkRender: (state: ActivityState) => boolean;
+    checkHidden: (state: ActivityState) => boolean;
     allowItemAttemptButtons?: boolean;
     generateNewItemAttempt?: (
         id: string,
         initialQuestionCounter: number,
     ) => void;
+    hasRenderedCallback: (id: string) => void;
+    reportVisibility?: boolean;
+    reportVisibilityCallback: (id: string, isVisible: boolean) => void;
 }) {
     const latestAttempt =
         state.attempts.length > 0
@@ -63,9 +72,13 @@ export function SequenceActivity({
                     showAnswerTitles={showAnswerTitles}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     documentStructureCallback={documentStructureCallback}
-                    render={render}
+                    checkRender={checkRender}
+                    checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
                     generateNewItemAttempt={generateNewItemAttempt}
+                    hasRenderedCallback={hasRenderedCallback}
+                    reportVisibility={reportVisibility}
+                    reportVisibilityCallback={reportVisibilityCallback}
                 />,
             );
         }
@@ -87,13 +100,17 @@ export function SequenceActivity({
                     showAnswerTitles={showAnswerTitles}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     documentStructureCallback={documentStructureCallback}
-                    render={render}
+                    checkRender={checkRender}
+                    checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
                     generateNewItemAttempt={generateNewItemAttempt}
+                    hasRenderedCallback={hasRenderedCallback}
+                    reportVisibility={reportVisibility}
+                    reportVisibilityCallback={reportVisibilityCallback}
                 />,
             );
         }
     }
 
-    return <div>{activityList}</div>;
+    return <div hidden={!checkRender(state)}>{activityList}</div>;
 }

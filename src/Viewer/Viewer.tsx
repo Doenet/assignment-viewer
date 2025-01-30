@@ -7,7 +7,7 @@ import {
 } from "../types";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { nanoid } from "nanoid";
 import { MdError } from "react-icons/md";
 import {
@@ -15,6 +15,8 @@ import {
     ActivityState,
     activityStateReducer,
     addSourceToActivityState,
+    extendedId,
+    getItemSequence,
     initializeActivityState,
     isActivityState,
     isActivityStateNoSource,
@@ -64,7 +66,7 @@ export function Viewer({
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
 }) {
-    const numDocs = useMemo(() => getNumDocs(source), [source]);
+    const numSourceDocs = useMemo(() => getNumSourceDocs(source), [source]);
 
     const [errMsg, setErrMsg] = useState<string | null>(null);
 
@@ -98,8 +100,8 @@ export function Viewer({
     useEffect(() => {
         if (
             !initialized &&
-            Object.keys(numActivityVariants).length === numDocs &&
-            Object.keys(questionCounts).length === numDocs
+            Object.keys(numActivityVariants).length === numSourceDocs &&
+            Object.keys(questionCounts).length === numSourceDocs
         ) {
             if (needNewAssignmentState) {
                 try {
@@ -111,6 +113,7 @@ export function Viewer({
                         allowSaveState: flags.allowSaveState,
                         baseId: activityId,
                     });
+                    setNeedNewAssignmentState(false);
                 } catch (e) {
                     const message = e instanceof Error ? e.message : "";
                     setErrMsg(`Error in activity: ${message}`);
@@ -121,15 +124,64 @@ export function Viewer({
     }, [
         numActivityVariants,
         questionCounts,
-        numDocs,
+        numSourceDocs,
         flags.allowSaveState,
         initialized,
         activityId,
         needNewAssignmentState,
     ]);
 
+    const itemSequence = getItemSequence(activityState);
+    const numItems = itemSequence.length;
+
     // The index of the current item
     const [currentItemIdx, setCurrentItemIdx] = useState(0);
+    const currentItemId = itemSequence[currentItemIdx];
+
+    const [itemsRendered, setItemsRendered] = useState<string[]>([]);
+    const [itemsToRender, setItemsToRender] = useState<string[]>([]);
+    const [itemsVisible, setItemsVisible] = useState<string[]>([]);
+
+    function addItemToRender(id: string) {
+        if (!itemsToRender.includes(id)) {
+            setItemsToRender((was) => {
+                if (was.includes(id)) {
+                    return was;
+                }
+                const obj = [...was];
+                obj.push(id);
+                return obj;
+            });
+        }
+    }
+
+    const checkRender = useCallback(
+        (state: ActivityState) => {
+            if (!initialized) {
+                return false;
+            }
+            if (state.type === "singleDoc") {
+                return itemsToRender.includes(extendedId(state));
+            } else {
+                return true;
+            }
+        },
+        [initialized, itemsToRender],
+    );
+
+    const checkHidden = useCallback(
+        (state: ActivityState) => {
+            if (!initialized) {
+                return true;
+            }
+            if (state.type === "singleDoc") {
+                return paginate && currentItemId !== extendedId(state);
+            } else {
+                return false;
+            }
+        },
+        [initialized, currentItemId, paginate],
+    );
 
     useEffect(() => {
         activityStateDispatch({ type: "reinitialize", source });
@@ -273,53 +325,62 @@ export function Viewer({
         );
     }
 
-    // if (allVariantsCalculated && !needNewAssignmentState) {
-    //     if (paginate) {
-    //         if (!itemsRendered.has(currentItemId)) {
-    //             // the current item is always rendered
-    //             addItemToRender(currentItemId);
-    //         } else {
-    //             const nextItemId = itemOrder[currentItemIdx + 1]?.id;
-    //             if (
-    //                 currentItemIdx < numItems - 1 &&
-    //                 !itemsRendered.has(nextItemId)
-    //             ) {
-    //                 // render the next item if the current item is already rendered
-    //                 addItemToRender(nextItemId);
-    //             } else {
-    //                 const prevItemId = itemOrder[currentItemIdx - 1]?.id;
-    //                 if (currentItemIdx > 0 && !itemsRendered.has(prevItemId)) {
-    //                     // render the previous item if the current and next item are already rendered
-    //                     addItemToRender(prevItemId);
-    //                 }
-    //             }
-    //         }
-    //     } else {
-    //         for (const item of source.items) {
-    //             if (!itemsRendered.has(item.id) && itemsVisible.has(item.id)) {
-    //                 addItemToRender(item.id);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
+    if (initialized && !needNewAssignmentState) {
+        if (paginate) {
+            if (!itemsRendered.includes(currentItemId)) {
+                // the current item is always rendered
+                addItemToRender(currentItemId);
+            } else {
+                const nextItemId = itemSequence[currentItemIdx + 1];
+                if (
+                    currentItemIdx < numItems - 1 &&
+                    !itemsRendered.includes(nextItemId)
+                ) {
+                    // render the next item if the current item is already rendered
+                    addItemToRender(nextItemId);
+                } else {
+                    const prevItemId = itemSequence[currentItemIdx - 1];
+                    if (
+                        currentItemIdx > 0 &&
+                        !itemsRendered.includes(prevItemId)
+                    ) {
+                        // render the previous item if the current and next item are already rendered
+                        addItemToRender(prevItemId);
+                    }
+                }
+            }
+        } else {
+            for (const id of itemSequence) {
+                if (!itemsRendered.includes(id) && itemsVisible.includes(id)) {
+                    addItemToRender(id);
+                    break;
+                }
+            }
+        }
+    }
 
     return (
         <div>
             <h2 style={{ marginLeft: "20px" }}>{source.title}</h2>
 
             <div>
-                {/* <div hidden={!paginate}>
+                <div hidden={!paginate}>
                     <button
                         onClick={clickPrevious}
                         style={{ marginLeft: "20px" }}
+                        disabled={currentItemIdx === 0}
                     >
                         Previous
                     </button>
-                    <button onClick={clickNext} style={{ marginLeft: "20px" }}>
+                    <button
+                        onClick={clickNext}
+                        style={{ marginLeft: "20px" }}
+                        disabled={currentItemIdx === numItems - 1}
+                    >
                         Next
                     </button>
-                </div> */}
+                    {currentItemIdx + 1}
+                </div>
                 {activityLevelAttempts ? (
                     <button
                         onClick={() => {
@@ -395,7 +456,8 @@ export function Viewer({
                         });
                     }
                 }}
-                render={initialized}
+                checkRender={checkRender}
+                checkHidden={checkHidden}
                 allowItemAttemptButtons={questionLevelAttempts}
                 generateNewItemAttempt={(
                     id: string,
@@ -413,21 +475,54 @@ export function Viewer({
                         });
                     }
                 }}
+                hasRenderedCallback={(id: string) => {
+                    setItemsRendered((was) => {
+                        if (was.includes(id)) {
+                            return was;
+                        }
+                        const obj = [...was];
+                        obj.push(id);
+                        return obj;
+                    });
+                }}
+                reportVisibility={!paginate}
+                reportVisibilityCallback={(id: string, isVisible: boolean) => {
+                    setItemsVisible((was) => {
+                        if (isVisible) {
+                            if (was.includes(id)) {
+                                return was;
+                            } else {
+                                const obj = [...was];
+                                obj.push(id);
+                                return obj;
+                            }
+                        } else {
+                            const idx = was.indexOf(id);
+                            if (idx === -1) {
+                                return was;
+                            } else {
+                                const obj = [...was];
+                                obj.splice(idx, 1);
+                                return obj;
+                            }
+                        }
+                    });
+                }}
             />
         </div>
     );
 }
 
-function getNumDocs(activity: ActivitySource): number {
+function getNumSourceDocs(activity: ActivitySource): number {
     switch (activity.type) {
         case "singleDoc": {
             return 1;
         }
         case "select": {
-            return activity.items.reduce((a, c) => a + getNumDocs(c), 0);
+            return activity.items.reduce((a, c) => a + getNumSourceDocs(c), 0);
         }
         case "sequence": {
-            return activity.items.reduce((a, c) => a + getNumDocs(c), 0);
+            return activity.items.reduce((a, c) => a + getNumSourceDocs(c), 0);
         }
     }
 }

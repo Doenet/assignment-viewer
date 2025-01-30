@@ -20,7 +20,6 @@ function App() {
         showHints: boolean;
         questionLevelAttempts: boolean;
         activityLevelAttempts: boolean;
-        shuffle: boolean;
         paginate: boolean;
     } = {
         requestedVariantIndex: 1,
@@ -30,7 +29,6 @@ function App() {
         showHints: true,
         questionLevelAttempts: true,
         activityLevelAttempts: true,
-        shuffle: false,
         paginate: false,
     };
 
@@ -46,7 +44,6 @@ function App() {
         showHints,
         questionLevelAttempts,
         activityLevelAttempts,
-        shuffle,
         paginate,
     } = testSettings;
 
@@ -187,24 +184,6 @@ function App() {
                             }}
                         />
                         Assignment level attempts
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        {" "}
-                        <input
-                            type="checkbox"
-                            checked={shuffle}
-                            onChange={() => {
-                                setTestSettings((was) => {
-                                    const newObj = { ...was };
-                                    newObj.shuffle = !was.shuffle;
-                                    return newObj;
-                                });
-                                setUpdateNumber((was) => was + 1);
-                            }}
-                        />
-                        Shuffle question order
                     </label>
                 </div>
                 <div>

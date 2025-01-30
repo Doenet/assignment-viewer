@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import type { DoenetMLFlags } from "../types";
 import { SelectState } from "./selectState";
 import { Activity } from "./Activity";
-import { extendedId } from "./activityState";
+import { ActivityState, extendedId } from "./activityState";
 
 export function SelectActivity({
     flags,
@@ -17,9 +17,13 @@ export function SelectActivity({
     state,
     reportScoreAndStateCallback,
     documentStructureCallback,
-    render = true,
+    checkRender,
+    checkHidden,
     allowItemAttemptButtons = false,
     generateNewItemAttempt,
+    hasRenderedCallback,
+    reportVisibility = false,
+    reportVisibilityCallback,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -33,12 +37,16 @@ export function SelectActivity({
     state: SelectState;
     reportScoreAndStateCallback: (args: unknown) => void;
     documentStructureCallback: (args: unknown) => void;
-    render?: boolean;
+    checkRender: (state: ActivityState) => boolean;
+    checkHidden: (state: ActivityState) => boolean;
     allowItemAttemptButtons?: boolean;
     generateNewItemAttempt?: (
         id: string,
         initialQuestionCounter: number,
     ) => void;
+    hasRenderedCallback: (id: string) => void;
+    reportVisibility?: boolean;
+    reportVisibilityCallback: (id: string, isVisible: boolean) => void;
 }) {
     const latestAttempt =
         state.attempts.length > 0
@@ -73,11 +81,15 @@ export function SelectActivity({
                     showAnswerTitles={showAnswerTitles}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     documentStructureCallback={documentStructureCallback}
-                    render={render}
+                    checkRender={checkRender}
+                    checkHidden={checkHidden}
                     allowItemAttemptButtons={
                         allowAttemptButton && !selectLevelAttemptButton
                     }
                     generateNewItemAttempt={generateNewItemAttempt}
+                    hasRenderedCallback={hasRenderedCallback}
+                    reportVisibility={reportVisibility}
+                    reportVisibilityCallback={reportVisibilityCallback}
                 />,
             );
             selectedIds.push(activity.id);
@@ -101,7 +113,11 @@ export function SelectActivity({
                 showAnswerTitles={showAnswerTitles}
                 reportScoreAndStateCallback={reportScoreAndStateCallback}
                 documentStructureCallback={documentStructureCallback}
-                render={false}
+                checkRender={() => false}
+                checkHidden={checkHidden}
+                hasRenderedCallback={hasRenderedCallback}
+                reportVisibility={reportVisibility}
+                reportVisibilityCallback={reportVisibilityCallback}
             />
         ));
 
@@ -109,7 +125,7 @@ export function SelectActivity({
         <div
             key={state.attempts.length}
             style={{ minHeight: "100px" }}
-            hidden={!render}
+            hidden={!checkRender(state)}
         >
             <div>{selectedActivities}</div>
             {selectLevelAttemptButton ? (

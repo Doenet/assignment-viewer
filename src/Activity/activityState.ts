@@ -528,3 +528,17 @@ export function extendedId({
 }) {
     return id + (duplicateNumber ? "|" + duplicateNumber.toString() : "");
 }
+
+export function getItemSequence(state: ActivityState): string[] {
+    if (state.type === "singleDoc") {
+        return [extendedId(state)];
+    } else {
+        const numAttempts = state.attempts.length;
+        if (numAttempts === 0) {
+            return [extendedId(state)];
+        }
+        return state.attempts[numAttempts - 1].activities.flatMap((a) =>
+            getItemSequence(a),
+        );
+    }
+}

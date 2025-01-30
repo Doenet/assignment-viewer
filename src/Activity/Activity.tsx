@@ -17,9 +17,13 @@ export function Activity({
     state,
     reportScoreAndStateCallback,
     documentStructureCallback,
-    render = false,
+    checkRender,
+    checkHidden,
     allowItemAttemptButtons = false,
     generateNewItemAttempt,
+    hasRenderedCallback,
+    reportVisibility = false,
+    reportVisibilityCallback,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -33,12 +37,16 @@ export function Activity({
     state: ActivityState;
     reportScoreAndStateCallback: (args: unknown) => void;
     documentStructureCallback: (args: unknown) => void;
-    render?: boolean;
+    checkRender: (state: ActivityState) => boolean;
+    checkHidden: (state: ActivityState) => boolean;
     allowItemAttemptButtons?: boolean;
     generateNewItemAttempt?: (
         id: string,
         initialQuestionCounter: number,
     ) => void;
+    hasRenderedCallback: (id: string) => void;
+    reportVisibility?: boolean;
+    reportVisibilityCallback: (id: string, isVisible: boolean) => void;
 }) {
     switch (state.type) {
         case "singleDoc": {
@@ -56,9 +64,13 @@ export function Activity({
                     state={state}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     documentStructureCallback={documentStructureCallback}
-                    render={render}
+                    checkRender={checkRender}
+                    checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
                     generateNewItemAttempt={generateNewItemAttempt}
+                    hasRenderedCallback={hasRenderedCallback}
+                    reportVisibility={reportVisibility}
+                    reportVisibilityCallback={reportVisibilityCallback}
                 />
             );
         }
@@ -77,9 +89,13 @@ export function Activity({
                     state={state}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     documentStructureCallback={documentStructureCallback}
-                    render={render}
+                    checkRender={checkRender}
+                    checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
                     generateNewItemAttempt={generateNewItemAttempt}
+                    hasRenderedCallback={hasRenderedCallback}
+                    reportVisibility={reportVisibility}
+                    reportVisibilityCallback={reportVisibilityCallback}
                 />
             );
         }
@@ -98,9 +114,13 @@ export function Activity({
                     state={state}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     documentStructureCallback={documentStructureCallback}
-                    render={render}
+                    checkRender={checkRender}
+                    checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
                     generateNewItemAttempt={generateNewItemAttempt}
+                    hasRenderedCallback={hasRenderedCallback}
+                    reportVisibility={reportVisibility}
+                    reportVisibilityCallback={reportVisibilityCallback}
                 />
             );
         }
