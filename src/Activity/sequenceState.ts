@@ -3,6 +3,7 @@ import {
     ActivityState,
     ActivityStateNoSource,
     addSourceToActivityState,
+    calcNumVariants,
     extractActivityItemCredit,
     generateNewActivityAttempt,
     initializeActivityState,
@@ -38,7 +39,7 @@ export type SequenceState = {
     creditAchieved: number;
     latestChildStates: ActivityState[];
     attempts: SequenceAttemptState[];
-    duplicateNumber?: number;
+    restrictToVariantSlice?: { idx: number; numSlices: number };
 };
 
 export type SequenceAttemptState = {
@@ -133,15 +134,25 @@ export function initializeSequenceState({
     source,
     variant,
     parentId,
+    numActivityVariants,
+    restrictToVariantSlice,
 }: {
     source: SequenceSource;
     variant: number;
     parentId: string | null;
+    numActivityVariants: Record<string, number>;
+    restrictToVariantSlice?: { idx: number; numSlices: number };
 }): SequenceState {
     const rngSeed = variant.toString() + "|" + source.id.toString();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
+
+    const extendedId =
+        source.id +
+        (restrictToVariantSlice === undefined
+            ? ""
+            : "|" + restrictToVariantSlice.idx.toString());
 
     const childStates = source.items.map((activitySource) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
@@ -150,19 +161,22 @@ export function initializeSequenceState({
         return initializeActivityState({
             source: activitySource,
             variant: childVariant,
-            parentId: source.id,
+            parentId: extendedId,
+            numActivityVariants,
+            restrictToVariantSlice,
         });
     });
 
     return {
         type: "sequence",
-        id: source.id,
+        id: extendedId,
         parentId,
         source,
         initialVariant: variant,
         creditAchieved: 0,
         latestChildStates: childStates,
         attempts: [],
+        restrictToVariantSlice,
     };
 }
 
@@ -292,7 +306,7 @@ export function generateNewSequenceAttempt({
 
 export function extractSequenceItemCredit(
     activityState: SequenceState,
-): { id: string; score: number; duplicateNumber?: number }[] {
+): { id: string; score: number }[] {
     if (activityState.attempts.length === 0) {
         return [{ id: activityState.id, score: 0 }];
     } else {
@@ -355,4 +369,27 @@ export function addSourceToSequenceState(
         latestChildStates,
         attempts,
     };
+}
+
+export function calcNumVariantsSequence(
+    source: SequenceSource,
+    numActivityVariants: Record<string, number>,
+): number {
+    // For the number of variants, we ignore any shuffling of items
+    // and calculate the number of sequence variants that are completely unique,
+    // i.e., the minimum number of variants over the items
+
+    if (source.items.length === 0) {
+        return 0;
+    }
+
+    let numVariants = Infinity;
+    for (const item of source.items) {
+        numVariants = Math.min(
+            numVariants,
+            calcNumVariants(item, numActivityVariants),
+        );
+    }
+
+    return numVariants;
 }

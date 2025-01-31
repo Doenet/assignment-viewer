@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import type { DoenetMLFlags } from "../types";
 import { SelectState } from "./selectState";
 import { Activity } from "./Activity";
-import { ActivityState, extendedId } from "./activityState";
+import { ActivityState } from "./activityState";
 
 export function SelectActivity({
     flags,
@@ -68,7 +68,7 @@ export function SelectActivity({
         for (const activity of latestAttempt.activities) {
             selectedActivities.push(
                 <Activity
-                    key={extendedId(activity)}
+                    key={activity.id}
                     state={activity}
                     flags={flags}
                     baseId={baseId}

@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { prng_alea } from "esm-seedrandom";
+import { calcNumVariantsFromState } from "./activityState";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const rngClass = prng_alea;
@@ -22,7 +23,7 @@ export type SingleDocState = {
     initialVariant: number;
     creditAchieved: number;
     attempts: SingleDocAttemptState[];
-    duplicateNumber?: number;
+    restrictToVariantSlice?: { idx: number; numSlices: number };
 };
 
 export type SingleDocAttemptState = {
@@ -104,19 +105,28 @@ export function initializeSingleDocState({
     source,
     variant,
     parentId,
+    restrictToVariantSlice,
 }: {
     source: SingleDocSource;
     variant: number;
     parentId: string | null;
+    restrictToVariantSlice?: { idx: number; numSlices: number };
 }): SingleDocState {
+    const extendedId =
+        source.id +
+        (restrictToVariantSlice === undefined
+            ? ""
+            : "|" + restrictToVariantSlice.idx.toString());
+
     return {
         type: "singleDoc",
-        id: source.id,
+        id: extendedId,
         parentId,
         source,
         initialVariant: variant,
         creditAchieved: 0,
         attempts: [],
+        restrictToVariantSlice,
     };
 }
 
@@ -134,7 +144,7 @@ export function generateNewSingleDocAttempt({
     resetCredit: boolean;
 }): { finalQuestionCounter: number; state: SingleDocState } {
     const previousVariants = state.attempts.map((a) => a.variant);
-    const numVariants = numActivityVariants[state.id];
+    const numVariants = calcNumVariantsFromState(state, numActivityVariants);
 
     const numPrevVariants = previousVariants.length;
     const numVariantsToExclude = numPrevVariants % numVariants;
@@ -160,6 +170,12 @@ export function generateNewSingleDocAttempt({
         }
     }
 
+    if (state.restrictToVariantSlice) {
+        selectedVariant =
+            (selectedVariant - 1) * state.restrictToVariantSlice.numSlices +
+            state.restrictToVariantSlice.idx;
+    }
+
     const newAttemptState: SingleDocAttemptState = {
         variant: selectedVariant,
         doenetState: null,
@@ -168,7 +184,7 @@ export function generateNewSingleDocAttempt({
     };
 
     const finalQuestionCounter =
-        initialQuestionCounter + questionCounts[state.id];
+        initialQuestionCounter + questionCounts[state.source.id];
 
     const newState = {
         ...state,
@@ -184,7 +200,7 @@ export function generateNewSingleDocAttempt({
 
 export function extractSingleDocItemCredit(
     activityState: SingleDocState,
-): { id: string; score: number; duplicateNumber?: number }[] {
+): { id: string; score: number }[] {
     if (activityState.source.isDescription) {
         return [];
     } else {
@@ -192,7 +208,6 @@ export function extractSingleDocItemCredit(
             {
                 id: activityState.id,
                 score: activityState.creditAchieved,
-                duplicateNumber: activityState.duplicateNumber,
             },
         ];
     }

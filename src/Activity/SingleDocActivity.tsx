@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { DoenetMLFlags } from "../types";
 import { DoenetViewer } from "@doenet/doenetml-iframe";
 import { SingleDocState } from "./singleDocState";
-import { ActivityState, extendedId } from "./activityState";
+import { ActivityState } from "./activityState";
 
 export function SingleDocActivity({
     flags,
@@ -65,15 +65,13 @@ export function SingleDocActivity({
         latestAttempt ? latestAttempt.variant : state.initialVariant,
     );
 
-    const docId = extendedId(state);
-
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (reportVisibility && ref.current) {
             const observer = new IntersectionObserver(
                 ([entry]) => {
-                    reportVisibilityCallback(docId, entry.isIntersecting);
+                    reportVisibilityCallback(state.id, entry.isIntersecting);
                 },
                 { rootMargin: "1000px 1000px 1000px 1000px" },
             );
@@ -84,7 +82,7 @@ export function SingleDocActivity({
                 observer.disconnect();
             };
         }
-    }, [reportVisibility, ref, docId, reportVisibilityCallback]);
+    }, [reportVisibility, ref, reportVisibilityCallback, state.id]);
 
     // Note: given the way the `<DoenetViewer>` iframe is set up, any changes in props
     // will reinitialize the activity. Hence, we make sure that no props change
@@ -136,8 +134,8 @@ export function SingleDocActivity({
                     requestedVariantIndex={requestedVariantIndex}
                     flags={flags}
                     activityId={baseId}
-                    prefixForIds={docId}
-                    docId={docId}
+                    prefixForIds={state.id}
+                    docId={state.id}
                     forceDisable={forceDisable}
                     forceShowCorrectness={forceShowCorrectness}
                     forceShowSolution={forceShowSolution}
@@ -154,14 +152,14 @@ export function SingleDocActivity({
                     }}
                     initializedCallback={() => {
                         setRendered(true);
-                        hasRenderedCallback(docId);
+                        hasRenderedCallback(state.id);
                     }}
                 />
                 {showAttemptButton ? (
                     <button
                         onClick={() => {
                             generateNewItemAttempt(
-                                docId,
+                                state.id,
                                 latestAttempt?.initialQuestionCounter ?? 1,
                             );
                         }}

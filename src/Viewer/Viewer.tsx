@@ -13,15 +13,14 @@ import { MdError } from "react-icons/md";
 import {
     ActivitySource,
     ActivityState,
-    activityStateReducer,
     addSourceToActivityState,
-    extendedId,
+    getUninitializedActivityState,
     getItemSequence,
-    initializeActivityState,
     isActivityState,
     isActivityStateNoSource,
 } from "../Activity/activityState";
 import { Activity } from "../Activity/Activity";
+import { activityStateReducer } from "../Activity/activityStateReducer";
 
 export function Viewer({
     source,
@@ -89,12 +88,8 @@ export function Viewer({
 
     const [activityState, activityStateDispatch] = useReducer(
         activityStateReducer,
-        {
-            source,
-            variant: initialVariantIndex,
-            parentId: null,
-        },
-        initializeActivityState,
+        source,
+        getUninitializedActivityState,
     );
 
     useEffect(() => {
@@ -106,7 +101,8 @@ export function Viewer({
             if (needNewAssignmentState) {
                 try {
                     activityStateDispatch({
-                        type: "generateNewActivityAttempt",
+                        type: "initialize",
+                        variantIndex: initialVariantIndex,
                         numActivityVariants,
                         initialQuestionCounter: 1,
                         questionCounts,
@@ -129,6 +125,7 @@ export function Viewer({
         initialized,
         activityId,
         needNewAssignmentState,
+        initialVariantIndex,
     ]);
 
     const itemSequence = getItemSequence(activityState);
@@ -161,7 +158,7 @@ export function Viewer({
                 return false;
             }
             if (state.type === "singleDoc") {
-                return itemsToRender.includes(extendedId(state));
+                return itemsToRender.includes(state.id);
             } else {
                 return true;
             }
@@ -175,7 +172,7 @@ export function Viewer({
                 return true;
             }
             if (state.type === "singleDoc") {
-                return paginate && currentItemId !== extendedId(state);
+                return paginate && currentItemId !== state.id;
             } else {
                 return false;
             }
@@ -184,7 +181,10 @@ export function Viewer({
     );
 
     useEffect(() => {
-        activityStateDispatch({ type: "reinitialize", source });
+        activityStateDispatch({
+            type: "reset",
+            source,
+        });
     }, [activityId, source]);
 
     useEffect(() => {
@@ -392,6 +392,7 @@ export function Viewer({
                                 allowSaveState: flags.allowSaveState,
                                 baseId: activityId,
                             });
+                            setCurrentItemIdx(0);
                         }}
                         disabled={!initialized}
                         style={{ marginLeft: "20px" }}
@@ -418,29 +419,31 @@ export function Viewer({
                 documentStructureCallback={(data: unknown) => {
                     if (isDocumentStructureData(data)) {
                         if (data.args.success) {
-                            setNumActivityVariants((was) => {
-                                if (data.docId in was) {
-                                    return was;
-                                }
-                                const obj = { ...was };
-                                obj[data.docId] =
-                                    data.args.allPossibleVariants.length;
-                                return obj;
-                            });
-                            setQuestionCounts((was) => {
-                                if (data.docId in was) {
-                                    return was;
-                                }
-                                const obj = { ...was };
-                                obj[data.docId] =
-                                    (data.args.baseLevelComponentCounts
-                                        .question ?? 0) +
-                                    (data.args.baseLevelComponentCounts
-                                        .problem ?? 0) +
-                                    (data.args.baseLevelComponentCounts
-                                        .exercise ?? 0);
-                                return obj;
-                            });
+                            if (!data.docId.includes("|")) {
+                                setNumActivityVariants((was) => {
+                                    if (data.docId in was) {
+                                        return was;
+                                    }
+                                    const obj = { ...was };
+                                    obj[data.docId] =
+                                        data.args.allPossibleVariants.length;
+                                    return obj;
+                                });
+                                setQuestionCounts((was) => {
+                                    if (data.docId in was) {
+                                        return was;
+                                    }
+                                    const obj = { ...was };
+                                    obj[data.docId] =
+                                        (data.args.baseLevelComponentCounts
+                                            .question ?? 0) +
+                                        (data.args.baseLevelComponentCounts
+                                            .problem ?? 0) +
+                                        (data.args.baseLevelComponentCounts
+                                            .exercise ?? 0);
+                                    return obj;
+                                });
+                            }
                         }
                     }
                 }}

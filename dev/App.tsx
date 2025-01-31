@@ -6,7 +6,6 @@ import activitySource from "./testActivity4.json";
 import initialAssignmentState from "./testInitialState.json";
 import {
     ActivityStateNoSource,
-    extendedId,
     isActivitySource,
 } from "../src/Activity/activityState";
 import { isReportScoreByItemMessage, isReportStateMessage } from "../src/types";
@@ -220,7 +219,7 @@ function App() {
 
     const [_score, setScore] = useState(0);
     const [scoreByItem, setScoreByItem] = useState<
-        { id: string; score: number; duplicateNumber?: number }[]
+        { id: string; score: number }[]
     >([]);
 
     useEffect(() => {
@@ -304,7 +303,7 @@ function App() {
                     Credit by item, latest attempt:
                     <ol>
                         {scoreByItem.map((item) => (
-                            <li key={extendedId(item)}>{item.score * 100}%</li>
+                            <li key={item.id}>{item.score * 100}%</li>
                         ))}
                     </ol>
                 </div>

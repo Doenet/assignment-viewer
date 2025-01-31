@@ -72,7 +72,7 @@ export type reportStateMessage = {
     subject: "SPLICE.reportScoreAndState";
     activityId: string;
     score: number;
-    scoreByItem: { id: string; score: number; duplicateNumber?: number }[];
+    scoreByItem: { id: string; score: number }[];
     state: ActivityStateNoSource;
 };
 
@@ -100,7 +100,7 @@ export type reportScoreByItemMessage = {
     subject: "SPLICE.reportScoreByItem";
     activityId: string;
     score: number;
-    scoreByItem: { id: string; score: number; duplicateNumber?: number }[];
+    scoreByItem: { id: string; score: number }[];
 };
 
 export function isReportScoreByItemMessage(

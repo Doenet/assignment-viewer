@@ -3,6 +3,8 @@ import {
     ActivityState,
     ActivityStateNoSource,
     addSourceToActivityState,
+    calcNumVariants,
+    calcNumVariantsFromState,
     extractActivityItemCredit,
     generateNewActivityAttempt,
     initializeActivityState,
@@ -37,7 +39,7 @@ export type SelectState = {
     creditAchieved: number;
     latestChildStates: ActivityState[];
     attempts: SelectAttemptState[];
-    duplicateNumber?: number;
+    restrictToVariantSlice?: { idx: number; numSlices: number };
 };
 
 export type SelectAttemptState = {
@@ -139,35 +141,73 @@ export function initializeSelectState({
     source,
     variant,
     parentId,
+    numActivityVariants,
+    restrictToVariantSlice,
 }: {
     source: SelectSource;
     variant: number;
     parentId: string | null;
+    numActivityVariants: Record<string, number>;
+    restrictToVariantSlice?: { idx: number; numSlices: number };
 }): SelectState {
     const rngSeed = variant.toString() + "|" + source.id.toString();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
 
-    const childStates = source.items.map((activitySource) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        const childVariant = Math.floor(rng() * 1000000);
-        return initializeActivityState({
-            source: activitySource,
-            variant: childVariant,
-            parentId: source.id,
-        });
-    });
+    const childStates: ActivityState[] = [];
+
+    const extendedId =
+        source.id +
+        (restrictToVariantSlice === undefined
+            ? ""
+            : "|" + restrictToVariantSlice.idx.toString());
+
+    if (source.numToSelect === 1) {
+        // TODO: handle restrictToVariantSlice
+        for (const activitySource of source.items) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const childVariant = Math.floor(rng() * 1000000);
+            childStates.push(
+                initializeActivityState({
+                    source: activitySource,
+                    variant: childVariant,
+                    parentId: extendedId,
+                    numActivityVariants,
+                }),
+            );
+        }
+    } else {
+        // We are selecting multiple items.
+        // Create a separate child state for each variant of each child
+        for (const activitySource of source.items) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const childVariant = Math.floor(rng() * 1000000);
+            const numVariants = numActivityVariants[activitySource.id];
+            for (let idx = 0; idx < numVariants; idx++) {
+                childStates.push(
+                    initializeActivityState({
+                        source: activitySource,
+                        variant: childVariant,
+                        parentId: extendedId,
+                        numActivityVariants,
+                        restrictToVariantSlice: { idx, numSlices: numVariants },
+                    }),
+                );
+            }
+        }
+    }
 
     return {
         type: "select",
-        id: source.id,
+        id: extendedId,
         parentId,
         source,
         initialVariant: variant,
         creditAchieved: 0,
         latestChildStates: childStates,
         attempts: [],
+        restrictToVariantSlice,
     };
 }
 
@@ -186,9 +226,9 @@ export function generateNewSelectAttempt({
 }): { finalQuestionCounter: number; state: SelectState } {
     const source = state.source;
     const numToSelect = source.numToSelect;
-    const numChildren = source.items.length;
-    const numVariantsPerChild = source.items.map(
-        (a) => numActivityVariants[a.id],
+    const numChildren = state.latestChildStates.length;
+    const numVariantsPerChild = state.latestChildStates.map((a) =>
+        calcNumVariantsFromState(a, numActivityVariants),
     );
     const totalNumChildVariants = numVariantsPerChild.reduce((a, c) => a + c);
 
@@ -199,7 +239,7 @@ export function generateNewSelectAttempt({
     }
 
     const childIdToIdx: Record<string, number> = {};
-    for (const [idx, child] of source.items.entries()) {
+    for (const [idx, child] of state.latestChildStates.entries()) {
         childIdToIdx[child.id] = idx;
     }
 
@@ -294,48 +334,14 @@ export function generateNewSelectAttempt({
     // For each child chosen, generate a new activity attempt,
     // storing the state representing this attempt in `newActivityOptionStates`,
     // and appending the state to `newActivityStates`.
-    // Note: an entry in `newActivityOptionStates` may get overwritten if a child is selected twice;
-    // `newActivityOptionStates` will always store the state according to the child's latest attempt.
     const newActivityStates: ActivityState[] = [];
     const newActivityOptionStates = [...state.latestChildStates];
     let questionCounter = initialQuestionCounter;
 
-    for (const [i, childIdx] of childrenChosen.entries()) {
-        const duplicateNumber = childrenChosen
-            .slice(0, i + 1)
-            .filter((idx) => idx === childIdx).length;
-
-        const totalNumDuplicates = childrenChosen.filter(
-            (idx) => idx === childIdx,
-        ).length;
-
-        const originalState = { ...newActivityOptionStates[childIdx] };
-
-        if (totalNumDuplicates === 1) {
-            delete originalState.duplicateNumber;
-        } else {
-            originalState.duplicateNumber = duplicateNumber;
-
-            // Note: this select with identical cases was only way found to keep Typescript happy....
-            switch (originalState.type) {
-                case "singleDoc": {
-                    originalState.attempts = [...originalState.attempts];
-                    break;
-                }
-                case "select": {
-                    originalState.attempts = [...originalState.attempts];
-                    break;
-                }
-                case "sequence": {
-                    originalState.attempts = [...originalState.attempts];
-                    break;
-                }
-            }
-        }
-
+    for (const childIdx of childrenChosen) {
         const { finalQuestionCounter: endCounter, state: newState } =
             generateNewActivityAttempt({
-                state: originalState,
+                state: newActivityOptionStates[childIdx],
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
                 questionCounts,
@@ -369,7 +375,7 @@ export function generateNewSelectAttempt({
 
 export function extractSelectItemCredit(
     activityState: SelectState,
-): { id: string; score: number; duplicateNumber?: number }[] {
+): { id: string; score: number }[] {
     if (
         activityState.source.numToSelect === 1 &&
         activityState.latestChildStates.every(
@@ -442,4 +448,19 @@ export function addSourceToSelectState(
         latestChildStates,
         attempts,
     };
+}
+
+export function calcNumVariantsSelect(
+    source: SelectSource,
+    numActivityVariants: Record<string, number>,
+): number {
+    // To calculate the number of completely unique variants,
+    // add up the variants of all items and divide by the number to select
+
+    const numVariantsTot = source.items.reduce(
+        (a, c) => a + calcNumVariants(c, numActivityVariants),
+        0,
+    );
+
+    return numVariantsTot / source.numToSelect;
 }
