@@ -8,6 +8,7 @@ import {
     pruneActivityStateForSave,
 } from "./activityState";
 import { generateNewAttemptForSelectChild } from "./selectState";
+import hash from "object-hash";
 
 type ResetStateAction = {
     type: "reset";
@@ -182,10 +183,22 @@ export function activityStateReducer(
 
             if (action.allowSaveState) {
                 const scoreByItem = extractActivityItemCredit(newActivityState);
+
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                const sourceHash = hash(newActivityState.source);
+
                 window.postMessage({
+                    state: {
+                        state: pruneActivityStateForSave(
+                            newActivityState,
+                            false,
+                        ),
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        sourceHash,
+                    },
                     score: newActivityState.creditAchieved,
                     scoreByItem,
-                    subject: "SPLICE.reportScoreByItem",
+                    subject: "SPLICE.reportScoreAndState",
                     activityId: action.baseId,
                 });
             }
@@ -198,8 +211,18 @@ export function activityStateReducer(
             if (action.allowSaveState) {
                 const scoreByItem = extractActivityItemCredit(newActivityState);
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                const sourceHash = hash(newActivityState.source);
+
                 window.postMessage({
-                    state: pruneActivityStateForSave(newActivityState, false),
+                    state: {
+                        state: pruneActivityStateForSave(
+                            newActivityState,
+                            false,
+                        ),
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        sourceHash,
+                    },
                     score: newActivityState.creditAchieved,
                     scoreByItem,
                     subject: "SPLICE.reportScoreAndState",

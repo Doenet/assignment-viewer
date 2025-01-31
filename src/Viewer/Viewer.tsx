@@ -21,6 +21,7 @@ import {
 } from "../Activity/activityState";
 import { Activity } from "../Activity/Activity";
 import { activityStateReducer } from "../Activity/activityStateReducer";
+import hash from "object-hash";
 
 export function Viewer({
     source,
@@ -216,13 +217,27 @@ export function Viewer({
                         waitingToLoadState = false;
                         if (event.data.success) {
                             if (event.data.loadedState) {
-                                const stateNoSource: unknown = event.data.state;
+                                const stateNoSource: unknown =
+                                    event.data.state.state;
                                 if (isActivityStateNoSource(stateNoSource)) {
-                                    const state = addSourceToActivityState(
-                                        stateNoSource,
-                                        source,
-                                    );
-                                    resolve(state);
+                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+                                    const sourceHash = hash(source);
+                                    if (
+                                        sourceHash ===
+                                        event.data.state.sourceHash
+                                    ) {
+                                        const state = addSourceToActivityState(
+                                            stateNoSource,
+                                            source,
+                                        );
+                                        resolve(state);
+                                    } else {
+                                        reject(
+                                            Error(
+                                                "Received state did not match source",
+                                            ),
+                                        );
+                                    }
                                 } else {
                                     reject(Error("Received invalid state"));
                                 }
