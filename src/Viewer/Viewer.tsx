@@ -220,7 +220,6 @@ export function Viewer({
                                 const stateNoSource: unknown =
                                     event.data.state.state;
                                 if (isActivityStateNoSource(stateNoSource)) {
-                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                                     const sourceHash = hash(source);
                                     if (
                                         sourceHash ===

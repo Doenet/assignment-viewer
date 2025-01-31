@@ -79,6 +79,7 @@ export function activityStateReducer(
                 numActivityVariants: action.numActivityVariants,
                 initialQuestionCounter: action.initialQuestionCounter,
                 questionCounts: action.questionCounts,
+                parentAttempt: 1,
             });
 
             if (action.allowSaveState) {
@@ -106,13 +107,14 @@ export function activityStateReducer(
             return action.state;
         }
         case "generateNewActivityAttempt": {
-            let newActivityState: ActivityState | null = null;
+            let newActivityState: ActivityState;
             if (!action.id || action.id === state.id) {
                 ({ state: newActivityState } = generateNewActivityAttempt({
                     state,
                     numActivityVariants: action.numActivityVariants,
                     initialQuestionCounter: action.initialQuestionCounter,
                     questionCounts: action.questionCounts,
+                    parentAttempt: 1,
                 }));
             } else {
                 // creating a new attempt at a lower level
@@ -120,45 +122,42 @@ export function activityStateReducer(
 
                 const subActivityState = allStates[action.id];
 
-                let generateAtSelectParent = false;
-                let parentState = null;
+                if (subActivityState.parentId === null) {
+                    throw Error("Lower lever should have parent");
+                }
+
+                const parentState = allStates[subActivityState.parentId];
 
                 if (
                     subActivityState.type === "singleDoc" &&
                     subActivityState.restrictToVariantSlice !== undefined &&
-                    subActivityState.parentId !== null
+                    parentState.type === "select" &&
+                    parentState.source.numToSelect > 1 &&
+                    parentState.latestChildStates.every(
+                        (child) => child.type === "singleDoc",
+                    )
                 ) {
-                    parentState = allStates[subActivityState.parentId];
-
-                    if (
-                        parentState.type === "select" &&
-                        parentState.source.numToSelect > 1 &&
-                        parentState.latestChildStates.every(
-                            (child) => child.type === "singleDoc",
-                        )
-                    ) {
-                        generateAtSelectParent = true;
-
-                        const { state: newParentState } =
-                            generateNewAttemptForSelectChild({
-                                state: parentState,
-                                numActivityVariants: action.numActivityVariants,
-                                initialQuestionCounter:
-                                    action.initialQuestionCounter,
-                                questionCounts: action.questionCounts,
-                                childId: action.id,
-                            });
-
-                        allStates[parentState.id] = newParentState;
-
-                        newActivityState = propagateStateChangeToRoot({
-                            allStates,
-                            id: parentState.id,
+                    const grandParentAttempt = parentState.parentId
+                        ? allStates[parentState.parentId].attempts.length
+                        : 1;
+                    const { state: newParentState } =
+                        generateNewAttemptForSelectChild({
+                            state: parentState,
+                            numActivityVariants: action.numActivityVariants,
+                            initialQuestionCounter:
+                                action.initialQuestionCounter,
+                            questionCounts: action.questionCounts,
+                            parentAttempt: grandParentAttempt,
+                            childId: action.id,
                         });
-                    }
-                }
 
-                if (!generateAtSelectParent) {
+                    allStates[parentState.id] = newParentState;
+
+                    newActivityState = propagateStateChangeToRoot({
+                        allStates,
+                        id: parentState.id,
+                    });
+                } else {
                     const { state: newSubActivityState } =
                         generateNewActivityAttempt({
                             state: allStates[action.id],
@@ -166,6 +165,7 @@ export function activityStateReducer(
                             initialQuestionCounter:
                                 action.initialQuestionCounter,
                             questionCounts: action.questionCounts,
+                            parentAttempt: parentState.attempts.length,
                         });
 
                     allStates[action.id] = newSubActivityState;
@@ -177,14 +177,8 @@ export function activityStateReducer(
                 }
             }
 
-            if (newActivityState === null) {
-                throw Error("This shouldn't happen");
-            }
-
             if (action.allowSaveState) {
                 const scoreByItem = extractActivityItemCredit(newActivityState);
-
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 const sourceHash = hash(newActivityState.source);
 
                 window.postMessage({
@@ -193,7 +187,6 @@ export function activityStateReducer(
                             newActivityState,
                             false,
                         ),
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         sourceHash,
                     },
                     score: newActivityState.creditAchieved,
@@ -211,7 +204,6 @@ export function activityStateReducer(
             if (action.allowSaveState) {
                 const scoreByItem = extractActivityItemCredit(newActivityState);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 const sourceHash = hash(newActivityState.source);
 
                 window.postMessage({
@@ -220,7 +212,6 @@ export function activityStateReducer(
                             newActivityState,
                             false,
                         ),
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         sourceHash,
                     },
                     score: newActivityState.creditAchieved,

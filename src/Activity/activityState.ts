@@ -125,6 +125,7 @@ export function generateNewActivityAttempt({
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
+    parentAttempt,
     resetCredit = false,
     resetAttempts = false,
 }: {
@@ -132,6 +133,7 @@ export function generateNewActivityAttempt({
     numActivityVariants: Record<string, number>;
     initialQuestionCounter: number;
     questionCounts: Record<string, number>;
+    parentAttempt: number;
     resetCredit?: boolean;
     resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: ActivityState } {
@@ -142,6 +144,7 @@ export function generateNewActivityAttempt({
                 numActivityVariants,
                 initialQuestionCounter,
                 questionCounts,
+                parentAttempt,
                 resetCredit,
                 resetAttempts,
             });
@@ -152,6 +155,7 @@ export function generateNewActivityAttempt({
                 numActivityVariants,
                 initialQuestionCounter,
                 questionCounts,
+                parentAttempt,
                 resetCredit,
                 resetAttempts,
             });
@@ -162,6 +166,7 @@ export function generateNewActivityAttempt({
                 numActivityVariants,
                 initialQuestionCounter,
                 questionCounts,
+                parentAttempt,
                 resetCredit,
                 resetAttempts,
             });

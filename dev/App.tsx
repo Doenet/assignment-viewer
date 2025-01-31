@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { useEffect, useState } from "react";
 import { ActivityViewer } from "../src/activity-viewer";
-import activitySource from "./testActivity4.json";
+import activitySource from "./testActivity.json";
 
 import initialAssignmentState from "./testInitialState.json";
 import {
     ActivityStateNoSource,
     isActivitySource,
+    isActivityStateNoSource,
 } from "../src/Activity/activityState";
 import { isReportScoreByItemMessage, isReportStateMessage } from "../src/types";
 
@@ -209,12 +210,13 @@ function App() {
 
     const activityId = "apple";
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const initialState = initialAssignmentState.state;
+
     const [activityState, setActivityState] =
         useState<ActivityStateNoSource | null>(
-            null,
-            // isActivityStateNoSource(initialAssignmentState)
-            //     ? initialAssignmentState
-            //     : null,
+            // null,
+            isActivityStateNoSource(initialState) ? initialState : null,
         );
 
     const [_score, setScore] = useState(0);
@@ -245,7 +247,7 @@ function App() {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     messageId: e.data.messageId,
                     success: true,
-                    loadedState: false,
+                    loadedState: true,
                     state: initialAssignmentState,
                 });
             }

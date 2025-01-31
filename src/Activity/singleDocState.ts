@@ -135,6 +135,7 @@ export function generateNewSingleDocAttempt({
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
+    parentAttempt,
     resetCredit = false,
     resetAttempts = false,
 }: {
@@ -142,6 +143,7 @@ export function generateNewSingleDocAttempt({
     numActivityVariants: Record<string, number>;
     initialQuestionCounter: number;
     questionCounts: Record<string, number>;
+    parentAttempt: number;
     resetCredit?: boolean;
     resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: SingleDocState } {
@@ -160,7 +162,9 @@ export function generateNewSingleDocAttempt({
         "|" +
         state.id.toString() +
         "|" +
-        state.attempts.length.toString();
+        state.attempts.length.toString() +
+        "|" +
+        parentAttempt.toString();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);

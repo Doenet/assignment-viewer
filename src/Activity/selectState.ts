@@ -219,6 +219,7 @@ export function generateNewSelectAttempt({
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
+    parentAttempt,
     resetCredit = false,
     resetAttempts = false,
 }: {
@@ -226,6 +227,7 @@ export function generateNewSelectAttempt({
     numActivityVariants: Record<string, number>;
     initialQuestionCounter: number;
     questionCounts: Record<string, number>;
+    parentAttempt: number;
     resetCredit?: boolean;
     resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: SelectState } {
@@ -300,7 +302,9 @@ export function generateNewSelectAttempt({
         "|" +
         state.id.toString() +
         "|" +
-        state.attempts.length.toString();
+        state.attempts.length.toString() +
+        "|" +
+        parentAttempt.toString();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
@@ -350,7 +354,8 @@ export function generateNewSelectAttempt({
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
                 questionCounts,
-                resetAttempts: true,
+                parentAttempt: resetAttempts ? 1 : state.attempts.length + 1,
+                // resetAttempts: true,
                 resetCredit: true,
             });
         questionCounter = endCounter;
@@ -389,12 +394,14 @@ export function generateNewAttemptForSelectChild({
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
+    parentAttempt,
     childId,
 }: {
     state: SelectState;
     numActivityVariants: Record<string, number>;
     initialQuestionCounter: number;
     questionCounts: Record<string, number>;
+    parentAttempt: number;
     childId: string;
 }): { finalQuestionCounter: number; state: SelectState } {
     const source = state.source;
@@ -448,7 +455,9 @@ export function generateNewAttemptForSelectChild({
         "|" +
         state.id.toString() +
         "|" +
-        state.attempts.length.toString();
+        state.attempts.length.toString() +
+        "|" +
+        parentAttempt.toString();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
@@ -472,6 +481,7 @@ export function generateNewAttemptForSelectChild({
             numActivityVariants,
             initialQuestionCounter,
             questionCounts,
+            parentAttempt: state.attempts.length + 1,
         });
 
     const childStatePreserveCredit = { ...newChildState };

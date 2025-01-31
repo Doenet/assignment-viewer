@@ -112,5 +112,9 @@ export function SequenceActivity({
         }
     }
 
-    return <div hidden={!checkRender(state)}>{activityList}</div>;
+    return (
+        <div hidden={!checkRender(state)} key={state.attempts.length}>
+            {activityList}
+        </div>
+    );
 }
