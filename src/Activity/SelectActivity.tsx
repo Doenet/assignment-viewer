@@ -123,7 +123,10 @@ export function SelectActivity({
 
     return (
         <div
-            key={state.attempts.length}
+            key={
+                state.attempts.filter((x) => !x.singleQuestionReplacement)
+                    .length
+            }
             style={{ minHeight: "100px" }}
             hidden={!checkRender(state)}
         >

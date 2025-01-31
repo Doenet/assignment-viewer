@@ -7,6 +7,7 @@ import {
     initializeActivityState,
     pruneActivityStateForSave,
 } from "./activityState";
+import { generateNewAttemptForSelectChild } from "./selectState";
 
 type ResetStateAction = {
     type: "reset";
@@ -104,7 +105,7 @@ export function activityStateReducer(
             return action.state;
         }
         case "generateNewActivityAttempt": {
-            let newActivityState: ActivityState;
+            let newActivityState: ActivityState | null = null;
             if (!action.id || action.id === state.id) {
                 ({ state: newActivityState } = generateNewActivityAttempt({
                     state,
@@ -116,20 +117,67 @@ export function activityStateReducer(
                 // creating a new attempt at a lower level
                 const allStates = gatherStates(state);
 
-                const { state: newSubActivityState } =
-                    generateNewActivityAttempt({
-                        state: allStates[action.id],
-                        numActivityVariants: action.numActivityVariants,
-                        initialQuestionCounter: action.initialQuestionCounter,
-                        questionCounts: action.questionCounts,
+                const subActivityState = allStates[action.id];
+
+                let generateAtSelectParent = false;
+                let parentState = null;
+
+                if (
+                    subActivityState.type === "singleDoc" &&
+                    subActivityState.restrictToVariantSlice !== undefined &&
+                    subActivityState.parentId !== null
+                ) {
+                    parentState = allStates[subActivityState.parentId];
+
+                    if (
+                        parentState.type === "select" &&
+                        parentState.source.numToSelect > 1 &&
+                        parentState.latestChildStates.every(
+                            (child) => child.type === "singleDoc",
+                        )
+                    ) {
+                        generateAtSelectParent = true;
+
+                        const { state: newParentState } =
+                            generateNewAttemptForSelectChild({
+                                state: parentState,
+                                numActivityVariants: action.numActivityVariants,
+                                initialQuestionCounter:
+                                    action.initialQuestionCounter,
+                                questionCounts: action.questionCounts,
+                                childId: action.id,
+                            });
+
+                        allStates[parentState.id] = newParentState;
+
+                        newActivityState = propagateStateChangeToRoot({
+                            allStates,
+                            id: parentState.id,
+                        });
+                    }
+                }
+
+                if (!generateAtSelectParent) {
+                    const { state: newSubActivityState } =
+                        generateNewActivityAttempt({
+                            state: allStates[action.id],
+                            numActivityVariants: action.numActivityVariants,
+                            initialQuestionCounter:
+                                action.initialQuestionCounter,
+                            questionCounts: action.questionCounts,
+                        });
+
+                    allStates[action.id] = newSubActivityState;
+
+                    newActivityState = propagateStateChangeToRoot({
+                        allStates,
+                        id: action.id,
                     });
+                }
+            }
 
-                allStates[action.id] = newSubActivityState;
-
-                newActivityState = propagateStateChangeToRoot({
-                    allStates,
-                    id: action.id,
-                });
+            if (newActivityState === null) {
+                throw Error("This shouldn't happen");
             }
 
             if (action.allowSaveState) {

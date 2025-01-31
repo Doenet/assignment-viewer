@@ -126,12 +126,14 @@ export function generateNewActivityAttempt({
     initialQuestionCounter,
     questionCounts,
     resetCredit = false,
+    resetAttempts = false,
 }: {
     state: ActivityState;
     numActivityVariants: Record<string, number>;
     initialQuestionCounter: number;
     questionCounts: Record<string, number>;
     resetCredit?: boolean;
+    resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: ActivityState } {
     switch (state.type) {
         case "singleDoc": {
@@ -141,6 +143,7 @@ export function generateNewActivityAttempt({
                 initialQuestionCounter,
                 questionCounts,
                 resetCredit,
+                resetAttempts,
             });
         }
         case "select": {
@@ -150,6 +153,7 @@ export function generateNewActivityAttempt({
                 initialQuestionCounter,
                 questionCounts,
                 resetCredit,
+                resetAttempts,
             });
         }
         case "sequence": {
@@ -159,6 +163,7 @@ export function generateNewActivityAttempt({
                 initialQuestionCounter,
                 questionCounts,
                 resetCredit,
+                resetAttempts,
             });
         }
     }
@@ -226,6 +231,10 @@ export function addSourceToActivityState(
             }
         }
     }
+}
+
+export function extractSourceId(compositeId: string): string {
+    return compositeId.split("|")[0];
 }
 
 export function getItemSequence(state: ActivityState): string[] {

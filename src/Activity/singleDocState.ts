@@ -135,13 +135,15 @@ export function generateNewSingleDocAttempt({
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
-    resetCredit,
+    resetCredit = false,
+    resetAttempts = false,
 }: {
     state: SingleDocState;
     numActivityVariants: Record<string, number>;
     initialQuestionCounter: number;
     questionCounts: Record<string, number>;
-    resetCredit: boolean;
+    resetCredit?: boolean;
+    resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: SingleDocState } {
     const previousVariants = state.attempts.map((a) => a.variant);
     const numVariants = calcNumVariantsFromState(state, numActivityVariants);
@@ -186,10 +188,13 @@ export function generateNewSingleDocAttempt({
     const finalQuestionCounter =
         initialQuestionCounter + questionCounts[state.source.id];
 
-    const newState = {
-        ...state,
-        attempts: [...state.attempts, newAttemptState],
-    };
+    const newState = { ...state };
+
+    if (resetAttempts) {
+        newState.attempts = [newAttemptState];
+    } else {
+        newState.attempts = [...newState.attempts, newAttemptState];
+    }
 
     if (resetCredit) {
         newState.creditAchieved = 0;

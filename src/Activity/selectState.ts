@@ -6,6 +6,7 @@ import {
     calcNumVariants,
     calcNumVariantsFromState,
     extractActivityItemCredit,
+    extractSourceId,
     generateNewActivityAttempt,
     initializeActivityState,
     isActivitySource,
@@ -46,6 +47,7 @@ export type SelectAttemptState = {
     activities: ActivityState[];
     creditAchieved: number;
     initialQuestionCounter: number;
+    singleQuestionReplacement?: boolean;
 };
 
 export type SelectStateNoSource = Omit<
@@ -57,6 +59,7 @@ export type SelectStateNoSource = Omit<
         activities: ActivityStateNoSource[];
         creditAchieved: number;
         initialQuestionCounter: number;
+        singleQuestionReplacement?: boolean;
     }[];
 };
 
@@ -216,13 +219,15 @@ export function generateNewSelectAttempt({
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
-    resetCredit,
+    resetCredit = false,
+    resetAttempts = false,
 }: {
     state: SelectState;
     numActivityVariants: Record<string, number>;
     initialQuestionCounter: number;
     questionCounts: Record<string, number>;
-    resetCredit: boolean;
+    resetCredit?: boolean;
+    resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: SelectState } {
     const source = state.source;
     const numToSelect = source.numToSelect;
@@ -345,6 +350,7 @@ export function generateNewSelectAttempt({
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
                 questionCounts,
+                resetAttempts: true,
                 resetCredit: true,
             });
         questionCounter = endCounter;
@@ -363,14 +369,132 @@ export function generateNewSelectAttempt({
     const newState: SelectState = {
         ...state,
         latestChildStates: newActivityOptionStates,
-        attempts: [...state.attempts, newAttemptState],
     };
+
+    if (resetAttempts) {
+        newState.attempts = [newAttemptState];
+    } else {
+        newState.attempts = [...newState.attempts, newAttemptState];
+    }
 
     if (resetCredit) {
         newState.creditAchieved = 0;
     }
 
     return { finalQuestionCounter: questionCounter, state: newState };
+}
+
+export function generateNewAttemptForSelectChild({
+    state,
+    numActivityVariants,
+    initialQuestionCounter,
+    questionCounts,
+    childId,
+}: {
+    state: SelectState;
+    numActivityVariants: Record<string, number>;
+    initialQuestionCounter: number;
+    questionCounts: Record<string, number>;
+    childId: string;
+}): { finalQuestionCounter: number; state: SelectState } {
+    const source = state.source;
+    const numToSelect = source.numToSelect;
+
+    if (numToSelect === 1 || state.attempts.length === 0) {
+        throw Error(
+            "no reason to call when selecting just one item or for first attempt",
+        );
+    }
+
+    const numChildren = state.latestChildStates.length;
+
+    const childIdToIdx: Record<string, number> = {};
+    for (const [idx, child] of state.latestChildStates.entries()) {
+        childIdToIdx[child.id] = idx;
+    }
+
+    // Randomly select a child for childIdx, but exclude all the current sources for this attempt
+    const lastAttempt = state.attempts[state.attempts.length - 1];
+
+    const initialExcludedIds = lastAttempt.activities
+        .filter((a) => a.id !== childId)
+        .map((a) => a.id);
+
+    if (initialExcludedIds.length !== numToSelect - 1) {
+        throw Error("We made a miscalculation");
+    }
+    const numOptions = numChildren - initialExcludedIds.length;
+
+    // In additional to excluding the other current sources,
+    // exclude the recently select items that were in this slot
+
+    const slotNum = lastAttempt.activities.map((a) => a.id).indexOf(childId);
+
+    const prevInSlot = state.attempts.map((a) => a.activities[slotNum].id);
+    const numPrevInIdx = prevInSlot.length;
+    const numExtraToExclude = numPrevInIdx % numOptions;
+
+    const extraToExclude = prevInSlot.slice(
+        numPrevInIdx - numExtraToExclude,
+        numPrevInIdx,
+    );
+
+    const idxOfAllExcluded = [...initialExcludedIds, ...extraToExclude]
+        .map((id) => childIdToIdx[id])
+        .sort((a, b) => a - b);
+
+    const rngSeed =
+        state.initialVariant.toString() +
+        "|" +
+        state.id.toString() +
+        "|" +
+        state.attempts.length.toString();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const rng = rngClass(rngSeed);
+
+    let selectedIdx = Math.floor(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        rng() * (numChildren - idxOfAllExcluded.length),
+    );
+    for (const excludedIdx of idxOfAllExcluded) {
+        if (selectedIdx === excludedIdx) {
+            selectedIdx++;
+        }
+    }
+
+    const newActivityStates = [...lastAttempt.activities];
+    const newActivityOptionStates = [...state.latestChildStates];
+
+    const { finalQuestionCounter, state: newChildState } =
+        generateNewActivityAttempt({
+            state: newActivityOptionStates[selectedIdx],
+            numActivityVariants,
+            initialQuestionCounter,
+            questionCounts,
+        });
+
+    const childStatePreserveCredit = { ...newChildState };
+    childStatePreserveCredit.creditAchieved =
+        lastAttempt.activities[slotNum].creditAchieved;
+
+    newActivityOptionStates[selectedIdx] = childStatePreserveCredit;
+    newActivityStates[slotNum] = childStatePreserveCredit;
+
+    const newAttemptState: SelectAttemptState = {
+        activities: newActivityStates,
+        creditAchieved: lastAttempt.creditAchieved, // keep credit achieved the same
+        initialQuestionCounter,
+        singleQuestionReplacement: true,
+    };
+
+    const newState: SelectState = {
+        ...state,
+        latestChildStates: newActivityOptionStates,
+        attempts: [...state.attempts, newAttemptState],
+    };
+
+    return { finalQuestionCounter, state: newState };
 }
 
 export function extractSelectItemCredit(
@@ -412,8 +536,7 @@ export function pruneSelectStateForSave(
     const numAttempts = newState.attempts.length;
 
     const attempts = newState.attempts.map((attempt, i) => ({
-        creditAchieved: attempt.creditAchieved,
-        initialQuestionCounter: attempt.initialQuestionCounter,
+        ...attempt,
         activities: attempt.activities.map((state) =>
             pruneActivityStateForSave(
                 state,
@@ -429,15 +552,19 @@ export function addSourceToSelectState(
     activityState: SelectStateNoSource,
     source: SelectSource,
 ): SelectState {
-    const latestChildStates = activityState.latestChildStates.map((child, i) =>
-        addSourceToActivityState(child, source.items[i]),
-    );
+    const latestChildStates = activityState.latestChildStates.map((child) => {
+        const idx = source.items.findIndex(
+            (src) => src.id === extractSourceId(child.id),
+        );
+        return addSourceToActivityState(child, source.items[idx]);
+    });
 
     const attempts = activityState.attempts.map((attempt) => ({
-        creditAchieved: attempt.creditAchieved,
-        initialQuestionCounter: attempt.initialQuestionCounter,
+        ...attempt,
         activities: attempt.activities.map((state) => {
-            const idx = source.items.findIndex((src) => src.id === state.id);
+            const idx = source.items.findIndex(
+                (src) => src.id === extractSourceId(state.id),
+            );
             return addSourceToActivityState(state, source.items[idx]);
         }),
     }));

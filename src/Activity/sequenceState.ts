@@ -5,6 +5,7 @@ import {
     addSourceToActivityState,
     calcNumVariants,
     extractActivityItemCredit,
+    extractSourceId,
     generateNewActivityAttempt,
     initializeActivityState,
     isActivitySource,
@@ -185,13 +186,15 @@ export function generateNewSequenceAttempt({
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
-    resetCredit,
+    resetCredit = false,
+    resetAttempts = false,
 }: {
     state: SequenceState;
     numActivityVariants: Record<string, number>;
     initialQuestionCounter: number;
     questionCounts: Record<string, number>;
-    resetCredit: boolean;
+    resetCredit?: boolean;
+    resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: SequenceState } {
     const source = state.source;
 
@@ -278,6 +281,7 @@ export function generateNewSequenceAttempt({
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
                 questionCounts,
+                resetAttempts: true,
                 resetCredit: true,
             });
 
@@ -294,8 +298,13 @@ export function generateNewSequenceAttempt({
     const newState: SequenceState = {
         ...state,
         latestChildStates: unorderedChildStates,
-        attempts: [...state.attempts, newAttemptState],
     };
+
+    if (resetAttempts) {
+        newState.attempts = [newAttemptState];
+    } else {
+        newState.attempts = [...newState.attempts, newAttemptState];
+    }
 
     if (resetCredit) {
         newState.creditAchieved = 0;
@@ -335,7 +344,7 @@ export function pruneSequenceStateForSave(
     const numAttempts = newState.attempts.length;
 
     const attempts = newState.attempts.map((attempt, i) => ({
-        creditAchieved: attempt.creditAchieved,
+        ...attempt,
         activities: attempt.activities.map((state) =>
             pruneActivityStateForSave(
                 state,
@@ -351,14 +360,19 @@ export function addSourceToSequenceState(
     activityState: SequenceStateNoSource,
     source: SequenceSource,
 ): SequenceState {
-    const latestChildStates = activityState.latestChildStates.map((child, i) =>
-        addSourceToActivityState(child, source.items[i]),
-    );
+    const latestChildStates = activityState.latestChildStates.map((child) => {
+        const idx = source.items.findIndex(
+            (src) => src.id === extractSourceId(child.id),
+        );
+        return addSourceToActivityState(child, source.items[idx]);
+    });
 
     const attempts = activityState.attempts.map((attempt) => ({
-        creditAchieved: attempt.creditAchieved,
+        ...attempt,
         activities: attempt.activities.map((state) => {
-            const idx = source.items.findIndex((src) => src.id === state.id);
+            const idx = source.items.findIndex(
+                (src) => src.id === extractSourceId(state.id),
+            );
             return addSourceToActivityState(state, source.items[idx]);
         }),
     }));

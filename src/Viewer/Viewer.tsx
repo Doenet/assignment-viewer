@@ -419,31 +419,30 @@ export function Viewer({
                 documentStructureCallback={(data: unknown) => {
                     if (isDocumentStructureData(data)) {
                         if (data.args.success) {
-                            if (!data.docId.includes("|")) {
-                                setNumActivityVariants((was) => {
-                                    if (data.docId in was) {
-                                        return was;
-                                    }
-                                    const obj = { ...was };
-                                    obj[data.docId] =
-                                        data.args.allPossibleVariants.length;
-                                    return obj;
-                                });
-                                setQuestionCounts((was) => {
-                                    if (data.docId in was) {
-                                        return was;
-                                    }
-                                    const obj = { ...was };
-                                    obj[data.docId] =
-                                        (data.args.baseLevelComponentCounts
-                                            .question ?? 0) +
-                                        (data.args.baseLevelComponentCounts
-                                            .problem ?? 0) +
-                                        (data.args.baseLevelComponentCounts
-                                            .exercise ?? 0);
-                                    return obj;
-                                });
-                            }
+                            const docId = data.docId.split("|")[0];
+                            setNumActivityVariants((was) => {
+                                if (docId in was) {
+                                    return was;
+                                }
+                                const obj = { ...was };
+                                obj[docId] =
+                                    data.args.allPossibleVariants.length;
+                                return obj;
+                            });
+                            setQuestionCounts((was) => {
+                                if (docId in was) {
+                                    return was;
+                                }
+                                const obj = { ...was };
+                                obj[docId] =
+                                    (data.args.baseLevelComponentCounts
+                                        .question ?? 0) +
+                                    (data.args.baseLevelComponentCounts
+                                        .problem ?? 0) +
+                                    (data.args.baseLevelComponentCounts
+                                        .exercise ?? 0);
+                                return obj;
+                            });
                         }
                     }
                 }}

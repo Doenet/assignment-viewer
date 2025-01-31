@@ -50,16 +50,21 @@ export function SingleDocActivity({
 }) {
     const [_rendered, setRendered] = useState(false);
 
-    const [attemptNumber, setAttemptNumber] = useState(state.attempts.length);
-    const [initialDoenetState, setInitialDoenetState] = useState<Record<
-        string,
-        unknown
-    > | null>(null);
-
     const latestAttempt =
         state.attempts.length > 0
             ? state.attempts[state.attempts.length - 1]
             : null;
+
+    const [attemptNumber, setAttemptNumber] = useState(state.attempts.length);
+    const [initialDoenetState, setInitialDoenetState] = useState<Record<
+        string,
+        unknown
+    > | null>(
+        latestAttempt
+            ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (latestAttempt.doenetState as Record<string, any> | null)
+            : null,
+    );
 
     const [requestedVariantIndex, setRequestedVariantIndex] = useState(
         latestAttempt ? latestAttempt.variant : state.initialVariant,
