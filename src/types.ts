@@ -1,6 +1,6 @@
 import {
-    ActivityStateNoSource,
-    isActivityStateNoSource,
+    ExportedActivityState,
+    isExportedActivityState,
 } from "./Activity/activityState";
 
 export type DoenetMLFlags = {
@@ -73,7 +73,7 @@ export type reportStateMessage = {
     activityId: string;
     score: number;
     scoreByItem: { id: string; score: number }[];
-    state: ActivityStateNoSource;
+    state: ExportedActivityState;
 };
 
 export function isReportStateMessage(obj: unknown): obj is reportStateMessage {
@@ -92,7 +92,7 @@ export function isReportStateMessage(obj: unknown): obj is reportStateMessage {
             (item) =>
                 typeof item.id === "string" && typeof item.score === "number",
         ) &&
-        isActivityStateNoSource(typeObj.state)
+        isExportedActivityState(typeObj.state)
     );
 }
 

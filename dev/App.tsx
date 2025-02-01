@@ -5,9 +5,10 @@ import activitySource from "./testActivity.json";
 
 import initialAssignmentState from "./testInitialState.json";
 import {
-    ActivityStateNoSource,
+    ExportedActivityState,
     isActivitySource,
-    isActivityStateNoSource,
+    isExportedActivityState,
+    validateStateAndSource,
 } from "../src/Activity/activityState";
 import { isReportScoreByItemMessage, isReportStateMessage } from "../src/types";
 
@@ -210,13 +211,15 @@ function App() {
 
     const activityId = "apple";
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const initialState = initialAssignmentState.state;
+    const initialState = initialAssignmentState;
 
     const [activityState, setActivityState] =
-        useState<ActivityStateNoSource | null>(
+        useState<ExportedActivityState | null>(
             // null,
-            isActivityStateNoSource(initialState) ? initialState : null,
+            isExportedActivityState(initialState) &&
+                validateStateAndSource(initialState, activitySource)
+                ? initialState
+                : null,
         );
 
     const [_score, setScore] = useState(0);
@@ -242,13 +245,18 @@ function App() {
                 setScore(msg.score);
                 setScoreByItem(msg.scoreByItem);
             } else if (e.data.subject === "SPLICE.getState") {
+                const haveState = validateStateAndSource(
+                    initialAssignmentState,
+                    activitySource,
+                );
+
                 window.postMessage({
                     subject: "SPLICE.getState.response",
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     messageId: e.data.messageId,
                     success: true,
-                    loadedState: true,
-                    state: initialAssignmentState,
+                    loadedState: haveState,
+                    state: haveState ? initialAssignmentState : null,
                 });
             }
         };
@@ -269,7 +277,7 @@ function App() {
     }
 
     return (
-        <>
+        <div style={{ marginBottom: "50vh" }}>
             <div
                 style={{
                     backgroundColor: "lightGray",
@@ -299,7 +307,7 @@ function App() {
 
                 <div>
                     Assignment credit:{" "}
-                    {(activityState?.creditAchieved ?? 0) * 100}%
+                    {(activityState?.state.creditAchieved ?? 0) * 100}%
                 </div>
                 <div>
                     Credit by item, latest attempt:
@@ -311,7 +319,7 @@ function App() {
                 </div>
                 <div>
                     Assignment attempt number:{" "}
-                    {activityState?.attempts.length ?? 0 + 1}
+                    {activityState?.state.attempts.length ?? 0 + 1}
                 </div>
             </div>
 
@@ -332,7 +340,7 @@ function App() {
                 questionLevelAttempts={questionLevelAttempts}
                 activityLevelAttempts={activityLevelAttempts}
             />
-        </>
+        </div>
     );
 }
 

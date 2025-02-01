@@ -1,10 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { prng_alea } from "esm-seedrandom";
+import seedrandom from "seedrandom";
 import { calcNumVariantsFromState } from "./activityState";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const rngClass = prng_alea;
+const rngClass = seedrandom.alea;
 
 export type SingleDocSource = {
     type: "singleDoc";
@@ -101,6 +98,15 @@ export function isSingleDocStateNoSource(
     );
 }
 
+/**
+ * Initialize activity state from `source` so that it is ready to generate attempts.
+ *
+ * If an ancestor was a select-multiple selects, then restrictToVariantSlice
+ * will be supplied to restrict this instance to a subset (typically one) of the variants.
+ *
+ * The provided `variant` will be used to create a seed to randomly generate
+ * the variant of attempts.
+ */
 export function initializeSingleDocState({
     source,
     variant,
@@ -166,9 +172,7 @@ export function generateNewSingleDocAttempt({
         "|" +
         parentAttempt.toString();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     let selectedVariant = Math.floor(rng() * numVariantOptions) + 1;
     for (const excludedVariant of variantsToExclude) {
         if (selectedVariant === excludedVariant) {
@@ -222,24 +226,36 @@ export function extractSingleDocItemCredit(
     }
 }
 
+/**
+ * Remove all references to source from `activityState`, forming an instance of `ActivityStateNoSource`
+ * that is intended to be saved to a database.
+ *
+ * If `clearDoenetState` is `true`, then also remove the `doenetState`.
+ *
+ * Even if `clearDoenetState` is `false`, still clear `doenetState` on all but the latest attempt,
+ * so the (potentially large) DoenetML state is saved
+ * only where needed to reconstitute the activity state.
+ */
 export function pruneSingleDocStateForSave(
     activityState: SingleDocState,
     clearDoenetState: boolean,
 ): SingleDocStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
 
-    let attempts = [...newState.attempts];
+    const numAttempts = newState.attempts.length;
 
-    if (clearDoenetState) {
-        attempts = attempts.map((attempt) => ({
-            ...attempt,
-            doenetState: null,
-        }));
-    }
+    const attempts = newState.attempts.map((attempt, i) => ({
+        ...attempt,
+        doenetState:
+            clearDoenetState || i !== numAttempts - 1
+                ? null
+                : attempt.doenetState,
+    }));
 
     return { ...newState, attempts };
 }
 
+/** Reverse the effect of `pruneSingleDocStateForSave by adding back adding back references to the source */
 export function addSourceToSingleDocState(
     activityState: SingleDocStateNoSource,
     source: SingleDocSource,

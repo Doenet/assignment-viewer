@@ -17,11 +17,12 @@ import {
     getUninitializedActivityState,
     getItemSequence,
     isActivityState,
-    isActivityStateNoSource,
+    validateIds,
+    isExportedActivityState,
+    validateStateAndSource,
 } from "../Activity/activityState";
 import { Activity } from "../Activity/Activity";
 import { activityStateReducer } from "../Activity/activityStateReducer";
-import hash from "object-hash";
 
 export function Viewer({
     source,
@@ -86,6 +87,15 @@ export function Viewer({
         setNumActivityVariants({});
         setQuestionCounts({});
     }, [activityId, userId, source]);
+
+    useEffect(() => {
+        try {
+            validateIds(source);
+        } catch (e) {
+            const message = e instanceof Error ? e.message : "";
+            setErrMsg(`Error in activity source: ${message}`);
+        }
+    }, [source]);
 
     const [activityState, activityStateDispatch] = useReducer(
         activityStateReducer,
@@ -217,16 +227,16 @@ export function Viewer({
                         waitingToLoadState = false;
                         if (event.data.success) {
                             if (event.data.loadedState) {
-                                const stateNoSource: unknown =
-                                    event.data.state.state;
-                                if (isActivityStateNoSource(stateNoSource)) {
-                                    const sourceHash = hash(source);
+                                const exportedState: unknown = event.data.state;
+                                if (isExportedActivityState(exportedState)) {
                                     if (
-                                        sourceHash ===
-                                        event.data.state.sourceHash
+                                        validateStateAndSource(
+                                            exportedState,
+                                            source,
+                                        )
                                     ) {
                                         const state = addSourceToActivityState(
-                                            stateNoSource,
+                                            exportedState.state,
                                             source,
                                         );
                                         resolve(state);
@@ -406,6 +416,7 @@ export function Viewer({
                                 allowSaveState: flags.allowSaveState,
                                 baseId: activityId,
                             });
+                            setItemsRendered([]);
                             setCurrentItemIdx(0);
                         }}
                         disabled={!initialized}
@@ -416,7 +427,10 @@ export function Viewer({
                 ) : null}
             </div>
 
-            <div hidden={initialized} style={{ marginLeft: "20px" }}>
+            <div
+                hidden={itemsRendered.length > 0}
+                style={{ marginLeft: "20px", marginTop: "20px" }}
+            >
                 Initializing...
             </div>
             <Activity

@@ -1,7 +1,5 @@
 import { Component, ErrorInfo, ReactNode, useRef, useState } from "react";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { prng_alea } from "esm-seedrandom";
+import seedrandom from "seedrandom";
 import { Viewer } from "./Viewer/Viewer";
 import { DoenetMLFlags } from "./types";
 import { ActivitySource } from "./Activity/activityState";
@@ -22,8 +20,7 @@ const defaultFlags: DoenetMLFlags = {
     autoSubmit: false,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const rngClass = prng_alea;
+const rngClass = seedrandom.alea;
 
 type PropSet = {
     source: string;
@@ -108,9 +105,7 @@ export function ActivityViewer({
 
     if (foundPropChange) {
         if (requestedVariantIndex === undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-            const rng = new rngClass(new Date());
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const rng = rngClass(new Date().toString());
             setVariantIndex(Math.floor(rng() * 1000000) + 1);
         } else {
             setVariantIndex(

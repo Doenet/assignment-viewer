@@ -48,7 +48,7 @@ export function SingleDocActivity({
     reportVisibility?: boolean;
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
 }) {
-    const [_rendered, setRendered] = useState(false);
+    const [rendered, setRendered] = useState(false);
 
     const latestAttempt =
         state.attempts.length > 0
@@ -129,8 +129,8 @@ export function SingleDocActivity({
         <div ref={ref}>
             <div hidden={!render || hidden} style={{ minHeight: "100px" }}>
                 {/* <div style={{ marginLeft: "20px" }} hidden={rendered}>
-                Initializing...
-            </div> */}
+                    Initializing...
+                </div> */}
                 <DoenetViewer
                     key={state.attempts.length}
                     doenetML={source.doenetML}
@@ -162,6 +162,7 @@ export function SingleDocActivity({
                 />
                 {showAttemptButton ? (
                     <button
+                        hidden={!rendered}
                         onClick={() => {
                             generateNewItemAttempt(
                                 state.id,

@@ -14,13 +14,10 @@ import {
     pruneActivityStateForSave,
 } from "./activityState";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { prng_alea } from "esm-seedrandom";
+import seedrandom from "seedrandom";
 import { SingleDocSource } from "./singleDocState";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const rngClass = prng_alea;
+const rngClass = seedrandom.alea;
 
 export type SequenceSource = {
     type: "sequence";
@@ -131,6 +128,20 @@ export function isSequenceStateNoSource(
     );
 }
 
+/**
+ * Initialize activity state from `source` so that it is ready to generate attempts.
+ *
+ * Populates all the activities through the `latestChildStates` field,
+ * similar to the behavior of `getUninitializedActivityState`,
+ * only this time it takes advantage of `numActivityVariants`,
+ * which stores of the number of variants calculated for each single doc activity.
+ *
+ * If the source contains any select-multiple selects, all the variants of each child activity
+ * becomes a separate child in `latestChildStates`, where each child is restricted to one variant,
+ * using the `restrictToVariantSlice` parameter when recursing.
+ *
+ * Using the provided `variant` to create a seed, an initial variant is randomly selected for each child.
+ */
 export function initializeSequenceState({
     source,
     variant,
@@ -146,7 +157,6 @@ export function initializeSequenceState({
 }): SequenceState {
     const rngSeed = variant.toString() + "|" + source.id.toString();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
 
     const extendedId =
@@ -156,7 +166,6 @@ export function initializeSequenceState({
             : "|" + restrictToVariantSlice.idx.toString());
 
     const childStates = source.items.map((activitySource) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const childVariant = Math.floor(rng() * 1000000);
 
         return initializeActivityState({
@@ -213,7 +222,6 @@ export function generateNewSequenceAttempt({
             "|" +
             parentAttempt.toString();
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const rng = rngClass(rngSeed);
 
         // randomly shuffle `numItems` components of `arr` starting with `startInd`
@@ -224,7 +232,6 @@ export function generateNewSequenceAttempt({
         ) {
             // https://stackoverflow.com/a/12646864
             for (let i = numItems - 1; i > 0; i--) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 const j = Math.floor(rng() * (i + 1));
                 [arr[startInd + i], arr[startInd + j]] = [
                     arr[startInd + j],
@@ -333,14 +340,21 @@ export function extractSequenceItemCredit(
     }
 }
 
+/**
+ * Remove all references to source from `activityState`, forming an instance of `ActivityStateNoSource`
+ * that is intended to be saved to a database.
+ *
+ * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
+ *
+ * Even if `clearDoenetState` is `false``, still clear `doenetState` on all but the latest attempt
+ * and clear it on all `latestChildStates`. In this way, the (potentially large) DoenetML state is saved
+ * only where needed to reconstitute the activity state.
+ */
 export function pruneSequenceStateForSave(
     activityState: SequenceState,
     clearDoenetState: boolean,
 ): SequenceStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
-
-    // Clear doenet state from latestChildStates and all but the latest attempt.
-    // Clear doenet state from latest attempt only if `clearDoenetState` specified.
 
     const latestChildStates = newState.latestChildStates.map((child) =>
         pruneActivityStateForSave(child, true),
@@ -361,6 +375,7 @@ export function pruneSequenceStateForSave(
     return { ...newState, latestChildStates, attempts };
 }
 
+/** Reverse the effect of `pruneSequenceStateForSave by adding back adding back references to the source */
 export function addSourceToSequenceState(
     activityState: SequenceStateNoSource,
     source: SequenceSource,
@@ -390,6 +405,13 @@ export function addSourceToSequenceState(
     };
 }
 
+/**
+ * Assuming that `numActivityVariants` contains the number of variants for all single doc activities,
+ * calculate the number of unique variants of the the activity given by `source`.
+ *
+ * The activity could contain more variants than the returned value, but the value is
+ * the number of unique variants that have no overlap with each other.
+ */
 export function calcNumVariantsSequence(
     source: SequenceSource,
     numActivityVariants: Record<string, number>,

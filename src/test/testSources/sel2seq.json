@@ -1,0 +1,57 @@
+{
+    "title": "My select",
+    "id": "sel",
+    "type": "select",
+    "numToSelect": 1,
+    "items": [
+        {
+            "id": "seq1",
+            "type": "sequence",
+            "shuffle": false,
+            "items": [
+                {
+                    "id": "doc4",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<problem>Enter <selectFromSequence name='n' from='1' to='4' />: <answer name='ans'>$n</answer></problem>",
+                    "version": "0.7.0-alpha30"
+                },
+                {
+                    "id": "doc5",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<problem>Enter <selectFromSequence name='n' from='11' to='15' />: <answer name='ans'>$n</answer></problem>",
+                    "version": "0.7.0-alpha30"
+                }
+            ]
+        },
+        {
+            "id": "seq2",
+            "type": "sequence",
+            "shuffle": true,
+            "items": [
+                {
+                    "id": "doc3",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='a' to='c' />: <answer name='ans'>$a</answer></question>",
+                    "version": "0.7.0-alpha30"
+                },
+                {
+                    "id": "doc2",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='h' to='i' />: <answer name='ans'>$a</answer></question>",
+                    "version": "0.7.0-alpha30"
+                },
+                {
+                    "id": "doc1",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<question>Enter <text name='a'>z</text>: <answer name='ans'>$a</answer></question>",
+                    "version": "0.7.0-alpha30"
+                }
+            ]
+        }
+    ]
+}

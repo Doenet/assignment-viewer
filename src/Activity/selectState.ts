@@ -15,12 +15,9 @@ import {
     pruneActivityStateForSave,
 } from "./activityState";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { prng_alea } from "esm-seedrandom";
+import seedrandom from "seedrandom";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const rngClass = prng_alea;
+const rngClass = seedrandom.alea;
 
 export type SelectSource = {
     type: "select";
@@ -140,6 +137,20 @@ export function isSelectStateNoSource(
     );
 }
 
+/**
+ * Initialize activity state from `source` so that it is ready to generate attempts.
+ *
+ * Populates all the activities through the `latestChildStates` field,
+ * similar to the behavior of `getUninitializedActivityState`,
+ * only this time it takes advantage of `numActivityVariants`,
+ * which stores of the number of variants calculated for each single doc activity.
+ *
+ * If the `numToSelect` parameter from `source` is larger than one,
+ * then create a separate child for each variant of each child
+ * (using `numActivityVariants` to determine the number of variants for each child)
+ *
+ * Using the provided `variant` to create a seed, an initial variant is randomly selected for each child.
+ */
 export function initializeSelectState({
     source,
     variant,
@@ -155,7 +166,6 @@ export function initializeSelectState({
 }): SelectState {
     const rngSeed = variant.toString() + "|" + source.id.toString();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
 
     const childStates: ActivityState[] = [];
@@ -166,10 +176,15 @@ export function initializeSelectState({
             ? ""
             : "|" + restrictToVariantSlice.idx.toString());
 
+    // TODO: handle restrictToVariantSlice
+    if (restrictToVariantSlice !== undefined) {
+        throw Error(
+            "A select inside a select-multiple has not yet been implemented.",
+        );
+    }
+
     if (source.numToSelect === 1) {
-        // TODO: handle restrictToVariantSlice
         for (const activitySource of source.items) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             const childVariant = Math.floor(rng() * 1000000);
             childStates.push(
                 initializeActivityState({
@@ -184,10 +199,13 @@ export function initializeSelectState({
         // We are selecting multiple items.
         // Create a separate child state for each variant of each child
         for (const activitySource of source.items) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            const childVariant = Math.floor(rng() * 1000000);
-            const numVariants = numActivityVariants[activitySource.id];
-            for (let idx = 0; idx < numVariants; idx++) {
+            const childVariant = Math.floor(rng() * 1000000) + 1;
+            const numVariants = calcNumVariants(
+                activitySource,
+                numActivityVariants,
+            );
+
+            for (let idx = 1; idx <= numVariants; idx++) {
                 childStates.push(
                     initializeActivityState({
                         source: activitySource,
@@ -306,14 +324,12 @@ export function generateNewSelectAttempt({
         "|" +
         parentAttempt.toString();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
 
     const childrenChosen: number[] = [];
 
     // randomly pick from childOptionsLeft without replacement
     for (let i = 0; i < Math.min(numToSelect, numChildVariantsLeft); i++) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const idx = Math.floor(rng() * childOptionsLeft.length);
         const newChildInd = childOptionsLeft.splice(idx, 1)[0];
         childrenChosen.push(newChildInd);
@@ -333,7 +349,6 @@ export function generateNewSelectAttempt({
 
         // randomly pick from nextChildOptions without replacement
         for (let i = 0; i < numToSelect - numChildVariantsLeft; i++) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             const idx = Math.floor(rng() * nextChildOptions.length);
             const newChildInd = nextChildOptions.splice(idx, 1)[0];
             childrenChosen.push(newChildInd);
@@ -459,11 +474,9 @@ export function generateNewAttemptForSelectChild({
         "|" +
         parentAttempt.toString();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const rng = rngClass(rngSeed);
 
     let selectedIdx = Math.floor(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         rng() * (numChildren - idxOfAllExcluded.length),
     );
     for (const excludedIdx of idxOfAllExcluded) {
@@ -530,14 +543,21 @@ export function extractSelectItemCredit(
     }
 }
 
+/**
+ * Remove all references to source from `activityState`, forming an instance of `ActivityStateNoSource`
+ * that is intended to be saved to a database.
+ *
+ * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
+ *
+ * Even if `clearDoenetState` is `false``, still clear `doenetState` on all but the latest attempt
+ * and clear it on all `latestChildStates`. In this way, the (potentially large) DoenetML state is saved
+ * only where needed to reconstitute the activity state.
+ */
 export function pruneSelectStateForSave(
     activityState: SelectState,
     clearDoenetState: boolean,
 ): SelectStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
-
-    // Clear doenet state from latestChildStates and all but the latest attempt.
-    // Clear doenet state from latest attempt only if `clearDoenetState` specified.
 
     const latestChildStates = newState.latestChildStates.map((child) =>
         pruneActivityStateForSave(child, true),
@@ -558,6 +578,7 @@ export function pruneSelectStateForSave(
     return { ...newState, latestChildStates, attempts };
 }
 
+/** Reverse the effect of `pruneSelectStateForSave by adding back adding back references to the source */
 export function addSourceToSelectState(
     activityState: SelectStateNoSource,
     source: SelectSource,
@@ -587,6 +608,13 @@ export function addSourceToSelectState(
     };
 }
 
+/**
+ * Assuming that `numActivityVariants` contains the number of variants for all single doc activities,
+ * calculate the number of unique variants of the the activity given by `source`.
+ *
+ * The activity could contain more variants than the returned value, but the value is
+ * the number of unique variants that have no overlap with each other.
+ */
 export function calcNumVariantsSelect(
     source: SelectSource,
     numActivityVariants: Record<string, number>,
@@ -599,5 +627,5 @@ export function calcNumVariantsSelect(
         0,
     );
 
-    return numVariantsTot / source.numToSelect;
+    return Math.floor(numVariantsTot / source.numToSelect);
 }
