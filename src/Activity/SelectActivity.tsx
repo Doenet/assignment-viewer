@@ -56,14 +56,6 @@ export function SelectActivity({
     const selectedActivities: ReactElement[] = [];
     const selectedIds: string[] = [];
 
-    const allowAttemptButton =
-        allowItemAttemptButtons && generateNewItemAttempt !== undefined;
-
-    const selectLevelAttemptButton =
-        allowAttemptButton &&
-        state.source.numToSelect === 1 &&
-        state.latestChildStates.every((child) => child.type === "singleDoc");
-
     if (latestAttempt) {
         for (const activity of latestAttempt.activities) {
             selectedActivities.push(
@@ -83,9 +75,7 @@ export function SelectActivity({
                     documentStructureCallback={documentStructureCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
-                    allowItemAttemptButtons={
-                        allowAttemptButton && !selectLevelAttemptButton
-                    }
+                    allowItemAttemptButtons={allowItemAttemptButtons}
                     generateNewItemAttempt={generateNewItemAttempt}
                     hasRenderedCallback={hasRenderedCallback}
                     reportVisibility={reportVisibility}
@@ -124,29 +114,14 @@ export function SelectActivity({
     return (
         <div
             key={
-                state.attempts.filter((x) => !x.singleQuestionReplacement)
-                    .length
+                state.attempts.filter(
+                    (x) => x.singleQuestionReplacementIdx === undefined,
+                ).length
             }
             style={{ minHeight: "100px" }}
             hidden={!checkRender(state)}
         >
             <div>{selectedActivities}</div>
-            {selectLevelAttemptButton ? (
-                <button
-                    onClick={() => {
-                        const initialQuestionCounter =
-                            state.attempts[state.attempts.length - 1]
-                                ?.initialQuestionCounter ?? 1;
-                        generateNewItemAttempt(
-                            state.id,
-                            initialQuestionCounter,
-                        );
-                    }}
-                    style={{ marginLeft: "20px" }}
-                >
-                    New question attempt
-                </button>
-            ) : null}
             <div hidden={true}>{unselectedActivities}</div>
         </div>
     );

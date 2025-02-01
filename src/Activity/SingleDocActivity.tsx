@@ -171,7 +171,7 @@ export function SingleDocActivity({
                         }}
                         style={{ marginLeft: "20px" }}
                     >
-                        New question attempt
+                        New item attempt
                     </button>
                 ) : null}
             </div>

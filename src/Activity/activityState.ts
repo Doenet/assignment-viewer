@@ -15,6 +15,7 @@ import {
     addSourceToSelectState,
     calcNumVariantsSelect,
     extractSelectItemCredit,
+    generateNewSingleDocAttemptForMultiSelect,
     generateNewSelectAttempt,
     initializeSelectState,
     isSelectSource,
@@ -40,6 +41,7 @@ import {
     SequenceStateNoSource,
 } from "./sequenceState";
 import hash from "object-hash";
+import { ActivityVariantRecord, QuestionCountRecord } from "../types";
 
 export type ActivitySource = SingleDocSource | SelectSource | SequenceSource;
 
@@ -110,7 +112,7 @@ export function initializeActivityState({
     source: ActivitySource;
     variant: number;
     parentId: string | null;
-    numActivityVariants: Record<string, number>;
+    numActivityVariants: ActivityVariantRecord;
     restrictToVariantSlice?: { idx: number; numSlices: number };
 }): ActivityState {
     switch (source.type) {
@@ -148,6 +150,8 @@ export function initializeActivityState({
 /**
  * Generate a new attempt for the specified activity, recursing to child activities.
  *
+ * The counters for `initialQuestionCounter` specifies the
+ *
  * @returns
  * - state: the new activity state
  * - finalQuestionCounter: the question counter to be given as an `initialQuestionCounter` for the next activity
@@ -159,15 +163,13 @@ export function generateNewActivityAttempt({
     questionCounts,
     parentAttempt,
     resetCredit = false,
-    resetAttempts = false,
 }: {
     state: ActivityState;
-    numActivityVariants: Record<string, number>;
+    numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: Record<string, number>;
+    questionCounts: QuestionCountRecord;
     parentAttempt: number;
     resetCredit?: boolean;
-    resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: ActivityState } {
     switch (state.type) {
         case "singleDoc": {
@@ -178,7 +180,6 @@ export function generateNewActivityAttempt({
                 questionCounts,
                 parentAttempt,
                 resetCredit,
-                resetAttempts,
             });
         }
         case "select": {
@@ -189,7 +190,6 @@ export function generateNewActivityAttempt({
                 questionCounts,
                 parentAttempt,
                 resetCredit,
-                resetAttempts,
             });
         }
         case "sequence": {
@@ -200,12 +200,112 @@ export function generateNewActivityAttempt({
                 questionCounts,
                 parentAttempt,
                 resetCredit,
-                resetAttempts,
             });
         }
     }
 
     throw Error("Invalid activity type");
+}
+
+export function generateNewSubActivityAttempt({
+    id,
+    state,
+    numActivityVariants,
+    initialQuestionCounter,
+    questionCounts,
+    resetCredit = false,
+}: {
+    id: string;
+    state: ActivityState;
+    numActivityVariants: ActivityVariantRecord;
+    initialQuestionCounter: number;
+    questionCounts: QuestionCountRecord;
+    resetCredit?: boolean;
+}): ActivityState {
+    if (id === state.id) {
+        // `id` does not correspond to a sub-activity, so generate full activity state
+        const { state: newActivityState } = generateNewActivityAttempt({
+            state,
+            numActivityVariants,
+            initialQuestionCounter,
+            questionCounts,
+            parentAttempt: 1,
+            resetCredit,
+        });
+        return newActivityState;
+    }
+
+    // creating a new attempt at a lower level
+    const allStates = gatherStates(state);
+
+    const subActivityState = allStates[id];
+
+    if (subActivityState.parentId === null) {
+        throw Error("Lower lever should have parent");
+    }
+
+    const parentState = allStates[subActivityState.parentId];
+
+    // If the activity is a single doc whose parent is a select with only single doc children,
+    // then we delegate the new attempt to the select parent.
+    if (
+        subActivityState.type === "singleDoc" &&
+        parentState.type === "select" &&
+        parentState.latestChildStates.every(
+            (child) => child.type === "singleDoc",
+        )
+    ) {
+        const grandParentAttempt = parentState.parentId
+            ? allStates[parentState.parentId].attempts.length
+            : 1;
+
+        let newParentState: ActivityState;
+
+        if (parentState.source.numToSelect > 1) {
+            // for a select-multiple, we generate a new selection of just one of its activities
+            ({ state: newParentState } =
+                generateNewSingleDocAttemptForMultiSelect({
+                    state: parentState,
+                    numActivityVariants,
+                    initialQuestionCounter,
+                    questionCounts,
+                    parentAttempt: grandParentAttempt,
+                    childId: id,
+                }));
+        } else {
+            // for a select-one, just generate a new attempt of the select (rather than the single doc)
+            // so that we pick a new single doc child rather than just a new variant of the original single doc
+            ({ state: newParentState } = generateNewActivityAttempt({
+                state: parentState,
+                numActivityVariants,
+                initialQuestionCounter,
+                questionCounts,
+                parentAttempt: grandParentAttempt,
+            }));
+        }
+
+        allStates[parentState.id] = newParentState;
+
+        return propagateStateChangeToRoot({
+            allStates,
+            id: parentState.id,
+        });
+    } else {
+        const { state: newSubActivityState } = generateNewActivityAttempt({
+            state: allStates[id],
+            numActivityVariants,
+            initialQuestionCounter,
+            questionCounts,
+            parentAttempt: parentState.attempts.length,
+        });
+
+        allStates[id] = newSubActivityState;
+
+        return propagateStateChangeToRoot({
+            allStates,
+            id,
+        });
+    }
 }
 
 export function extractActivityItemCredit(
@@ -312,7 +412,7 @@ export function getItemSequence(state: ActivityState): string[] {
  */
 export function calcNumVariants(
     source: ActivitySource,
-    numActivityVariants: Record<string, number>,
+    numActivityVariants: ActivityVariantRecord,
 ): number {
     switch (source.type) {
         case "singleDoc": {
@@ -336,7 +436,7 @@ export function calcNumVariants(
  */
 export function calcNumVariantsFromState(
     state: ActivityState,
-    numActivityVariants: Record<string, number>,
+    numActivityVariants: ActivityVariantRecord,
 ): number {
     let numVariants = calcNumVariants(state.source, numActivityVariants);
 
@@ -437,4 +537,118 @@ export function validateStateAndSource(state: unknown, source: unknown) {
     const sourceHash = hash(source);
 
     return state.sourceHash === sourceHash;
+}
+
+export function gatherStates(
+    state: ActivityState,
+): Record<string, ActivityState> {
+    const allStates: Record<string, ActivityState> = {
+        [state.id]: state,
+    };
+
+    if (state.type !== "singleDoc") {
+        for (const child of state.latestChildStates) {
+            Object.assign(allStates, gatherStates(child));
+        }
+    }
+
+    return allStates;
+}
+
+export function propagateStateChangeToRoot({
+    allStates,
+    id,
+}: {
+    allStates: Record<string, ActivityState>;
+    id: string;
+}): ActivityState {
+    const activityState = allStates[id];
+    if (activityState.parentId === null) {
+        return activityState;
+    }
+
+    const newParentState = (allStates[activityState.parentId] = {
+        ...allStates[activityState.parentId],
+    });
+
+    if (newParentState.type === "singleDoc") {
+        throw Error("Single doc activity cannot be a parent");
+    }
+
+    const childIdx = newParentState.latestChildStates
+        .map((child) => child.id)
+        .indexOf(id);
+
+    if (childIdx === -1) {
+        throw Error("Something went wrong as parent didn't have child.");
+    } else {
+        newParentState.latestChildStates = [
+            ...newParentState.latestChildStates,
+        ];
+        newParentState.latestChildStates[childIdx] = activityState;
+    }
+
+    newParentState.attempts = [...newParentState.attempts];
+    const numAttempts = newParentState.attempts.length;
+    const lastAttempt = (newParentState.attempts[numAttempts - 1] = {
+        ...newParentState.attempts[numAttempts - 1],
+    });
+
+    const childIdx2 = lastAttempt.activities
+        .map((child) => child.id)
+        .indexOf(id);
+    if (childIdx2 === -1) {
+        throw Error(
+            "Something went wrong as parent didn't have child in last attempt.",
+        );
+    }
+
+    lastAttempt.activities = [...lastAttempt.activities];
+    lastAttempt.activities[childIdx2] = activityState;
+
+    let credit: number;
+
+    if (newParentState.type === "sequence") {
+        // calculate credit only from non-descriptions
+        const nonDescriptions = newParentState.latestChildStates.filter(
+            (activityState) =>
+                activityState.type !== "singleDoc" ||
+                !activityState.source.isDescription,
+        );
+
+        let weights = [...(newParentState.source.weights ?? [])];
+        if (weights.length < nonDescriptions.length) {
+            weights.push(
+                ...Array<number>(nonDescriptions.length - weights.length).fill(
+                    1,
+                ),
+            );
+        }
+        weights = weights.slice(0, nonDescriptions.length);
+
+        const totWeights = weights.reduce((a, c) => a + c);
+        weights = weights.map((w) => w / totWeights);
+
+        credit = nonDescriptions.reduce(
+            (a, c, i) => a + c.creditAchieved * weights[i],
+            0,
+        );
+    } else {
+        // select: take average of credit from all last attempt activities
+        credit =
+            lastAttempt.activities.reduce((a, c) => a + c.creditAchieved, 0) /
+            lastAttempt.activities.length;
+    }
+
+    lastAttempt.creditAchieved = Math.max(lastAttempt.creditAchieved, credit);
+
+    newParentState.creditAchieved = Math.max(
+        newParentState.creditAchieved,
+        credit,
+    );
+
+    return propagateStateChangeToRoot({
+        allStates,
+        id: newParentState.id,
+    });
 }

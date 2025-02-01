@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { useEffect, useState } from "react";
 import { ActivityViewer } from "../src/activity-viewer";
-import activitySource from "./testActivity.json";
+import activitySource from "./testActivity3.json";
 
 import initialAssignmentState from "./testInitialState.json";
 import {
@@ -19,7 +19,7 @@ function App() {
         readOnly: boolean;
         showFeedback: boolean;
         showHints: boolean;
-        questionLevelAttempts: boolean;
+        itemLevelAttempts: boolean;
         activityLevelAttempts: boolean;
         paginate: boolean;
     } = {
@@ -28,7 +28,7 @@ function App() {
         readOnly: false,
         showFeedback: true,
         showHints: true,
-        questionLevelAttempts: true,
+        itemLevelAttempts: true,
         activityLevelAttempts: true,
         paginate: false,
     };
@@ -43,7 +43,7 @@ function App() {
         readOnly,
         showFeedback,
         showHints,
-        questionLevelAttempts,
+        itemLevelAttempts,
         activityLevelAttempts,
         paginate,
     } = testSettings;
@@ -154,18 +154,18 @@ function App() {
                         {" "}
                         <input
                             type="checkbox"
-                            checked={questionLevelAttempts}
+                            checked={itemLevelAttempts}
                             onChange={() => {
                                 setTestSettings((was) => {
                                     const newObj = { ...was };
-                                    newObj.questionLevelAttempts =
-                                        !was.questionLevelAttempts;
+                                    newObj.itemLevelAttempts =
+                                        !was.itemLevelAttempts;
                                     return newObj;
                                 });
                                 setUpdateNumber((was) => was + 1);
                             }}
                         />
-                        Question level attempts
+                        Item level attempts
                     </label>
                 </div>
                 <div>
@@ -337,7 +337,7 @@ function App() {
                 }}
                 paginate={paginate}
                 activityId={activityId}
-                questionLevelAttempts={questionLevelAttempts}
+                itemLevelAttempts={itemLevelAttempts}
                 activityLevelAttempts={activityLevelAttempts}
             />
         </div>

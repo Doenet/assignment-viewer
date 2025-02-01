@@ -16,6 +16,7 @@ import {
 
 import seedrandom from "seedrandom";
 import { SingleDocSource } from "./singleDocState";
+import { ActivityVariantRecord, QuestionCountRecord } from "../types";
 
 const rngClass = seedrandom.alea;
 
@@ -152,7 +153,7 @@ export function initializeSequenceState({
     source: SequenceSource;
     variant: number;
     parentId: string | null;
-    numActivityVariants: Record<string, number>;
+    numActivityVariants: ActivityVariantRecord;
     restrictToVariantSlice?: { idx: number; numSlices: number };
 }): SequenceState {
     const rngSeed = variant.toString() + "|" + source.id.toString();
@@ -197,15 +198,13 @@ export function generateNewSequenceAttempt({
     questionCounts,
     parentAttempt,
     resetCredit = false,
-    resetAttempts = false,
 }: {
     state: SequenceState;
-    numActivityVariants: Record<string, number>;
+    numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: Record<string, number>;
+    questionCounts: QuestionCountRecord;
     parentAttempt: number;
     resetCredit?: boolean;
-    resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: SequenceState } {
     const source = state.source;
 
@@ -292,8 +291,7 @@ export function generateNewSequenceAttempt({
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
                 questionCounts,
-                parentAttempt: resetAttempts ? 1 : state.attempts.length + 1,
-                // resetAttempts: true,
+                parentAttempt: state.attempts.length + 1,
                 resetCredit: true,
             });
 
@@ -312,11 +310,7 @@ export function generateNewSequenceAttempt({
         latestChildStates: unorderedChildStates,
     };
 
-    if (resetAttempts) {
-        newState.attempts = [newAttemptState];
-    } else {
-        newState.attempts = [...newState.attempts, newAttemptState];
-    }
+    newState.attempts = [...newState.attempts, newAttemptState];
 
     if (resetCredit) {
         newState.creditAchieved = 0;
@@ -414,7 +408,7 @@ export function addSourceToSequenceState(
  */
 export function calcNumVariantsSequence(
     source: SequenceSource,
-    numActivityVariants: Record<string, number>,
+    numActivityVariants: ActivityVariantRecord,
 ): number {
     // For the number of variants, we ignore any shuffling of items
     // and calculate the number of sequence variants that are completely unique,

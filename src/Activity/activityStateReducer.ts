@@ -1,13 +1,16 @@
+import { ActivityVariantRecord, QuestionCountRecord } from "../types";
 import {
     ActivitySource,
     ActivityState,
     extractActivityItemCredit,
+    gatherStates,
     generateNewActivityAttempt,
+    generateNewSubActivityAttempt,
     getUninitializedActivityState,
     initializeActivityState,
+    propagateStateChangeToRoot,
     pruneActivityStateForSave,
 } from "./activityState";
-import { generateNewAttemptForSelectChild } from "./selectState";
 import hash from "object-hash";
 
 type ResetStateAction = {
@@ -18,9 +21,9 @@ type ResetStateAction = {
 type InitializeStateAction = {
     type: "initialize";
     variantIndex: number;
-    numActivityVariants: Record<string, number>;
+    numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: Record<string, number>;
+    questionCounts: QuestionCountRecord;
     allowSaveState: boolean;
     baseId: string;
 };
@@ -35,9 +38,9 @@ type SetStateAction = {
 type GenerateActivityAttemptAction = {
     type: "generateNewActivityAttempt";
     id?: string;
-    numActivityVariants: Record<string, number>;
+    numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: Record<string, number>;
+    questionCounts: QuestionCountRecord;
     allowSaveState: boolean;
     baseId: string;
 };
@@ -117,64 +120,13 @@ export function activityStateReducer(
                     parentAttempt: 1,
                 }));
             } else {
-                // creating a new attempt at a lower level
-                const allStates = gatherStates(state);
-
-                const subActivityState = allStates[action.id];
-
-                if (subActivityState.parentId === null) {
-                    throw Error("Lower lever should have parent");
-                }
-
-                const parentState = allStates[subActivityState.parentId];
-
-                if (
-                    subActivityState.type === "singleDoc" &&
-                    subActivityState.restrictToVariantSlice !== undefined &&
-                    parentState.type === "select" &&
-                    parentState.source.numToSelect > 1 &&
-                    parentState.latestChildStates.every(
-                        (child) => child.type === "singleDoc",
-                    )
-                ) {
-                    const grandParentAttempt = parentState.parentId
-                        ? allStates[parentState.parentId].attempts.length
-                        : 1;
-                    const { state: newParentState } =
-                        generateNewAttemptForSelectChild({
-                            state: parentState,
-                            numActivityVariants: action.numActivityVariants,
-                            initialQuestionCounter:
-                                action.initialQuestionCounter,
-                            questionCounts: action.questionCounts,
-                            parentAttempt: grandParentAttempt,
-                            childId: action.id,
-                        });
-
-                    allStates[parentState.id] = newParentState;
-
-                    newActivityState = propagateStateChangeToRoot({
-                        allStates,
-                        id: parentState.id,
-                    });
-                } else {
-                    const { state: newSubActivityState } =
-                        generateNewActivityAttempt({
-                            state: allStates[action.id],
-                            numActivityVariants: action.numActivityVariants,
-                            initialQuestionCounter:
-                                action.initialQuestionCounter,
-                            questionCounts: action.questionCounts,
-                            parentAttempt: parentState.attempts.length,
-                        });
-
-                    allStates[action.id] = newSubActivityState;
-
-                    newActivityState = propagateStateChangeToRoot({
-                        allStates,
-                        id: action.id,
-                    });
-                }
+                newActivityState = generateNewSubActivityAttempt({
+                    id: action.id,
+                    state,
+                    numActivityVariants: action.numActivityVariants,
+                    initialQuestionCounter: action.initialQuestionCounter,
+                    questionCounts: action.questionCounts,
+                });
             }
 
             if (action.allowSaveState) {
@@ -275,116 +227,4 @@ function updateSingleDocState(
     });
 
     return rootActivityState;
-}
-
-function propagateStateChangeToRoot({
-    allStates,
-    id,
-}: {
-    allStates: Record<string, ActivityState>;
-    id: string;
-}): ActivityState {
-    const activityState = allStates[id];
-    if (activityState.parentId === null) {
-        return activityState;
-    }
-
-    const newParentState = (allStates[activityState.parentId] = {
-        ...allStates[activityState.parentId],
-    });
-
-    if (newParentState.type === "singleDoc") {
-        throw Error("Single doc activity cannot be a parent");
-    }
-
-    const childIdx = newParentState.latestChildStates
-        .map((child) => child.id)
-        .indexOf(id);
-
-    if (childIdx === -1) {
-        throw Error("Something went wrong as parent didn't have child.");
-    } else {
-        newParentState.latestChildStates = [
-            ...newParentState.latestChildStates,
-        ];
-        newParentState.latestChildStates[childIdx] = activityState;
-    }
-
-    newParentState.attempts = [...newParentState.attempts];
-    const numAttempts = newParentState.attempts.length;
-    const lastAttempt = (newParentState.attempts[numAttempts - 1] = {
-        ...newParentState.attempts[numAttempts - 1],
-    });
-
-    const childIdx2 = lastAttempt.activities
-        .map((child) => child.id)
-        .indexOf(id);
-    if (childIdx2 === -1) {
-        throw Error(
-            "Something went wrong as parent didn't have child in last attempt.",
-        );
-    }
-
-    lastAttempt.activities = [...lastAttempt.activities];
-    lastAttempt.activities[childIdx2] = activityState;
-
-    let credit: number;
-
-    if (newParentState.type === "sequence") {
-        // calculate credit only from non-descriptions
-        const nonDescriptions = newParentState.latestChildStates.filter(
-            (activityState) =>
-                activityState.type !== "singleDoc" ||
-                !activityState.source.isDescription,
-        );
-
-        let weights = [...(newParentState.source.weights ?? [])];
-        if (weights.length < nonDescriptions.length) {
-            weights.push(
-                ...Array<number>(nonDescriptions.length - weights.length).fill(
-                    1,
-                ),
-            );
-        }
-        weights = weights.slice(0, nonDescriptions.length);
-
-        const totWeights = weights.reduce((a, c) => a + c);
-        weights = weights.map((w) => w / totWeights);
-
-        credit = nonDescriptions.reduce(
-            (a, c, i) => a + c.creditAchieved * weights[i],
-            0,
-        );
-    } else {
-        // select: take average of credit from all last attempt activities
-        credit =
-            lastAttempt.activities.reduce((a, c) => a + c.creditAchieved, 0) /
-            lastAttempt.activities.length;
-    }
-
-    lastAttempt.creditAchieved = Math.max(lastAttempt.creditAchieved, credit);
-
-    newParentState.creditAchieved = Math.max(
-        newParentState.creditAchieved,
-        credit,
-    );
-
-    return propagateStateChangeToRoot({
-        allStates,
-        id: newParentState.id,
-    });
-}
-
-function gatherStates(state: ActivityState): Record<string, ActivityState> {
-    const allStates: Record<string, ActivityState> = {
-        [state.id]: state,
-    };
-
-    if (state.type !== "singleDoc") {
-        for (const child of state.latestChildStates) {
-            Object.assign(allStates, gatherStates(child));
-        }
-    }
-
-    return allStates;
 }

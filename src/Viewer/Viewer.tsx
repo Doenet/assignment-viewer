@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
+    ActivityVariantRecord,
     DoenetMLFlags,
     isDocumentStructureData,
     isSingleDocReportStateMessage,
+    QuestionCountRecord,
 } from "../types";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -32,7 +34,7 @@ export function Viewer({
     attemptNumber: _attemptNumber = 1,
     variantIndex: initialVariantIndex,
     maxAttemptsAllowed: _maxAttemptsAllowed = Infinity,
-    questionLevelAttempts = false,
+    itemLevelAttempts = false,
     activityLevelAttempts = false,
     paginate = true,
     showFinishButton: _showFinishButton = false,
@@ -53,7 +55,7 @@ export function Viewer({
     attemptNumber?: number;
     variantIndex: number;
     maxAttemptsAllowed?: number;
-    questionLevelAttempts?: boolean;
+    itemLevelAttempts?: boolean;
     activityLevelAttempts?: boolean;
     paginate?: boolean;
     showFinishButton?: boolean;
@@ -71,13 +73,12 @@ export function Viewer({
 
     const [errMsg, setErrMsg] = useState<string | null>(null);
 
-    const [numActivityVariants, setNumActivityVariants] = useState<
-        Record<string, number>
-    >({});
+    const [numActivityVariants, setNumActivityVariants] =
+        useState<ActivityVariantRecord>({});
 
-    const [questionCounts, setQuestionCounts] = useState<
-        Record<string, number>
-    >({});
+    const [questionCounts, setQuestionCounts] = useState<QuestionCountRecord>(
+        {},
+    );
 
     const [initialized, setInitialized] = useState(false);
     const [needNewAssignmentState, setNeedNewAssignmentState] = useState(false);
@@ -488,7 +489,7 @@ export function Viewer({
                 }}
                 checkRender={checkRender}
                 checkHidden={checkHidden}
-                allowItemAttemptButtons={questionLevelAttempts}
+                allowItemAttemptButtons={itemLevelAttempts}
                 generateNewItemAttempt={(
                     id: string,
                     initialQuestionCounter: number,
@@ -502,6 +503,26 @@ export function Viewer({
                             questionCounts,
                             allowSaveState: flags.allowSaveState,
                             baseId: activityId,
+                        });
+                        setItemsRendered((was) => {
+                            const idx = was.indexOf(id);
+                            if (idx === -1) {
+                                return was;
+                            } else {
+                                const arr = [...was];
+                                arr.splice(idx, 1);
+                                return arr;
+                            }
+                        });
+                        setItemsToRender((was) => {
+                            const idx = was.indexOf(id);
+                            if (idx === -1) {
+                                return was;
+                            } else {
+                                const arr = [...was];
+                                arr.splice(idx, 1);
+                                return arr;
+                            }
                         });
                     }
                 }}

@@ -36,7 +36,7 @@ export function ActivityViewer({
     attemptNumber = 1,
     requestedVariantIndex,
     maxAttemptsAllowed = Infinity,
-    questionLevelAttempts = false,
+    itemLevelAttempts = false,
     activityLevelAttempts = false,
     paginate = true,
     showFinishButton = false,
@@ -58,7 +58,7 @@ export function ActivityViewer({
     attemptNumber?: number;
     requestedVariantIndex?: number;
     maxAttemptsAllowed?: number;
-    questionLevelAttempts?: boolean;
+    itemLevelAttempts?: boolean;
     activityLevelAttempts?: boolean;
     paginate?: boolean;
     showFinishButton?: boolean;
@@ -130,7 +130,7 @@ export function ActivityViewer({
                 attemptNumber={attemptNumber}
                 variantIndex={variantIndex}
                 maxAttemptsAllowed={maxAttemptsAllowed}
-                questionLevelAttempts={questionLevelAttempts}
+                itemLevelAttempts={itemLevelAttempts}
                 activityLevelAttempts={activityLevelAttempts}
                 paginate={paginate}
                 showFinishButton={showFinishButton}

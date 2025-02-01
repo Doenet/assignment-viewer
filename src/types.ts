@@ -2,6 +2,12 @@ import {
     ExportedActivityState,
     isExportedActivityState,
 } from "./Activity/activityState";
+import type {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    calcNumVariants,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    calcNumVariantsFromState,
+} from "./Activity/activityState";
 
 export type DoenetMLFlags = {
     showCorrectness: boolean;
@@ -22,7 +28,7 @@ export type DocumentStructureData = {
     docId: string;
     args: {
         allPossibleVariants: string[];
-        baseLevelComponentCounts: Record<string, number>;
+        baseLevelComponentCounts: QuestionCountRecord;
         success: boolean;
     };
 };
@@ -123,3 +129,23 @@ export function isReportScoreByItemMessage(
         )
     );
 }
+
+/**
+ * A record of the number of variants for each single document activity,
+ * keyed by activity id.
+ *
+ * Use {@link calcNumVariants} to calculate the number of variants for other activities
+ * from this record.
+ *
+ * Use {@link calcNumVariantsFromState} to calculate the number of variants of activities
+ * from this record, taking into account possible restrictions to variant slices.
+ *
+ */
+export type ActivityVariantRecord = Record<string, number>;
+
+/**
+ * A record of the number of question type (`<question>`, `<problem>`, `<exercise>`) components
+ * that are document children in each single document activity,
+ * keyed by activity id.
+ */
+export type QuestionCountRecord = Record<string, number>;

@@ -1,5 +1,6 @@
 import seedrandom from "seedrandom";
 import { calcNumVariantsFromState } from "./activityState";
+import { ActivityVariantRecord, QuestionCountRecord } from "../types";
 
 const rngClass = seedrandom.alea;
 
@@ -143,15 +144,13 @@ export function generateNewSingleDocAttempt({
     questionCounts,
     parentAttempt,
     resetCredit = false,
-    resetAttempts = false,
 }: {
     state: SingleDocState;
-    numActivityVariants: Record<string, number>;
+    numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: Record<string, number>;
+    questionCounts: QuestionCountRecord;
     parentAttempt: number;
     resetCredit?: boolean;
-    resetAttempts?: boolean;
 }): { finalQuestionCounter: number; state: SingleDocState } {
     const previousVariants = state.attempts.map((a) => a.variant);
     const numVariants = calcNumVariantsFromState(state, numActivityVariants);
@@ -175,7 +174,7 @@ export function generateNewSingleDocAttempt({
     const rng = rngClass(rngSeed);
     let selectedVariant = Math.floor(rng() * numVariantOptions) + 1;
     for (const excludedVariant of variantsToExclude) {
-        if (selectedVariant === excludedVariant) {
+        if (selectedVariant >= excludedVariant) {
             selectedVariant++;
         }
     }
@@ -198,11 +197,7 @@ export function generateNewSingleDocAttempt({
 
     const newState = { ...state };
 
-    if (resetAttempts) {
-        newState.attempts = [newAttemptState];
-    } else {
-        newState.attempts = [...newState.attempts, newAttemptState];
-    }
+    newState.attempts = [...newState.attempts, newAttemptState];
 
     if (resetCredit) {
         newState.creditAchieved = 0;
