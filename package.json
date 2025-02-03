@@ -1,12 +1,25 @@
 {
-    "name": "assignment-builder",
+    "name": "@doenet/assignment-viewer",
     "private": true,
-    "description": "Build and view assignments from questions written in DoenetML",
-    "version": "0.0.0",
+    "description": "View assignments from questions written in DoenetML",
+    "version": "0.1.0-alpha1",
     "license": "AGPL-3.0-or-later",
-    "homepage": "https://github.com/Doenet/assignment-builder#readme",
+    "homepage": "https://github.com/Doenet/assignment-viewer#readme",
     "type": "module",
-    "repository": "github:Doenet/assignment-builder",
+    "repository": "github:Doenet/assignment-viewer",
+    "files": [
+        "/dist"
+    ],
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.js"
+        },
+        "./*": {
+            "import": "./dist/*",
+            "require": "./dist/*"
+        }
+    },
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
@@ -16,12 +29,14 @@
         "prettier:format": "prettier --write .",
         "prettier:check": "prettier --check ."
     },
+    "peerDependencies": {
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
+    },
     "dependencies": {
         "@doenet/doenetml-iframe": "^0.7.0-alpha30",
         "nanoid": "^5.0.9",
         "object-hash": "^3.0.0",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1",
         "react-icons": "^5.4.0",
         "seedrandom": "^3.0.5"
     },

@@ -9,7 +9,33 @@ const fullReloadAlways: Plugin = {
     },
 };
 
-// https://vite.dev/config/
+// These are the dependencies that will not be bundled into the library.
+const EXTERNAL_DEPS = ["react", "react-dom"];
+
 export default defineConfig({
     plugins: [react(), fullReloadAlways],
+    build: {
+        minify: false,
+        lib: {
+            entry: {
+                index: "./src/activity-viewer.tsx",
+            },
+            formats: ["es"],
+        },
+        rollupOptions: {
+            external: EXTERNAL_DEPS,
+            output: {
+                globals: Object.fromEntries(
+                    EXTERNAL_DEPS.map((dep) => [dep, dep]),
+                ),
+            },
+            onwarn(warning, warn) {
+                // Ignore warnings about module level directives. I.e., literal strings like `"use strict";` included at the top of source code.
+                if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+                    return;
+                }
+                warn(warning);
+            },
+        },
+    },
 });
