@@ -120,7 +120,6 @@ export function SelectActivity({
                     (x) => x.singleItemReplacementIdx === undefined,
                 ).length
             }
-            style={{ minHeight: "100px" }}
             hidden={!checkRender(state)}
         >
             <div>{selectedActivities}</div>

@@ -1,5 +1,6 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import dts from "vite-plugin-dts";
 
 const fullReloadAlways: Plugin = {
     name: "full-reload",
@@ -13,12 +14,12 @@ const fullReloadAlways: Plugin = {
 const EXTERNAL_DEPS = ["react", "react-dom"];
 
 export default defineConfig({
-    plugins: [react(), fullReloadAlways],
+    plugins: [react(), dts(), fullReloadAlways],
     build: {
         minify: false,
         lib: {
             entry: {
-                index: "./src/activity-viewer.tsx",
+                index: "./src/index.ts",
             },
             formats: ["es"],
         },
