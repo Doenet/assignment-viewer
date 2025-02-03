@@ -24,34 +24,62 @@ import seedrandom from "seedrandom";
 
 const rngClass = seedrandom.alea;
 
+/** The source for creating a select activity */
 export type SelectSource = {
     type: "select";
     id: string;
     title?: string;
+    /** The child activities to select from */
     items: ActivitySource[];
+    /** The number of child activities to select (without replacement) for each attempt */
     numToSelect: number;
-    weights?: number[];
+    /**
+     * Whether or not to consider each variant of each child a separate option to select from.
+     * If `selectByVariant` is `true`, the selection is from the total set of all variants,
+     * meaning selection probabilities is weighted by the number of variants each child has,
+     * and, if `numToSelect` > 1, a child could be selected multiple times for a given attempt.
+     */
+    selectByVariant: boolean;
 };
 
+/** The current state of a select activity, including all attempts. */
 export type SelectState = {
     type: "select";
     id: string;
     parentId: string | null;
     source: SelectSource;
+    /** Used to seed the random number generate to yield the actual variants of each attempt. */
     initialVariant: number;
+    /** Credit achieved (between 0 and 1) over all attempts of this activity */
     creditAchieved: number;
+    /** The latest state of all possible activities that could be selected from. */
     latestChildStates: ActivityState[];
     attempts: SelectAttemptState[];
+    /** See {@link RestrictToVariantSlice} */
     restrictToVariantSlice?: RestrictToVariantSlice;
 };
 
+/** The state of an attempt of a select activity. */
 export type SelectAttemptState = {
+    /** The activities that were selected for this attempt */
     activities: ActivityState[];
+    /** Credit achieved (between 0 and 1) on this attempt */
     creditAchieved: number;
+    /** The value of the question counter set for the beginning of this activity */
     initialQuestionCounter: number;
-    singleQuestionReplacementIdx?: number;
+    /**
+     * If `numToSelect` > 1 and a new attempt was created (via `generateNewSingleDocAttemptForMultiSelect`)
+     * that replaced just one item and left the others unchanged,
+     * then `singleItemReplacementIdx` gives the index of that one item that was replaced.
+     */
+    singleItemReplacementIdx?: number;
 };
 
+/**
+ * The current state of a select activity, where references to the source have been eliminated.
+ *
+ * Useful for saving to a database, as this extraneously information has been removed.
+ */
 export type SelectStateNoSource = Omit<
     SelectState,
     "source" | "latestChildStates" | "attempts"
@@ -61,9 +89,11 @@ export type SelectStateNoSource = Omit<
         activities: ActivityStateNoSource[];
         creditAchieved: number;
         initialQuestionCounter: number;
-        singleQuestionReplacementIdx?: number;
+        singleItemReplacementIdx?: number;
     }[];
 };
+
+// type guards
 
 export function isSelectSource(obj: unknown): obj is SelectSource {
     const typedObj = obj as SelectSource;
@@ -75,11 +105,7 @@ export function isSelectSource(obj: unknown): obj is SelectSource {
         typedObj.type === "select" &&
         typeof typedObj.id === "string" &&
         typeof typedObj.numToSelect === "number" &&
-        (typedObj.weights === undefined ||
-            (Array.isArray(typedObj.weights) &&
-                typedObj.weights.every(
-                    (weight) => typeof weight === "number",
-                ))) &&
+        typeof typedObj.selectByVariant === "boolean" &&
         Array.isArray(typedObj.items) &&
         typedObj.items.every(isActivitySource)
     );
@@ -150,9 +176,9 @@ export function isSelectStateNoSource(
  * only this time it takes advantage of `numActivityVariants`,
  * which stores of the number of variants calculated for each single doc activity.
  *
- * If the `numToSelect` parameter from `source` is larger than one,
+ * If `source.selectByVariant` is `true` and the `source.numToSelect` is larger than one,
  * then create a separate child for each variant of each child
- * (using `numActivityVariants` to determine the number of variants for each child)
+ * (using `numActivityVariants` to determine the number of unique variants for each child)
  *
  * Using the provided `variant` to create a seed, an initial variant is randomly selected for each child.
  */
@@ -188,7 +214,7 @@ export function initializeSelectState({
         );
     }
 
-    if (source.numToSelect === 1) {
+    if (source.numToSelect === 1 || !source.selectByVariant) {
         for (const activitySource of source.items) {
             const childVariant = Math.floor(rng() * 1000000);
             childStates.push(
@@ -201,8 +227,16 @@ export function initializeSelectState({
             );
         }
     } else {
-        // We are selecting multiple items.
-        // Create a separate child state for each variant of each child
+        // We are selecting multiple items while selecting by variant.
+        // Create a separate child state for each variant of each child.
+
+        // NB: we separate variants only if `numToSelect` > 1 because this separation is imperfect.
+        // The calculated `numVariants` is only the number of variants that are completely unique,
+        // but a select or sequence activity may have more variants than `numVariants`.
+        // If `numToSelect` is 1, we delegation the selection of variants completely to the child activities,
+        // which have access to more information about their variants.
+        // If `numToSelect` exceeds 1, then we need to coordinate variants among selections,
+        // so we fall back to separating them at this level.
         for (const activitySource of source.items) {
             const childVariant = Math.floor(rng() * 1000000) + 1;
             const numVariants = calcNumVariants(
@@ -217,6 +251,10 @@ export function initializeSelectState({
                         variant: childVariant,
                         parentId: extendedId,
                         numActivityVariants,
+                        // If `numVariants` is actually the number of variants,
+                        // this restrictions creates a slice of just one variant.
+                        // Otherwise, the slice may still contain multiple variants,
+                        // but they at least will not overlap with other slices.
                         restrictToVariantSlice: { idx, numSlices: numVariants },
                     }),
                 );
@@ -237,6 +275,19 @@ export function initializeSelectState({
     };
 }
 
+/**
+ * Generate a new attempt for the base activity of `state`, recursing to child activities.
+ *
+ * For each attempt, a set of children from `state.latestChildStates` of size `state.source.numToSelect`
+ * is selected. If `state.source.selectByVariant` is `true`, then the selection probability of each
+ * child is weighted by its number of variants, and a child may be selected multiple times (but with different variants).
+ *
+ * See {@link generateNewActivityAttempt} for more information on the influence of parameters.
+ *
+ * @returns
+ * - state: the new activity state
+ * - finalQuestionCounter: the question counter to be given as an `initialQuestionCounter` for the next activity
+ */
 export function generateNewSelectAttempt({
     state,
     numActivityVariants,
@@ -255,15 +306,40 @@ export function generateNewSelectAttempt({
     const source = state.source;
     const numToSelect = source.numToSelect;
     const numChildren = state.latestChildStates.length;
+
+    // If the child's variants have already been broken up into slices via `initializeSelectState`, above,
+    // this calculation based on activity state will take that into account.
+    // In particular, if `numToSelect` > 1, each child should report just one variant.
     const numVariantsPerChild = state.latestChildStates.map((a) =>
         calcNumVariantsFromState(a, numActivityVariants),
     );
-    const totalNumChildVariants = numVariantsPerChild.reduce((a, c) => a + c);
 
-    if (numToSelect > totalNumChildVariants) {
-        throw Error(
-            "numToSelect is larger than the number of available variants",
-        );
+    // If `selectByVariants` is true, then the number of available options
+    // is the total number of variants of all child activities.
+    // Otherwise, the number of available options is the number of child activities.
+    const totalNumOptions = source.selectByVariant
+        ? numVariantsPerChild.reduce((a, c) => a + c)
+        : numChildren;
+
+    if (numToSelect > totalNumOptions) {
+        if (source.selectByVariant) {
+            throw Error(
+                "The specified number to select of a select activity is larger than the number of available variants.",
+            );
+        } else {
+            const totalNumChildVariants = numVariantsPerChild.reduce(
+                (a, c) => a + c,
+            );
+            if (numToSelect > totalNumChildVariants) {
+                throw Error(
+                    "The specified number to select of a select activity is larger than the number of available activities.",
+                );
+            } else {
+                throw Error(
+                    'The specified number to select of a select activity is larger than the number of available activities. Turning on "select by variant" will add enough options for the select activity to function.',
+                );
+            }
+        }
     }
 
     const childIdToIdx: Record<string, number> = {};
@@ -271,50 +347,55 @@ export function generateNewSelectAttempt({
         childIdToIdx[child.id] = idx;
     }
 
-    // Goal: randomly select `numToSelect` child variants from `source.activities`
-    // weighted by the number of unique variants for each child.
-    // However, we don't actually pick the child variant here,
-    // just the number of times the child is selected,
-    // as the child is responsible for determining its variants.
+    // Goal: randomly select `numToSelect` options from `source.activities`,
+    // where an option is either a child activity (if `selectByVariants` is `false`)
+    // on a variant of a child activity (if `selectByVariants` is `true`.)
 
-    // Strategy: to spread out the variants selected,
-    // choose child variants in groups of size `totalNumChildVariants`,
-    // where each child variant is selected exactly once per group.
+    // Strategy: over the course of consecutive attempts, we select each option once before selecting repeats
+    // (though we do not allow any repeats in a group of selections if `numToSelect` is larger than 1).
+    // Break consecutive selections down into groups of size `totalNumOptions`,
+    // where each option is selected exactly once per group.
 
-    // Note: the algorithm is easier to understand if one thinks of selecting a variant for each child,
-    // even though we actually just select a child and ignore the variant.
+    // Further notes for the ase when `selectByVariants` is `true`:
+    // If `selectByVariants` is `true`, the goal is to select individual variants of children.
+    // However, we don't actually select the variants, but simply select children multiple times,
+    // weighted by the number of variants, delegating the actually selection of variants to the child.
+    // The actual number of variants of a child may be larger than the calculated `numVariantsPerChild`,
+    // and the child activity has access to more information to select the variants.
 
-    // Rationale for ignoring actual child variants:
-    // `numVariantsPerChild` is actually just a lower bound on the number of unique variants per child.
-    // We use that number to determine how often to select a child variant,
-    // but delegate to the child the algorithm for selecting the variant.
+    // total number of options selected in previous attempts
+    const numPrevSelected = numToSelect * state.attempts.length;
 
-    // total number of child variants selected in previous attempts
-    const numPrevChildVariants = numToSelect * state.attempts.length;
+    // The total number of options selected so far in our current group of size `totalNumOptions`
+    const numInGroup = numPrevSelected % totalNumOptions;
 
-    // The total number of child variants selected so far in our current group of size `totalNumChildVariants`
-    const numChildVariantsInGroup =
-        numPrevChildVariants % totalNumChildVariants;
-    const numChildVariantsLeft =
-        totalNumChildVariants - numChildVariantsInGroup;
+    const numLeftInGroup = totalNumOptions - numInGroup;
 
-    // Go back to the previous `numChildVariantsInGroup` children
+    // Go back to the previous `numInGroup` children
     // and count how many times each child has already been selected
     const childCountsInGroup = Array<number>(numChildren).fill(0);
     for (const childId of state.attempts
         .flatMap((attempt) => attempt.activities.map((activity) => activity.id))
         .reverse()
-        .slice(0, numChildVariantsInGroup)) {
+        .slice(0, numInGroup)) {
         childCountsInGroup[childIdToIdx[childId]]++;
     }
 
     // List of the children left in group, where the child's index is repeated
     // based on the number of its variants left in the group.
-    const childOptionsLeft = childCountsInGroup.flatMap((cnt, idx) =>
-        Array<number>(numVariantsPerChild[idx] - cnt).fill(idx),
-    );
+    const childOptionsLeft = childCountsInGroup.flatMap((cnt, idx) => {
+        if (source.selectByVariant) {
+            return Array<number>(numVariantsPerChild[idx] - cnt).fill(idx);
+        } else {
+            if (cnt) {
+                return [];
+            } else {
+                return [idx];
+            }
+        }
+    });
 
-    if (childOptionsLeft.length !== numChildVariantsLeft) {
+    if (childOptionsLeft.length !== numLeftInGroup) {
         throw Error("we did something wrong");
     }
 
@@ -332,13 +413,13 @@ export function generateNewSelectAttempt({
     const childrenChosen: number[] = [];
 
     // randomly pick from childOptionsLeft without replacement
-    for (let i = 0; i < Math.min(numToSelect, numChildVariantsLeft); i++) {
+    for (let i = 0; i < Math.min(numToSelect, numLeftInGroup); i++) {
         const idx = Math.floor(rng() * childOptionsLeft.length);
         const newChildInd = childOptionsLeft.splice(idx, 1)[0];
         childrenChosen.push(newChildInd);
     }
 
-    if (numToSelect > numChildVariantsLeft) {
+    if (numToSelect > numLeftInGroup) {
         // We need to select more items than child variant options left, i.e., start a new group.
         // Select any additional items from the options that were initially excluded,
         // i.e., from items that were in the original group before we started this attempt.
@@ -346,12 +427,20 @@ export function generateNewSelectAttempt({
         // Initialize to the array of the child variants,
         // represented by the (possibly repeated) indices of the children,
         // that were in the previous group
-        const nextChildOptions = childCountsInGroup.flatMap((cnt, idx) =>
-            Array<number>(cnt).fill(idx),
-        );
+        const nextChildOptions = childCountsInGroup.flatMap((cnt, idx) => {
+            if (source.selectByVariant) {
+                return Array<number>(cnt).fill(idx);
+            } else {
+                if (cnt) {
+                    return [idx];
+                } else {
+                    return [];
+                }
+            }
+        });
 
         // randomly pick from nextChildOptions without replacement
-        for (let i = 0; i < numToSelect - numChildVariantsLeft; i++) {
+        for (let i = 0; i < numToSelect - numLeftInGroup; i++) {
             const idx = Math.floor(rng() * nextChildOptions.length);
             const newChildInd = nextChildOptions.splice(idx, 1)[0];
             childrenChosen.push(newChildInd);
@@ -402,6 +491,10 @@ export function generateNewSelectAttempt({
     return { finalQuestionCounter: questionCounter, state: newState };
 }
 
+/**
+ * For a select-multiple, generate a new attempt that replaces just the selection given by `childId`
+ * and leaves all other selections unchanged.
+ */
 export function generateNewSingleDocAttemptForMultiSelect({
     state,
     numActivityVariants,
@@ -433,9 +526,15 @@ export function generateNewSingleDocAttemptForMultiSelect({
         childIdToIdx[child.id] = idx;
     }
 
-    // Randomly select a child for childIdx, but exclude all the current selected sources for this attempt
-    const lastAttempt = state.attempts[state.attempts.length - 1];
+    // Note: when selecting a child to replace `childId`, we apply two rules:
+    // 1. exclude from selection any of the other currently selected children, and
+    // 2. for the remaining children, look back at previous attempts to make sure
+    //    that all options get selected once before allowing repeats,
+    //    where the bookkeeping includes all previous selections of those children,
+    //    including previous replacements of other children and entire attempts via `generateNewSelectAttempt`.
 
+    // First, we exclude all the currently selected sources for this attempt
+    const lastAttempt = state.attempts[state.attempts.length - 1];
     const otherSelectedIds = lastAttempt.activities
         .filter((a) => a.id !== childId)
         .map((a) => a.id);
@@ -455,14 +554,17 @@ export function generateNewSingleDocAttemptForMultiSelect({
     // and exclude those id's that are in our current group.
     // (We don't worry that the current group might have duplicate ids.)
     const prevSelectionOfOptions = state.attempts.flatMap((attempt) => {
-        if (attempt.singleQuestionReplacementIdx === undefined) {
+        if (attempt.singleItemReplacementIdx === undefined) {
+            // This attempt was from `generateNewSelectAttempt`, so count all items.
             return attempt.activities
                 .map((activity) => activity.id)
                 .filter((id) => !otherSelectedIds.includes(id));
         } else {
-            // if the select attempt just replaced a single question, only count that question
+            // This attempt replaced a single item,
+            // (i.e., was a previous call to `generateNewSingleDocAttemptForMultiSelect`)
+            // sp only count that item that was changed
             const changedId =
-                attempt.activities[attempt.singleQuestionReplacementIdx].id;
+                attempt.activities[attempt.singleItemReplacementIdx].id;
             if (otherSelectedIds.includes(changedId)) {
                 return [];
             } else {
@@ -478,10 +580,13 @@ export function generateNewSingleDocAttemptForMultiSelect({
         numPrevSelections,
     );
 
+    // The complete list of all the activities were are excluding from selection,
+    // represented by their index into `latestChildStates`
     const idxOfAllExcluded = [...otherSelectedIds, ...additionalExcludes]
         .map((id) => childIdToIdx[id])
         .sort((a, b) => a - b);
 
+    // The slot number (in the latest attempts activity) that we are replacing
     const slotNum = lastAttempt.activities.map((a) => a.id).indexOf(childId);
 
     const rngSeed =
@@ -507,6 +612,7 @@ export function generateNewSingleDocAttemptForMultiSelect({
     const newActivityStates = [...lastAttempt.activities];
     const newActivityOptionStates = [...state.latestChildStates];
 
+    // Generate a new attempt for the selected child
     const { finalQuestionCounter, state: newChildState } =
         generateNewActivityAttempt({
             state: newActivityOptionStates[selectedIdx],
@@ -516,6 +622,8 @@ export function generateNewSingleDocAttemptForMultiSelect({
             parentAttempt: state.attempts.length + 1,
         });
 
+    // Give that child the credit achieved from the child we are replacing
+    // as it will be viewed as another attempt for that item.
     const childStatePreserveCredit = { ...newChildState };
     childStatePreserveCredit.creditAchieved =
         lastAttempt.activities[slotNum].creditAchieved;
@@ -527,7 +635,8 @@ export function generateNewSingleDocAttemptForMultiSelect({
         activities: newActivityStates,
         creditAchieved: lastAttempt.creditAchieved, // keep credit achieved the same
         initialQuestionCounter,
-        singleQuestionReplacementIdx: slotNum,
+        // indicate that this select attempt is really just about replacing the child from `slotNum`
+        singleItemReplacementIdx: slotNum,
     };
 
     const newState: SelectState = {

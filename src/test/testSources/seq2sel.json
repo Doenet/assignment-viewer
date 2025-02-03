@@ -7,6 +7,7 @@
         {
             "id": "sel1",
             "type": "select",
+            "selectByVariant": true,
             "numToSelect": 1,
             "items": [
                 {
@@ -28,6 +29,7 @@
         {
             "id": "sel2",
             "type": "select",
+            "selectByVariant": true,
             "numToSelect": 1,
             "items": [
                 {

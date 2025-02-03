@@ -4,6 +4,8 @@ import seqShuf from "./testSources/seqShuf.json";
 import selMult1doc from "./testSources/selMult1doc.json";
 import selMult2docs from "./testSources/selMult2docs.json";
 import seq2sel from "./testSources/seq2sel.json";
+import selMult4docsNoVariant from "./testSources/selMult4docsNoVariant.json";
+
 import { SequenceSource, SequenceState } from "../Activity/sequenceState";
 import {
     generateNewActivityAttempt,
@@ -308,9 +310,9 @@ describe("Test of generating new item attempts", () => {
                     // in every group of 9 consecutive selections,
                     // no variant should have been selected more than twice
                     for (const id of validDocIds) {
-                        for (let i = 0; i < 6; i++) {
+                        for (let k = 0; k < 6; k++) {
                             expect(
-                                newDocIds.slice(i, i + 9).filter((v) => v == id)
+                                newDocIds.slice(k, k + 9).filter((v) => v == id)
                                     .length,
                             ).lte(2);
                         }
@@ -530,6 +532,159 @@ describe("Test of generating new item attempts", () => {
         expect(allQuestionIds[1]).not.eqls(allQuestionIds[2]);
 
         // identical question variants when repeat base variant
+        expect(allQuestionIds[0]).eqls(allQuestionIds[3]);
+        expect(allQuestionIds[2]).eqls(allQuestionIds[4]);
+    });
+
+    it("select multiple from four docs, selectByVariant=false", () => {
+        const source = selMult4docsNoVariant as SelectSource;
+
+        const allQuestionIds: string[][] = [];
+        const allQuestionVariants: number[][][] = [];
+
+        const variants = [1, 2, 3, 1, 3];
+        const allDocIds = ["doc1", "doc2", "doc4", "doc5"];
+
+        for (const variant of variants) {
+            const initialState0 = initializeActivityState({
+                source,
+                variant,
+                parentId: null,
+                numActivityVariants,
+            }) as SelectState;
+
+            const res = generateNewActivityAttempt({
+                state: initialState0,
+                numActivityVariants,
+                initialQuestionCounter: 1,
+                questionCounts,
+                parentAttempt: 1,
+            });
+            const initialState = res.state as SelectState;
+            const questionIds: string[] = [];
+            allQuestionIds.push(questionIds);
+
+            const questionVariants: number[][] = [[], [], [], []];
+            allQuestionVariants.push(questionVariants);
+
+            let state = initialState;
+
+            let numAttempts = state.attempts.length;
+            let latestAttempt = state.attempts[numAttempts - 1];
+
+            const currentDocIds = latestAttempt.activities.map((a) => a.id);
+
+            questionIds.push(...currentDocIds);
+            for (const activity of latestAttempt.activities) {
+                const lastDocAttempt = activity.attempts[
+                    activity.attempts.length - 1
+                ] as SingleDocAttemptState;
+                questionVariants[allDocIds.indexOf(activity.id)].push(
+                    lastDocAttempt.variant,
+                );
+            }
+
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 2; j++) {
+                    const otherDocId = currentDocIds[1 - j];
+
+                    const newDocIds: string[] = [];
+
+                    const validDocIds = allDocIds.filter(
+                        (v) => v != otherDocId,
+                    );
+
+                    // with 3 valid doc choices, could take 5 to get all of them
+                    for (let k = 0; k < 5; k++) {
+                        const docIds = state.attempts[
+                            numAttempts - 1
+                        ].activities.map((a) => a.id);
+
+                        state = generateNewSubActivityAttempt({
+                            id: docIds[j],
+                            state,
+                            numActivityVariants,
+                            initialQuestionCounter: 1, // not right, but doesn't matter for this test
+                            questionCounts,
+                        }) as SelectState;
+
+                        numAttempts = state.attempts.length;
+                        latestAttempt = state.attempts[numAttempts - 1];
+
+                        const activity = latestAttempt.activities[j];
+                        const newDocId = activity.id;
+
+                        // should not get a variant that matches one of the other current variants
+                        expect(validDocIds.includes(newDocId)).eq(true);
+
+                        newDocIds.push(newDocId);
+                        questionIds.push(newDocId);
+                        currentDocIds[j] = newDocId;
+
+                        const lastDocAttempt = activity.attempts[
+                            activity.attempts.length - 1
+                        ] as SingleDocAttemptState;
+                        questionVariants[allDocIds.indexOf(newDocId)].push(
+                            lastDocAttempt.variant,
+                        );
+                    }
+
+                    // every valid variant must have been selected at least once
+                    expect(validDocIds.every((v) => newDocIds.includes(v))).eq(
+                        true,
+                    );
+
+                    // in every group of 4 consecutive selections,
+                    // no doc should have been selected more than twice
+                    for (const id of validDocIds) {
+                        for (let k = 0; k < 5; k++) {
+                            expect(
+                                newDocIds.slice(k, k + 4).filter((v) => v == id)
+                                    .length,
+                            ).lte(2);
+                        }
+                    }
+                }
+            }
+
+            expect(questionVariants[0].slice(0, 10)).eqls(Array(10).fill(1));
+
+            for (let i = 0; i < 5; i++) {
+                expect(
+                    questionVariants[1]
+                        .slice(2 * i, 2 * i + 2)
+                        .sort((a, b) => a - b),
+                ).eqls([1, 2]);
+            }
+            expect(questionVariants[2].slice(0, 4).sort((a, b) => a - b)).eqls([
+                1, 2, 3, 4,
+            ]);
+            expect(questionVariants[2].slice(4, 8).sort((a, b) => a - b)).eqls([
+                1, 2, 3, 4,
+            ]);
+            expect(questionVariants[3].slice(0, 5).sort((a, b) => a - b)).eqls([
+                1, 2, 3, 4, 5,
+            ]);
+            expect(questionVariants[3].slice(5, 10).sort((a, b) => a - b)).eqls(
+                [1, 2, 3, 4, 5],
+            );
+        }
+
+        // different question variants for each base variant
+        expect(allQuestionVariants[0]).not.eqls(allQuestionVariants[1]);
+        expect(allQuestionVariants[0]).not.eqls(allQuestionVariants[2]);
+        expect(allQuestionVariants[1]).not.eqls(allQuestionVariants[2]);
+
+        // identical question variants when repeat base variant
+        expect(allQuestionVariants[0]).eqls(allQuestionVariants[3]);
+        expect(allQuestionVariants[2]).eqls(allQuestionVariants[4]);
+
+        // different questions for each base variant
+        expect(allQuestionIds[0]).not.eqls(allQuestionIds[1]);
+        expect(allQuestionIds[0]).not.eqls(allQuestionIds[2]);
+        expect(allQuestionIds[1]).not.eqls(allQuestionIds[2]);
+
+        // identical questions when repeat base variant
         expect(allQuestionIds[0]).eqls(allQuestionIds[3]);
         expect(allQuestionIds[2]).eqls(allQuestionIds[4]);
     });

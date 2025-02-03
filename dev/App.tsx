@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { useEffect, useState } from "react";
 import { ActivityViewer } from "../src/activity-viewer";
-import activitySource from "./testActivity3.json";
+import activitySource from "./testActivity.json";
 
 import initialAssignmentState from "./testInitialState.json";
 import {

@@ -16,6 +16,8 @@ import duplicateId from "./testSources/duplicateId.json";
 import invalidId from "./testSources/invalidId.json";
 import selMult2docs from "./testSources/selMult2docs.json";
 import selMult1doc from "./testSources/selMult1doc.json";
+import selMult1docNoVariant from "./testSources/selMult1docNoVariant.json";
+
 import { SelectSource, SelectState } from "../Activity/selectState";
 import { SequenceSource, SequenceState } from "../Activity/sequenceState";
 
@@ -446,5 +448,26 @@ describe("Activity state tests", () => {
                 docFromFirstSelect,
             ]);
         }
+    });
+
+    it("error when select multiple from a single doc with selectByVariant=false", () => {
+        const source = selMult1docNoVariant as SelectSource;
+
+        const initialState = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        }) as SelectState;
+
+        expect(() =>
+            generateNewActivityAttempt({
+                state: initialState,
+                numActivityVariants,
+                initialQuestionCounter: 1,
+                questionCounts,
+                parentAttempt: 1,
+            }),
+        ).toThrowError("larger than the number of available activities");
     });
 });

@@ -2,7 +2,7 @@
     "title": "My select",
     "id": "seq",
     "type": "select",
-    "selectByVariant": true,
+    "selectByVariant": false,
     "numToSelect": 1,
     "items": [
         {

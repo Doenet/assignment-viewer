@@ -13,7 +13,6 @@ import {
     isActivityStateNoSource,
     pruneActivityStateForSave,
 } from "./activityState";
-
 import seedrandom from "seedrandom";
 import { SingleDocSource } from "./singleDocState";
 import {
@@ -24,32 +23,53 @@ import {
 
 const rngClass = seedrandom.alea;
 
+/** The source for creating a sequence activity */
 export type SequenceSource = {
     type: "sequence";
     id: string;
     title?: string;
+    /** The child activities that form the sequence. */
     items: ActivitySource[];
+    /** If `true`, randomly permute the item order on each new attempt. */
     shuffle: boolean;
-    weights?: number[];
+    /**
+     * Weights given to the credit achieved of each item
+     * when averaging them to determine the credit achieved of the sequence activity.
+     * Items missing a weight are given the weight 1.
+     */
+    creditWeights?: number[];
 };
 
+/** The current state of a sequence activity, including all attempts. */
 export type SequenceState = {
     type: "sequence";
     id: string;
     parentId: string | null;
     source: SequenceSource;
+    /** Used to seed the random number generate to yield the actual variants of each attempt. */
     initialVariant: number;
+    /** Credit achieved (between 0 and 1) over all attempts of this activity */
     creditAchieved: number;
+    /** The latest state of child activities, in their original order */
     latestChildStates: ActivityState[];
     attempts: SequenceAttemptState[];
+    /** See {@link RestrictToVariantSlice} */
     restrictToVariantSlice?: RestrictToVariantSlice;
 };
 
+/** The state of an attempt of a sequence activity. */
 export type SequenceAttemptState = {
+    /** The activities as ordered for this attempt */
     activities: ActivityState[];
+    /** Credit achieved (between 0 and 1) on this attempt */
     creditAchieved: number;
 };
 
+/**
+ * The current state of a sequence activity, where references to the source have been eliminated.
+ *
+ * Useful for saving to a database, as this extraneously information has been removed.
+ */
 export type SequenceStateNoSource = Omit<
     SequenceState,
     "source" | "latestChildStates" | "attempts"
@@ -57,6 +77,8 @@ export type SequenceStateNoSource = Omit<
     latestChildStates: ActivityStateNoSource[];
     attempts: { activities: ActivityStateNoSource[]; creditAchieved: number }[];
 };
+
+// type guards
 
 export function isSequenceSource(obj: unknown): obj is SequenceSource {
     const typedObj = obj as SequenceSource;
@@ -70,9 +92,11 @@ export function isSequenceSource(obj: unknown): obj is SequenceSource {
         Array.isArray(typedObj.items) &&
         typedObj.items.every(isActivitySource) &&
         typeof typedObj.shuffle === "boolean" &&
-        (typedObj.weights === undefined ||
-            (Array.isArray(typedObj.weights) &&
-                typedObj.weights.every((weight) => typeof weight === "number")))
+        (typedObj.creditWeights === undefined ||
+            (Array.isArray(typedObj.creditWeights) &&
+                typedObj.creditWeights.every(
+                    (weight) => typeof weight === "number",
+                )))
     );
 }
 
@@ -141,10 +165,6 @@ export function isSequenceStateNoSource(
  * only this time it takes advantage of `numActivityVariants`,
  * which stores of the number of variants calculated for each single doc activity.
  *
- * If the source contains any select-multiple selects, all the variants of each child activity
- * becomes a separate child in `latestChildStates`, where each child is restricted to one variant,
- * using the `restrictToVariantSlice` parameter when recursing.
- *
  * Using the provided `variant` to create a seed, an initial variant is randomly selected for each child.
  */
 export function initializeSequenceState({
@@ -195,6 +215,17 @@ export function initializeSequenceState({
     };
 }
 
+/**
+ * Generate a new attempt for the base activity of `state`, recursing to child activities.
+ *
+ * Generate a new attempt for each child.  If `source.shuffle` is `true`, randomly permute the child order.
+ *
+ * See {@link generateNewActivityAttempt} for more information on the influence of parameters.
+ *
+ * @returns
+ * - state: the new activity state
+ * - finalQuestionCounter: the question counter to be given as an `initialQuestionCounter` for the next activity
+ */
 export function generateNewSequenceAttempt({
     state,
     numActivityVariants,

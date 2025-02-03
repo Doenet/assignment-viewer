@@ -114,8 +114,10 @@ export function SelectActivity({
     return (
         <div
             key={
+                // Replace the activity in the DOM when a new attempt is created,
+                // except preserve it if just a single item was replaced with the other items staying unchanged.
                 state.attempts.filter(
-                    (x) => x.singleQuestionReplacementIdx === undefined,
+                    (x) => x.singleItemReplacementIdx === undefined,
                 ).length
             }
             style={{ minHeight: "100px" }}

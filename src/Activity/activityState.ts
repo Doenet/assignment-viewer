@@ -116,10 +116,6 @@ export function isExportedActivityState(
  * only this time it takes advantage of `numActivityVariants`,
  * which stores of the number of variants calculated for each single doc activity.
  *
- * If the source contains any select-multiple selects, all the variants of each child activity
- * becomes a separate child in `latestChildStates`, where each child is restricted to one variant,
- * using the `restrictToVariantSlice` parameter when recursing.
- *
  * Using the provided `variant` to create a seed, an initial variant is randomly selected for each activity.
  */
 export function initializeActivityState({
@@ -675,21 +671,21 @@ export function propagateStateChangeToRoot({
                 !activityState.source.isDescription,
         );
 
-        let weights = [...(newParentState.source.weights ?? [])];
-        if (weights.length < nonDescriptions.length) {
-            weights.push(
-                ...Array<number>(nonDescriptions.length - weights.length).fill(
-                    1,
-                ),
+        let creditWeights = [...(newParentState.source.creditWeights ?? [])];
+        if (creditWeights.length < nonDescriptions.length) {
+            creditWeights.push(
+                ...Array<number>(
+                    nonDescriptions.length - creditWeights.length,
+                ).fill(1),
             );
         }
-        weights = weights.slice(0, nonDescriptions.length);
+        creditWeights = creditWeights.slice(0, nonDescriptions.length);
 
-        const totWeights = weights.reduce((a, c) => a + c);
-        weights = weights.map((w) => w / totWeights);
+        const totWeights = creditWeights.reduce((a, c) => a + c);
+        creditWeights = creditWeights.map((w) => w / totWeights);
 
         credit = nonDescriptions.reduce(
-            (a, c, i) => a + c.creditAchieved * weights[i],
+            (a, c, i) => a + c.creditAchieved * creditWeights[i],
             0,
         );
     } else {

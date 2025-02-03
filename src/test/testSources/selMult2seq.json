@@ -2,6 +2,7 @@
     "title": "My select",
     "id": "sel",
     "type": "select",
+    "selectByVariant": true,
     "numToSelect": 3,
     "items": [
         {
