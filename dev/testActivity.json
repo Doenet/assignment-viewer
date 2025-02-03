@@ -1,0 +1,68 @@
+{
+    "title": "My sequence",
+    "id": "seq",
+    "type": "sequence",
+    "shuffle": true,
+    "items": [
+        {
+            "title": "My select",
+            "id": "sel",
+            "type": "select",
+            "selectByVariant": true,
+            "numToSelect": 1,
+            "items": [
+                {
+                    "id": "qrf",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<problem>2+2=<answer>4</answer><selectFromSequence /></problem>",
+                    "version": "0.7.0-alpha30"
+                },
+                {
+                    "title": "My activity",
+                    "id": "abc",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<problem>1+1=<answer>2</answer><selectFromSequence length='3' /></problem><problem>4+4=<answer>8</answer><selectFromSequence length='4' /></problem>",
+                    "version": "0.7.0-alpha30"
+                }
+            ]
+        },
+        {
+            "id": "sel2",
+            "type": "select",
+            "selectByVariant": true,
+            "numToSelect": 1,
+            "items": [
+                {
+                    "id": "sel2a",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<question>Question 1A <graph><point name='P'/></graph><answer><award><when>$P.x > 0</when></award></answer></question>",
+                    "version": "0.7.0-alpha30"
+                },
+                {
+                    "id": "sel2b",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<question>Question 1B <p>Enter: <select assignNames='a'>a b c</select>. <answer>$a</answer></p></question>",
+                    "version": "0.7.0-alpha30"
+                },
+                {
+                    "id": "sel2c",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<question>Question 1C <p>Enter: <selectFromSequence assignNames='a' />. <answer>$a</answer></p></question>",
+                    "version": "0.7.0-alpha30"
+                },
+                {
+                    "id": "sel2d",
+                    "type": "singleDoc",
+                    "isDescription": false,
+                    "doenetML": "<question>Question 1D <p>Enter: <selectFromSequence assignNames='a' length=\"5\" />.  <answer>$a</answer></p></question>",
+                    "version": "0.7.0-alpha30"
+                }
+            ]
+        }
+    ]
+}

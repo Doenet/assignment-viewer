@@ -1,9 +1,8 @@
-import { useRef, useState } from "react";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { prng_alea } from "esm-seedrandom";
+import { Component, ErrorInfo, ReactNode, useRef, useState } from "react";
+import seedrandom from "seedrandom";
 import { Viewer } from "./Viewer/Viewer";
-import { AssignmentSource, DoenetMLFlags } from "./types";
+import { DoenetMLFlags } from "./types";
+import { ActivitySource } from "./Activity/activityState";
 
 type DoenetMLFlagsSubset = Partial<DoenetMLFlags>;
 
@@ -21,26 +20,24 @@ const defaultFlags: DoenetMLFlags = {
     autoSubmit: false,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const rngClass = prng_alea;
+const rngClass = seedrandom.alea;
 
 type PropSet = {
     source: string;
-    assignmentId?: string;
+    activityId?: string;
     requestedVariantIndex?: number;
 };
 
-export function AssignmentViewer({
+export function ActivityViewer({
     source,
     flags: specifiedFlags = {},
-    shuffle = false,
-    assignmentId = "a",
+    activityId = "a",
     userId,
     attemptNumber = 1,
     requestedVariantIndex,
     maxAttemptsAllowed = Infinity,
-    questionLevelAttempts = false,
-    assignmentLevelAttempts = false,
+    itemLevelAttempts = false,
+    activityLevelAttempts = false,
     paginate = true,
     showFinishButton = false,
     forceDisable = false,
@@ -52,18 +49,17 @@ export function AssignmentViewer({
     linkSettings,
     darkMode = "light",
     showAnswerTitles = false,
-    includeVariantSelector = false,
+    includeVariantSelector: _includeVariantSelector = false,
 }: {
-    source: AssignmentSource;
+    source: ActivitySource;
     flags?: DoenetMLFlagsSubset;
-    shuffle?: boolean;
-    assignmentId?: string;
+    activityId?: string;
     userId?: string;
     attemptNumber?: number;
     requestedVariantIndex?: number;
     maxAttemptsAllowed?: number;
-    questionLevelAttempts?: boolean;
-    assignmentLevelAttempts?: boolean;
+    itemLevelAttempts?: boolean;
+    activityLevelAttempts?: boolean;
     paginate?: boolean;
     showFinishButton?: boolean;
     forceDisable?: boolean;
@@ -87,7 +83,7 @@ export function AssignmentViewer({
 
     const thisPropSet: PropSet = {
         source: JSON.stringify(source),
-        assignmentId,
+        activityId,
         requestedVariantIndex,
     };
     const lastPropSet = useRef<PropSet>({ source: "" });
@@ -109,9 +105,7 @@ export function AssignmentViewer({
 
     if (foundPropChange) {
         if (requestedVariantIndex === undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-            const rng = new rngClass(new Date());
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const rng = rngClass(new Date().toString());
             setVariantIndex(Math.floor(rng() * 1000000) + 1);
         } else {
             setVariantIndex(
@@ -127,28 +121,57 @@ export function AssignmentViewer({
     }
 
     return (
-        <Viewer
-            source={source}
-            flags={flags}
-            shuffle={shuffle}
-            assignmentId={assignmentId}
-            userId={userId}
-            attemptNumber={attemptNumber}
-            variantIndex={variantIndex}
-            maxAttemptsAllowed={maxAttemptsAllowed}
-            questionLevelAttempts={questionLevelAttempts}
-            assignmentLevelAttempts={assignmentLevelAttempts}
-            paginate={paginate}
-            showFinishButton={showFinishButton}
-            forceDisable={forceDisable}
-            forceShowCorrectness={forceShowCorrectness}
-            forceShowSolution={forceShowSolution}
-            forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-            addVirtualKeyboard={addVirtualKeyboard}
-            externalVirtualKeyboardProvided={externalVirtualKeyboardProvided}
-            linkSettings={linkSettings}
-            darkMode={darkMode}
-            showAnswerTitles={showAnswerTitles}
-        />
+        <ErrorBoundary>
+            <Viewer
+                source={source}
+                flags={flags}
+                activityId={activityId}
+                userId={userId}
+                attemptNumber={attemptNumber}
+                variantIndex={variantIndex}
+                maxAttemptsAllowed={maxAttemptsAllowed}
+                itemLevelAttempts={itemLevelAttempts}
+                activityLevelAttempts={activityLevelAttempts}
+                paginate={paginate}
+                showFinishButton={showFinishButton}
+                forceDisable={forceDisable}
+                forceShowCorrectness={forceShowCorrectness}
+                forceShowSolution={forceShowSolution}
+                forceUnsuppressCheckwork={forceUnsuppressCheckwork}
+                addVirtualKeyboard={addVirtualKeyboard}
+                externalVirtualKeyboardProvided={
+                    externalVirtualKeyboardProvided
+                }
+                linkSettings={linkSettings}
+                darkMode={darkMode}
+                showAnswerTitles={showAnswerTitles}
+            />
+        </ErrorBoundary>
     );
+}
+
+type ErrorProps = {
+    children?: ReactNode;
+};
+
+type ErrorState = { hasError: boolean };
+
+class ErrorBoundary extends Component<ErrorProps, ErrorState> {
+    constructor(props: ErrorProps) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(_: Error): ErrorState {
+        return { hasError: true };
+    }
+    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        console.error("Uncaught error", error, errorInfo);
+    }
+    render() {
+        if (this.state.hasError) {
+            return <h1>Sorry, something went wrong</h1>;
+        }
+        return this.props.children;
+    }
 }

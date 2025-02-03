@@ -1,0 +1,7 @@
+{
+    "id": "doc5",
+    "type": "singleDoc",
+    "isDescription": false,
+    "doenetML": "<problem>Enter <selectFromSequence name='n' from='11' to='15' />: <answer name='ans'>$n</answer></problem>",
+    "version": "0.7.0-alpha30"
+}

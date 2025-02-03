@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { useEffect, useMemo, useState } from "react";
-import { AssignmentViewer } from "../src/assignment-builder";
-import { AssignmentSource } from "../src/types";
-import assignmentSource from "./testAssignment.json";
+import { useEffect, useState } from "react";
+import { ActivityViewer } from "../src/activity-viewer";
+import activitySource from "./testActivity.json";
 
 import initialAssignmentState from "./testInitialState.json";
 import {
-    AssignmentAttemptState,
-    AssignmentState,
-    ItemId,
-} from "../src/Viewer/assignmentState";
+    ExportedActivityState,
+    isActivitySource,
+    isExportedActivityState,
+    validateStateAndSource,
+} from "../src/Activity/activityState";
+import { isReportScoreByItemMessage, isReportStateMessage } from "../src/types";
 
 function App() {
     const defaultTestSettings: {
@@ -18,9 +19,8 @@ function App() {
         readOnly: boolean;
         showFeedback: boolean;
         showHints: boolean;
-        questionLevelAttempts: boolean;
-        assignmentLevelAttempts: boolean;
-        shuffle: boolean;
+        itemLevelAttempts: boolean;
+        activityLevelAttempts: boolean;
         paginate: boolean;
     } = {
         requestedVariantIndex: 1,
@@ -28,9 +28,8 @@ function App() {
         readOnly: false,
         showFeedback: true,
         showHints: true,
-        questionLevelAttempts: true,
-        assignmentLevelAttempts: true,
-        shuffle: false,
+        itemLevelAttempts: true,
+        activityLevelAttempts: true,
         paginate: false,
     };
 
@@ -39,14 +38,13 @@ function App() {
     const [updateNumber, setUpdateNumber] = useState(0);
 
     const {
-        requestedVariantIndex,
+        requestedVariantIndex: _requestedVariantIndex,
         showCorrectness,
         readOnly,
         showFeedback,
         showHints,
-        questionLevelAttempts,
-        assignmentLevelAttempts,
-        shuffle,
+        itemLevelAttempts,
+        activityLevelAttempts,
         paginate,
     } = testSettings;
 
@@ -156,18 +154,18 @@ function App() {
                         {" "}
                         <input
                             type="checkbox"
-                            checked={questionLevelAttempts}
+                            checked={itemLevelAttempts}
                             onChange={() => {
                                 setTestSettings((was) => {
                                     const newObj = { ...was };
-                                    newObj.questionLevelAttempts =
-                                        !was.questionLevelAttempts;
+                                    newObj.itemLevelAttempts =
+                                        !was.itemLevelAttempts;
                                     return newObj;
                                 });
                                 setUpdateNumber((was) => was + 1);
                             }}
                         />
-                        Question level attempts
+                        Item level attempts
                     </label>
                 </div>
                 <div>
@@ -175,36 +173,18 @@ function App() {
                         {" "}
                         <input
                             type="checkbox"
-                            checked={assignmentLevelAttempts}
+                            checked={activityLevelAttempts}
                             onChange={() => {
                                 setTestSettings((was) => {
                                     const newObj = { ...was };
-                                    newObj.assignmentLevelAttempts =
-                                        !was.assignmentLevelAttempts;
+                                    newObj.activityLevelAttempts =
+                                        !was.activityLevelAttempts;
                                     return newObj;
                                 });
                                 setUpdateNumber((was) => was + 1);
                             }}
                         />
                         Assignment level attempts
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        {" "}
-                        <input
-                            type="checkbox"
-                            checked={shuffle}
-                            onChange={() => {
-                                setTestSettings((was) => {
-                                    const newObj = { ...was };
-                                    newObj.shuffle = !was.shuffle;
-                                    return newObj;
-                                });
-                                setUpdateNumber((was) => was + 1);
-                            }}
-                        />
-                        Shuffle question order
                     </label>
                 </div>
                 <div>
@@ -229,32 +209,54 @@ function App() {
         );
     }
 
-    const assignmentId = "apple";
+    const activityId = "apple";
 
-    const [assignmentState, setAssignmentState] = useState<AssignmentState>(
-        initialAssignmentState,
-    );
+    const initialState = initialAssignmentState;
 
-    const [score, setScore] = useState(0);
+    const [activityState, setActivityState] =
+        useState<ExportedActivityState | null>(
+            // null,
+            isExportedActivityState(initialState) &&
+                validateStateAndSource(initialState, activitySource)
+                ? initialState
+                : null,
+        );
+
+    const [_score, setScore] = useState(0);
+    const [scoreByItem, setScoreByItem] = useState<
+        { id: string; score: number }[]
+    >([]);
 
     useEffect(() => {
         const stateListener = function (e: MessageEvent) {
-            if (e.data.assignmentId !== assignmentId) {
+            if (e.data.activityId !== activityId) {
                 return;
             }
+
+            const msg: unknown = e.data;
+
             console.log("got an event for this assignment", e.data);
 
-            if (e.data.subject === "SPLICE.reportScoreAndState") {
-                setAssignmentState(e.data.state as AssignmentState);
-                setScore(e.data.score as number);
+            if (isReportStateMessage(msg)) {
+                setActivityState(msg.state);
+                setScore(msg.score);
+                setScoreByItem(msg.scoreByItem);
+            } else if (isReportScoreByItemMessage(msg)) {
+                setScore(msg.score);
+                setScoreByItem(msg.scoreByItem);
             } else if (e.data.subject === "SPLICE.getState") {
+                const haveState = validateStateAndSource(
+                    initialAssignmentState,
+                    activitySource,
+                );
+
                 window.postMessage({
                     subject: "SPLICE.getState.response",
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     messageId: e.data.messageId,
                     success: true,
-                    loadedState: true,
-                    state: initialAssignmentState,
+                    loadedState: haveState,
+                    state: haveState ? initialAssignmentState : null,
                 });
             }
         };
@@ -266,33 +268,16 @@ function App() {
         };
     }, []);
 
-    const [itemIdToOrigItemIdx, itemWeights] = useMemo(() => {
-        const idToIdx: Record<ItemId, number> = {};
-        let weights = [];
-        let totalWeight = 0;
-        for (const [idx, item] of assignmentSource.items.entries()) {
-            idToIdx[item.id] = idx;
-            if (item.type === "question") {
-                const w = item.weight ?? 1;
-                weights.push(w);
-                totalWeight += w;
-            } else {
-                weights.push(0);
-            }
-        }
-        weights = weights.map((w) => w / totalWeight);
+    // const lastAssignmentAttempt = activityState.attempts[
+    //     activityState.assignmentAttemptNumber - 1
+    // ] as AssignmentAttemptState | null;
 
-        return [idToIdx, weights];
-    }, []);
-
-    console.log({ score, assignmentState });
-
-    const lastAssignmentAttempt = assignmentState.attempts[
-        assignmentState.assignmentAttemptNumber - 1
-    ] as AssignmentAttemptState | null;
+    if (!isActivitySource(activitySource)) {
+        return <>Bad activity source</>;
+    }
 
     return (
-        <>
+        <div style={{ marginBottom: "50vh" }}>
             <div
                 style={{
                     backgroundColor: "lightGray",
@@ -321,34 +306,26 @@ function App() {
                 {controls}
 
                 <div>
-                    Assignment credit: {assignmentState.creditAchieved * 100}%
+                    Assignment credit:{" "}
+                    {(activityState?.state.creditAchieved ?? 0) * 100}%
                 </div>
                 <div>
                     Credit by item, latest attempt:
                     <ol>
-                        {lastAssignmentAttempt?.items
-                            .filter(
-                                (item) =>
-                                    assignmentSource.items[
-                                        itemIdToOrigItemIdx[item.itemId]
-                                    ].type === "question",
-                            )
-                            .map((item) => (
-                                <li key={item.itemId}>
-                                    {item.creditAchieved * 100}%
-                                </li>
-                            ))}
+                        {scoreByItem.map((item) => (
+                            <li key={item.id}>{item.score * 100}%</li>
+                        ))}
                     </ol>
                 </div>
                 <div>
                     Assignment attempt number:{" "}
-                    {assignmentState.assignmentAttemptNumber}
+                    {activityState?.state.attempts.length ?? 0 + 1}
                 </div>
             </div>
 
-            <AssignmentViewer
+            <ActivityViewer
                 key={"viewer" + updateNumber.toString()}
-                source={assignmentSource as AssignmentSource}
+                source={activitySource}
                 flags={{
                     showCorrectness,
                     readOnly,
@@ -358,13 +335,12 @@ function App() {
                     allowSaveState: true,
                     allowLoadState: true,
                 }}
-                shuffle={true}
                 paginate={paginate}
-                assignmentId={assignmentId}
-                questionLevelAttempts={questionLevelAttempts}
-                assignmentLevelAttempts={assignmentLevelAttempts}
+                activityId={activityId}
+                itemLevelAttempts={itemLevelAttempts}
+                activityLevelAttempts={activityLevelAttempts}
             />
-        </>
+        </div>
     );
 }
 
