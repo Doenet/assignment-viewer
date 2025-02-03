@@ -16,7 +16,11 @@ import {
 
 import seedrandom from "seedrandom";
 import { SingleDocSource } from "./singleDocState";
-import { ActivityVariantRecord, QuestionCountRecord } from "../types";
+import {
+    ActivityVariantRecord,
+    QuestionCountRecord,
+    RestrictToVariantSlice,
+} from "../types";
 
 const rngClass = seedrandom.alea;
 
@@ -38,7 +42,7 @@ export type SequenceState = {
     creditAchieved: number;
     latestChildStates: ActivityState[];
     attempts: SequenceAttemptState[];
-    restrictToVariantSlice?: { idx: number; numSlices: number };
+    restrictToVariantSlice?: RestrictToVariantSlice;
 };
 
 export type SequenceAttemptState = {
@@ -154,7 +158,7 @@ export function initializeSequenceState({
     variant: number;
     parentId: string | null;
     numActivityVariants: ActivityVariantRecord;
-    restrictToVariantSlice?: { idx: number; numSlices: number };
+    restrictToVariantSlice?: RestrictToVariantSlice;
 }): SequenceState {
     const rngSeed = variant.toString() + "|" + source.id.toString();
 
@@ -319,6 +323,11 @@ export function generateNewSequenceAttempt({
     return { finalQuestionCounter: questionCounter, state: newState };
 }
 
+/**
+ * Recurse through the descendants of `activityState`,
+ * returning an array of the `creditAchieved` of the latest single document activities,
+ * or of select activities that select a single document.
+ */
 export function extractSequenceItemCredit(
     activityState: SequenceState,
 ): { id: string; score: number }[] {

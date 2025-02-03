@@ -1,4 +1,8 @@
-import { ActivityVariantRecord, QuestionCountRecord } from "../types";
+import {
+    ActivityVariantRecord,
+    QuestionCountRecord,
+    RestrictToVariantSlice,
+} from "../types";
 import {
     ActivitySource,
     ActivityState,
@@ -38,7 +42,7 @@ export type SelectState = {
     creditAchieved: number;
     latestChildStates: ActivityState[];
     attempts: SelectAttemptState[];
-    restrictToVariantSlice?: { idx: number; numSlices: number };
+    restrictToVariantSlice?: RestrictToVariantSlice;
 };
 
 export type SelectAttemptState = {
@@ -163,7 +167,7 @@ export function initializeSelectState({
     variant: number;
     parentId: string | null;
     numActivityVariants: ActivityVariantRecord;
-    restrictToVariantSlice?: { idx: number; numSlices: number };
+    restrictToVariantSlice?: RestrictToVariantSlice;
 }): SelectState {
     const rngSeed = variant.toString() + "|" + source.id.toString();
 
@@ -535,6 +539,11 @@ export function generateNewSingleDocAttemptForMultiSelect({
     return { finalQuestionCounter, state: newState };
 }
 
+/**
+ * Recurse through the descendants of `activityState`,
+ * returning an array of the `creditAchieved` of the latest single document activities,
+ * or of select activities that select a single document.
+ */
 export function extractSelectItemCredit(
     activityState: SelectState,
 ): { id: string; score: number }[] {

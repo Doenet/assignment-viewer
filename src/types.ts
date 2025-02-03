@@ -149,3 +149,15 @@ export type ActivityVariantRecord = Record<string, number>;
  * keyed by activity id.
  */
 export type QuestionCountRecord = Record<string, number>;
+
+/**
+ * A description of how to restrict the variant of a given activity.
+ *
+ * The `numSlices` attribute indicates how many slices the variants were broken up into.
+ * The (1-indexed) `idx` attribute indicate which slice of those `numSlices` slices this activity
+ * is restricted to.
+ *
+ * The typical case is that `numSlices` equals the number of variants for this activity,
+ * so each slice contains just a single variant.
+ */
+export type RestrictToVariantSlice = { idx: number; numSlices: number };

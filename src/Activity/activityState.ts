@@ -41,21 +41,41 @@ import {
     SequenceStateNoSource,
 } from "./sequenceState";
 import hash from "object-hash";
-import { ActivityVariantRecord, QuestionCountRecord } from "../types";
+import {
+    ActivityVariantRecord,
+    QuestionCountRecord,
+    RestrictToVariantSlice,
+} from "../types";
 
+/** The source for creating an activity */
 export type ActivitySource = SingleDocSource | SelectSource | SequenceSource;
 
+/** The current state of an activity, including all descendants and attempts. */
 export type ActivityState = SingleDocState | SelectState | SequenceState;
 
+/**
+ * The current state of an activity, where references to the source have been eliminated.
+ *
+ * Useful for saving to a database, as this extraneously information has been removed.
+ */
 export type ActivityStateNoSource =
     | SingleDocStateNoSource
     | SelectStateNoSource
     | SequenceStateNoSource;
 
+/**
+ * The activity state packaged for saving to a database.
+ *
+ * The `sourceHash` is a hash of the source (which has been removed from `state`),
+ * which will be used to verify that the state matches the current source
+ * when loading in the state.
+ */
 export type ExportedActivityState = {
     state: ActivityStateNoSource;
     sourceHash: string;
 };
+
+// Type guards
 
 export function isActivitySource(obj: unknown): obj is ActivitySource {
     return (
@@ -113,7 +133,7 @@ export function initializeActivityState({
     variant: number;
     parentId: string | null;
     numActivityVariants: ActivityVariantRecord;
-    restrictToVariantSlice?: { idx: number; numSlices: number };
+    restrictToVariantSlice?: RestrictToVariantSlice;
 }): ActivityState {
     switch (source.type) {
         case "singleDoc": {
@@ -148,9 +168,18 @@ export function initializeActivityState({
 }
 
 /**
- * Generate a new attempt for the specified activity, recursing to child activities.
+ * Generate a new attempt for the base activity of `state`, recursing to child activities.
  *
- * The counters for `initialQuestionCounter` specifies the
+ * The `initialQuestionCounter` parameter specifies the initial value of the counters for any
+ * `<question>`, `<problem>`, or `<exercise>`.
+ *
+ * Calculates a value for the next question counter (`finalQuestionCounter`) based on
+ * the numbers of questions in the single documents of the new attempt, as specified by `questionCounts`.
+ *
+ * If `resetCredit` is true, set the `creditAchieved` of the new attempt to zero.
+ *
+ * The `parentAttempt` counter should be the current attempt number of the parent activity.
+ * It is used to ensure that selected variants change with the parent's attempt number.
  *
  * @returns
  * - state: the new activity state
@@ -207,6 +236,11 @@ export function generateNewActivityAttempt({
     throw Error("Invalid activity type");
 }
 
+/**
+ * Generate a new activity for the descendant activity `id` of the base activity `state`.
+ * Once the the new descendant activity is calculated, recurse to ancestors to create
+ * a new state of the base activity, which is returned.
+ */
 export function generateNewSubActivityAttempt({
     id,
     state,
@@ -308,6 +342,11 @@ export function generateNewSubActivityAttempt({
     }
 }
 
+/**
+ * Recurse through the descendants of `activityState`,
+ * returning an array of the `creditAchieved` of the latest single document activities,
+ * or of select activities that select a single document.
+ */
 export function extractActivityItemCredit(
     activityState: ActivityState,
 ): { id: string; score: number }[] {
@@ -381,6 +420,11 @@ export function addSourceToActivityState(
     }
 }
 
+/**
+ * In case `compositeId` was formed by appending variant information to the original id from with source,
+ * extract and return the original id, which is the first part of an composite id.
+ * Return the id unchanged in the case that it is still the original id.
+ */
 export function extractSourceId(compositeId: string): string {
     return compositeId.split("|")[0];
 }
@@ -539,6 +583,10 @@ export function validateStateAndSource(state: unknown, source: unknown) {
     return state.sourceHash === sourceHash;
 }
 
+/**
+ * Gather the states of all the descendants of `state`,
+ * adding them to the returned object, which is indexed by `id`.
+ */
 export function gatherStates(
     state: ActivityState,
 ): Record<string, ActivityState> {
@@ -555,6 +603,17 @@ export function gatherStates(
     return allStates;
 }
 
+/**
+ * Given the changed state of activity with `id`, as stored in `allStates[id]`,
+ * propagate the change to the activities ancestors, updating their
+ * `latestChidStates`, `attempts`, and `creditAchieved` fields.
+ *
+ * Creates new state objects via shallow copies (and does not modify existing state objects),
+ * adding the new state objects back to `allStates`.
+ *
+ * Returns the new activity state corresponding to the root activity,
+ * which contains all the newly calculated states as descendants.
+ */
 export function propagateStateChangeToRoot({
     allStates,
     id,
