@@ -331,6 +331,130 @@ export function Viewer({
         setCurrentItemIdx((was) => Math.max(0, was - 1));
     }
 
+    function documentStructureCallback(data: unknown) {
+        if (isDocumentStructureData(data)) {
+            if (data.args.success) {
+                const docId = data.docId.split("|")[0];
+                setNumActivityVariants((was) => {
+                    if (docId in was) {
+                        return was;
+                    }
+                    const obj = { ...was };
+                    obj[docId] = data.args.allPossibleVariants.length;
+                    return obj;
+                });
+                setQuestionCounts((was) => {
+                    if (docId in was) {
+                        return was;
+                    }
+                    const obj = { ...was };
+                    obj[docId] =
+                        (data.args.baseLevelComponentCounts.question ?? 0) +
+                        (data.args.baseLevelComponentCounts.problem ?? 0) +
+                        (data.args.baseLevelComponentCounts.exercise ?? 0);
+                    return obj;
+                });
+            }
+        }
+    }
+
+    function reportScoreAndStateCallback(msg: unknown) {
+        if (isSingleDocReportStateMessage(msg)) {
+            activityStateDispatch({
+                type: "updateSingleState",
+                id: msg.docId,
+                doenetState: msg.state,
+                creditAchieved: msg.score,
+                allowSaveState: flags.allowSaveState,
+                baseId: activityId,
+            });
+        }
+    }
+
+    function generateNewItemAttempt(
+        id: string,
+        initialQuestionCounter: number,
+    ) {
+        if (initialized) {
+            activityStateDispatch({
+                type: "generateNewActivityAttempt",
+                id,
+                numActivityVariants,
+                initialQuestionCounter,
+                questionCounts,
+                allowSaveState: flags.allowSaveState,
+                baseId: activityId,
+            });
+            setItemsRendered((was) => {
+                const idx = was.indexOf(id);
+                if (idx === -1) {
+                    return was;
+                } else {
+                    const arr = [...was];
+                    arr.splice(idx, 1);
+                    return arr;
+                }
+            });
+            setItemsToRender((was) => {
+                const idx = was.indexOf(id);
+                if (idx === -1) {
+                    return was;
+                } else {
+                    const arr = [...was];
+                    arr.splice(idx, 1);
+                    return arr;
+                }
+            });
+        }
+    }
+
+    function hasRenderedCallback(id: string) {
+        setItemsRendered((was) => {
+            if (was.includes(id)) {
+                return was;
+            }
+            const obj = [...was];
+            obj.push(id);
+            return obj;
+        });
+    }
+
+    function reportVisibilityCallback(id: string, isVisible: boolean) {
+        setItemsVisible((was) => {
+            if (isVisible) {
+                if (was.includes(id)) {
+                    return was;
+                } else {
+                    const obj = [...was];
+                    obj.push(id);
+                    return obj;
+                }
+            } else {
+                const idx = was.indexOf(id);
+                if (idx === -1) {
+                    return was;
+                } else {
+                    const obj = [...was];
+                    obj.splice(idx, 1);
+                    return obj;
+                }
+            }
+        });
+    }
+
+    function generateActivityAttempt() {
+        activityStateDispatch({
+            type: "generateNewActivityAttempt",
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            questionCounts,
+            allowSaveState: flags.allowSaveState,
+            baseId: activityId,
+        });
+        setItemsRendered([]);
+        setCurrentItemIdx(0);
+    }
+
     if (errMsg !== null) {
         const errorIcon = (
             <span style={{ fontSize: "1em", color: "#C1292E" }}>
@@ -408,18 +532,7 @@ export function Viewer({
                 </div>
                 {activityLevelAttempts ? (
                     <button
-                        onClick={() => {
-                            activityStateDispatch({
-                                type: "generateNewActivityAttempt",
-                                numActivityVariants,
-                                initialQuestionCounter: 1,
-                                questionCounts,
-                                allowSaveState: flags.allowSaveState,
-                                baseId: activityId,
-                            });
-                            setItemsRendered([]);
-                            setCurrentItemIdx(0);
-                        }}
+                        onClick={generateActivityAttempt}
                         disabled={!initialized}
                         style={{ marginLeft: "20px" }}
                     >
@@ -445,120 +558,15 @@ export function Viewer({
                 darkMode={darkMode}
                 showAnswerTitles={showAnswerTitles}
                 state={activityState}
-                documentStructureCallback={(data: unknown) => {
-                    if (isDocumentStructureData(data)) {
-                        if (data.args.success) {
-                            const docId = data.docId.split("|")[0];
-                            setNumActivityVariants((was) => {
-                                if (docId in was) {
-                                    return was;
-                                }
-                                const obj = { ...was };
-                                obj[docId] =
-                                    data.args.allPossibleVariants.length;
-                                return obj;
-                            });
-                            setQuestionCounts((was) => {
-                                if (docId in was) {
-                                    return was;
-                                }
-                                const obj = { ...was };
-                                obj[docId] =
-                                    (data.args.baseLevelComponentCounts
-                                        .question ?? 0) +
-                                    (data.args.baseLevelComponentCounts
-                                        .problem ?? 0) +
-                                    (data.args.baseLevelComponentCounts
-                                        .exercise ?? 0);
-                                return obj;
-                            });
-                        }
-                    }
-                }}
-                reportScoreAndStateCallback={(msg: unknown) => {
-                    if (isSingleDocReportStateMessage(msg)) {
-                        activityStateDispatch({
-                            type: "updateSingleState",
-                            id: msg.docId,
-                            doenetState: msg.state,
-                            creditAchieved: msg.score,
-                            allowSaveState: flags.allowSaveState,
-                            baseId: activityId,
-                        });
-                    }
-                }}
+                documentStructureCallback={documentStructureCallback}
+                reportScoreAndStateCallback={reportScoreAndStateCallback}
                 checkRender={checkRender}
                 checkHidden={checkHidden}
                 allowItemAttemptButtons={itemLevelAttempts}
-                generateNewItemAttempt={(
-                    id: string,
-                    initialQuestionCounter: number,
-                ) => {
-                    if (initialized) {
-                        activityStateDispatch({
-                            type: "generateNewActivityAttempt",
-                            id,
-                            numActivityVariants,
-                            initialQuestionCounter,
-                            questionCounts,
-                            allowSaveState: flags.allowSaveState,
-                            baseId: activityId,
-                        });
-                        setItemsRendered((was) => {
-                            const idx = was.indexOf(id);
-                            if (idx === -1) {
-                                return was;
-                            } else {
-                                const arr = [...was];
-                                arr.splice(idx, 1);
-                                return arr;
-                            }
-                        });
-                        setItemsToRender((was) => {
-                            const idx = was.indexOf(id);
-                            if (idx === -1) {
-                                return was;
-                            } else {
-                                const arr = [...was];
-                                arr.splice(idx, 1);
-                                return arr;
-                            }
-                        });
-                    }
-                }}
-                hasRenderedCallback={(id: string) => {
-                    setItemsRendered((was) => {
-                        if (was.includes(id)) {
-                            return was;
-                        }
-                        const obj = [...was];
-                        obj.push(id);
-                        return obj;
-                    });
-                }}
+                generateNewItemAttempt={generateNewItemAttempt}
+                hasRenderedCallback={hasRenderedCallback}
                 reportVisibility={!paginate}
-                reportVisibilityCallback={(id: string, isVisible: boolean) => {
-                    setItemsVisible((was) => {
-                        if (isVisible) {
-                            if (was.includes(id)) {
-                                return was;
-                            } else {
-                                const obj = [...was];
-                                obj.push(id);
-                                return obj;
-                            }
-                        } else {
-                            const idx = was.indexOf(id);
-                            if (idx === -1) {
-                                return was;
-                            } else {
-                                const obj = [...was];
-                                obj.splice(idx, 1);
-                                return obj;
-                            }
-                        }
-                    });
-                }}
+                reportVisibilityCallback={reportVisibilityCallback}
             />
         </div>
     );
