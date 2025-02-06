@@ -169,7 +169,12 @@ export function SingleDocActivity({
                                 latestAttempt?.initialQuestionCounter ?? 1,
                             );
                         }}
-                        style={{ marginLeft: "20px" }}
+                        style={{
+                            marginLeft: "20px",
+                            backgroundColor: "lightgray",
+                            borderRadius: "10px",
+                            padding: "5px 20px",
+                        }}
                     >
                         New item attempt
                     </button>

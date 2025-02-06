@@ -50,6 +50,7 @@ export function ActivityViewer({
     darkMode = "light",
     showAnswerTitles = false,
     includeVariantSelector: _includeVariantSelector = false,
+    showTitle = true,
 }: {
     source: ActivitySource;
     flags?: DoenetMLFlagsSubset;
@@ -72,6 +73,7 @@ export function ActivityViewer({
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
     includeVariantSelector?: boolean;
+    showTitle?: boolean;
 }) {
     // const [variants, setVariants] = useState({
     //     index: 1,
@@ -145,6 +147,7 @@ export function ActivityViewer({
                 linkSettings={linkSettings}
                 darkMode={darkMode}
                 showAnswerTitles={showAnswerTitles}
+                showTitle={showTitle}
             />
         </ErrorBoundary>
     );
