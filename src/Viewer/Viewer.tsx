@@ -47,6 +47,7 @@ export function Viewer({
     linkSettings,
     darkMode = "light",
     showAnswerTitles = false,
+    showTitle = true,
 }: {
     source: ActivitySource;
     flags: DoenetMLFlags;
@@ -68,6 +69,7 @@ export function Viewer({
     linkSettings?: { viewURL: string; editURL: string };
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
+    showTitle?: boolean;
 }) {
     const numSourceDocs = useMemo(() => getNumSourceDocs(source), [source]);
 
@@ -510,35 +512,53 @@ export function Viewer({
 
     return (
         <div>
-            <h2 style={{ marginLeft: "20px" }}>{source.title}</h2>
+            {showTitle ? (
+                <h2 style={{ marginLeft: "20px" }}>{source.title}</h2>
+            ) : null}
 
-            <div>
+            <div style={{ marginTop: "5px" }}>
                 <div hidden={!paginate}>
                     <button
                         onClick={clickPrevious}
-                        style={{ marginLeft: "20px" }}
+                        style={{
+                            marginLeft: "20px",
+                            marginRight: "10px",
+                            backgroundColor: "lightgray",
+                            borderRadius: "10px",
+                            padding: "5px 20px",
+                        }}
                         disabled={currentItemIdx === 0}
                     >
                         Previous
                     </button>
+                    Page {currentItemIdx + 1} of {numItems}
                     <button
                         onClick={clickNext}
-                        style={{ marginLeft: "20px" }}
+                        style={{
+                            marginLeft: "10px",
+                            backgroundColor: "lightgray",
+                            borderRadius: "10px",
+                            padding: "5px 20px",
+                        }}
                         disabled={currentItemIdx === numItems - 1}
                     >
                         Next
                     </button>
-                    {currentItemIdx + 1}
+                    {activityLevelAttempts ? (
+                        <button
+                            onClick={generateActivityAttempt}
+                            disabled={!initialized}
+                            style={{
+                                marginLeft: "30px",
+                                backgroundColor: "lightgray",
+                                borderRadius: "10px",
+                                padding: "5px 20px",
+                            }}
+                        >
+                            New attempt
+                        </button>
+                    ) : null}
                 </div>
-                {activityLevelAttempts ? (
-                    <button
-                        onClick={generateActivityAttempt}
-                        disabled={!initialized}
-                        style={{ marginLeft: "20px" }}
-                    >
-                        New attempt
-                    </button>
-                ) : null}
             </div>
 
             <div
