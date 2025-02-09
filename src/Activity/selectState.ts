@@ -307,6 +307,10 @@ export function generateNewSelectAttempt({
     const numToSelect = source.numToSelect;
     const numChildren = state.latestChildStates.length;
 
+    if (numChildren === 0) {
+        return { finalQuestionCounter: initialQuestionCounter, state };
+    }
+
     // If the child's variants have already been broken up into slices via `initializeSelectState`, above,
     // this calculation based on activity state will take that into account.
     // In particular, if `numToSelect` > 1, each child should report just one variant.
@@ -324,7 +328,7 @@ export function generateNewSelectAttempt({
     if (numToSelect > totalNumOptions) {
         if (source.selectByVariant) {
             throw Error(
-                "The specified number to select of a select activity is larger than the number of available variants.",
+                `For a select activity, "number to select" is ${numToSelect.toString()}, which is larger than the number of available variants (${totalNumOptions.toString()}).`,
             );
         } else {
             const totalNumChildVariants = numVariantsPerChild.reduce(
@@ -332,11 +336,11 @@ export function generateNewSelectAttempt({
             );
             if (numToSelect > totalNumChildVariants) {
                 throw Error(
-                    "The specified number to select of a select activity is larger than the number of available activities.",
+                    `For a select activity, "number to select" is ${numToSelect.toString()}, which is larger than the number of available activities (${totalNumOptions.toString()}).`,
                 );
             } else {
                 throw Error(
-                    'The specified number to select of a select activity is larger than the number of available activities. Turning on "select by variant" will add enough options for the select activity to function.',
+                    `For a select activity, "number to select" is ${numToSelect.toString()}, which is larger than the number of available activities (${totalNumOptions.toString()}). (Turning on "select by variant" will add enough options for the select activity to function.)`,
                 );
             }
         }

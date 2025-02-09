@@ -1,0 +1,8 @@
+{
+    "title": "My select",
+    "id": "seq",
+    "type": "select",
+    "selectByVariant": true,
+    "numToSelect": 1,
+    "items": []
+}

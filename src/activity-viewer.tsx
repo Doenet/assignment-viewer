@@ -157,23 +157,28 @@ type ErrorProps = {
     children?: ReactNode;
 };
 
-type ErrorState = { hasError: boolean };
+type ErrorState = { hasError: boolean; message: string };
 
 class ErrorBoundary extends Component<ErrorProps, ErrorState> {
     constructor(props: ErrorProps) {
         super(props);
-        this.state = { hasError: false };
+        this.state = { hasError: false, message: "" };
     }
 
-    static getDerivedStateFromError(_: Error): ErrorState {
-        return { hasError: true };
+    static getDerivedStateFromError(error: Error): ErrorState {
+        return { hasError: true, message: error.message };
     }
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error("Uncaught error", error, errorInfo);
     }
     render() {
         if (this.state.hasError) {
-            return <h1>Sorry, something went wrong</h1>;
+            return (
+                <div style={{ marginLeft: "20px" }}>
+                    <h1>An error occurred</h1>
+                    <p>{this.state.message}</p>
+                </div>
+            );
         }
         return this.props.children;
     }
