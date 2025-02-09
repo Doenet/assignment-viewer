@@ -1,6 +1,6 @@
 {
     "name": "@doenet/assignment-viewer",
-    "private": true,
+    "private": false,
     "description": "View assignments from questions written in DoenetML",
     "version": "0.1.0-alpha1",
     "license": "AGPL-3.0-or-later",

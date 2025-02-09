@@ -435,7 +435,18 @@ export function getItemSequence(state: ActivityState): string[] {
     } else {
         const numAttempts = state.attempts.length;
         if (numAttempts === 0) {
-            return [state.id];
+            if (state.latestChildStates.length === 0) {
+                return [];
+            } else {
+                const prelimResult = state.latestChildStates.flatMap((a) =>
+                    getItemSequence(a),
+                );
+                if (state.type === "sequence") {
+                    return prelimResult;
+                } else {
+                    return prelimResult.slice(0, state.source.numToSelect);
+                }
+            }
         }
         return state.attempts[numAttempts - 1].activities.flatMap((a) =>
             getItemSequence(a),

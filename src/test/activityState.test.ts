@@ -17,6 +17,10 @@ import invalidId from "./testSources/invalidId.json";
 import selMult2docs from "./testSources/selMult2docs.json";
 import selMult1doc from "./testSources/selMult1doc.json";
 import selMult1docNoVariant from "./testSources/selMult1docNoVariant.json";
+import sel0 from "./testSources/sel0.json";
+import seq0 from "./testSources/seq0.json";
+import seq2Sel0 from "./testSources/seq2Sel0.json";
+import seqSel0Sel from "./testSources/seqSel0Sel.json";
 
 import { SelectSource, SelectState } from "../Activity/selectState";
 import { SequenceSource, SequenceState } from "../Activity/sequenceState";
@@ -448,6 +452,94 @@ describe("Activity state tests", () => {
                 docFromFirstSelect,
             ]);
         }
+    });
+
+    it("get item sequence, select from 0", () => {
+        const source = sel0 as SelectSource;
+        const initialState = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        }) as SelectState;
+
+        const { state } = generateNewActivityAttempt({
+            state: initialState,
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            questionCounts,
+            parentAttempt: 1,
+        });
+
+        expect(getItemSequence(state)).eqls([]);
+    });
+
+    it("get item sequence, sequence of 0", () => {
+        const source = seq0 as SequenceSource;
+        const initialState = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        }) as SequenceState;
+
+        const { state } = generateNewActivityAttempt({
+            state: initialState,
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            questionCounts,
+            parentAttempt: 1,
+        });
+
+        expect(getItemSequence(state)).eqls([]);
+    });
+
+    it("get item sequence, sequence of two selects from 0", () => {
+        const source = seq2Sel0 as SequenceSource;
+        const initialState = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        }) as SequenceState;
+
+        const { state } = generateNewActivityAttempt({
+            state: initialState,
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            questionCounts,
+            parentAttempt: 1,
+        });
+
+        expect(getItemSequence(state)).eqls([]);
+    });
+
+    it("get item sequence, sequence of select from 0 and select", () => {
+        const source = seqSel0Sel as SequenceSource;
+        const initialState = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        }) as SequenceState;
+
+        const { state: newState } = generateNewActivityAttempt({
+            state: initialState,
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            questionCounts,
+            parentAttempt: 1,
+        });
+
+        const state = newState as SequenceState;
+
+        const secondSelectState = state.latestChildStates[1] as SelectState;
+
+        const docFromSecondSelect =
+            secondSelectState.attempts[0].activities[0].id;
+        expect(["doc3", "doc2", "doc1"].includes(docFromSecondSelect)).eq(true);
+
+        expect(getItemSequence(state)).eqls([docFromSecondSelect]);
     });
 
     it("error when select multiple from a single doc with selectByVariant=false", () => {

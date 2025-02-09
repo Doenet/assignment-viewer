@@ -527,7 +527,7 @@ export function Viewer({
                             borderRadius: "10px",
                             padding: "5px 20px",
                         }}
-                        disabled={currentItemIdx === 0}
+                        disabled={currentItemIdx <= 0}
                     >
                         Previous
                     </button>
@@ -540,14 +540,14 @@ export function Viewer({
                             borderRadius: "10px",
                             padding: "5px 20px",
                         }}
-                        disabled={currentItemIdx === numItems - 1}
+                        disabled={currentItemIdx >= numItems - 1}
                     >
                         Next
                     </button>
                     {activityLevelAttempts ? (
                         <button
                             onClick={generateActivityAttempt}
-                            disabled={!initialized}
+                            disabled={!initialized || numItems === 0}
                             style={{
                                 marginLeft: "30px",
                                 backgroundColor: "lightgray",
@@ -562,7 +562,7 @@ export function Viewer({
             </div>
 
             <div
-                hidden={itemsRendered.length > 0}
+                hidden={itemsRendered.length > 0 || numItems === 0}
                 style={{ marginLeft: "20px", marginTop: "20px" }}
             >
                 Initializing...

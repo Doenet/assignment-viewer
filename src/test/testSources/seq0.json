@@ -1,0 +1,7 @@
+{
+    "title": "My sequence",
+    "id": "seq",
+    "type": "sequence",
+    "shuffle": false,
+    "items": []
+}
