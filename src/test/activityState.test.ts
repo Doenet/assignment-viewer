@@ -4,9 +4,9 @@ import {
     addSourceToActivityState,
     calcNumVariants,
     calcNumVariantsFromState,
+    gatherDocumentStructure,
     generateNewActivityAttempt,
     getItemSequence,
-    getUninitializedActivityState,
     initializeActivityState,
     pruneActivityStateForSave,
     validateIds,
@@ -25,60 +25,51 @@ import seqSel0Sel from "./testSources/seqSel0Sel.json";
 import { SelectSource, SelectState } from "../Activity/selectState";
 import { SequenceSource, SequenceState } from "../Activity/sequenceState";
 
-const numActivityVariants = {
-    doc1: 1,
-    doc2: 2,
-    doc3: 3,
-    doc4: 4,
-    doc5: 5,
-};
-
-const questionCounts = {
-    doc1: 1,
-    doc2: 1,
-    doc3: 1,
-    doc4: 1,
-    doc5: 1,
-};
-
 describe("Activity state tests", () => {
     it("prune and add source back to uninitialized state", () => {
         const source = seq2sel as SequenceSource;
-        const state = getUninitializedActivityState(source);
+
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
+        console.log({ numActivityVariants });
+
+        const state = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        }) as SelectState;
 
         const expectedState = {
             type: "sequence",
             id: "seq",
             parentId: null,
             source: source,
-            initialVariant: 0,
+            initialVariant: 1,
             creditAchieved: 0,
             attempts: [],
             latestChildStates: [
                 {
                     type: "select",
                     id: "sel1",
-                    parentId: null,
+                    parentId: "seq",
                     source: source.items[0],
-                    initialVariant: 0,
                     creditAchieved: 0,
                     attempts: [],
                     latestChildStates: [
                         {
                             type: "singleDoc",
                             id: "doc4",
-                            parentId: null,
+                            parentId: "sel1",
                             source: (source.items[0] as SelectSource).items[0],
-                            initialVariant: 0,
                             creditAchieved: 0,
                             attempts: [],
                         },
                         {
                             type: "singleDoc",
                             id: "doc5",
-                            parentId: null,
+                            parentId: "sel1",
                             source: (source.items[0] as SelectSource).items[1],
-                            initialVariant: 0,
                             creditAchieved: 0,
                             attempts: [],
                         },
@@ -87,36 +78,32 @@ describe("Activity state tests", () => {
                 {
                     type: "select",
                     id: "sel2",
-                    parentId: null,
+                    parentId: "seq",
                     source: source.items[1],
-                    initialVariant: 0,
                     creditAchieved: 0,
                     attempts: [],
                     latestChildStates: [
                         {
                             type: "singleDoc",
                             id: "doc3",
-                            parentId: null,
+                            parentId: "sel2",
                             source: (source.items[1] as SelectSource).items[0],
-                            initialVariant: 0,
                             creditAchieved: 0,
                             attempts: [],
                         },
                         {
                             type: "singleDoc",
                             id: "doc2",
-                            parentId: null,
+                            parentId: "sel2",
                             source: (source.items[1] as SelectSource).items[1],
-                            initialVariant: 0,
                             creditAchieved: 0,
                             attempts: [],
                         },
                         {
                             type: "singleDoc",
                             id: "doc1",
-                            parentId: null,
+                            parentId: "sel2",
                             source: (source.items[1] as SelectSource).items[2],
-                            initialVariant: 0,
                             creditAchieved: 0,
                             attempts: [],
                         },
@@ -125,7 +112,7 @@ describe("Activity state tests", () => {
             ],
         };
 
-        expect(state).eqls(expectedState);
+        expect(state).toMatchObject(expectedState);
 
         const prunedState = pruneActivityStateForSave(state);
 
@@ -133,31 +120,28 @@ describe("Activity state tests", () => {
             type: "sequence",
             id: "seq",
             parentId: null,
-            initialVariant: 0,
+            initialVariant: 1,
             creditAchieved: 0,
             attempts: [],
             latestChildStates: [
                 {
                     type: "select",
                     id: "sel1",
-                    parentId: null,
-                    initialVariant: 0,
+                    parentId: "seq",
                     creditAchieved: 0,
                     attempts: [],
                     latestChildStates: [
                         {
                             type: "singleDoc",
                             id: "doc4",
-                            parentId: null,
-                            initialVariant: 0,
+                            parentId: "sel1",
                             creditAchieved: 0,
                             attempts: [],
                         },
                         {
                             type: "singleDoc",
                             id: "doc5",
-                            parentId: null,
-                            initialVariant: 0,
+                            parentId: "sel1",
                             creditAchieved: 0,
                             attempts: [],
                         },
@@ -166,32 +150,28 @@ describe("Activity state tests", () => {
                 {
                     type: "select",
                     id: "sel2",
-                    parentId: null,
-                    initialVariant: 0,
+                    parentId: "seq",
                     creditAchieved: 0,
                     attempts: [],
                     latestChildStates: [
                         {
                             type: "singleDoc",
                             id: "doc3",
-                            parentId: null,
-                            initialVariant: 0,
+                            parentId: "sel2",
                             creditAchieved: 0,
                             attempts: [],
                         },
                         {
                             type: "singleDoc",
                             id: "doc2",
-                            parentId: null,
-                            initialVariant: 0,
+                            parentId: "sel2",
                             creditAchieved: 0,
                             attempts: [],
                         },
                         {
                             type: "singleDoc",
                             id: "doc1",
-                            parentId: null,
-                            initialVariant: 0,
+                            parentId: "sel2",
                             creditAchieved: 0,
                             attempts: [],
                         },
@@ -200,14 +180,30 @@ describe("Activity state tests", () => {
             ],
         };
 
-        expect(prunedState).eqls(expectedPrunedState);
+        expect(prunedState).not.toMatchObject(expectedState);
+        expect(prunedState).toMatchObject(expectedPrunedState);
+
+        if (prunedState.type !== "sequence") {
+            throw Error("nope");
+        }
+
+        expect("source" in prunedState).eq(false);
+        for (const child of prunedState.latestChildStates) {
+            if (child.type !== "select") {
+                throw Error("nope");
+            }
+            expect("source" in child).eq(false);
+            for (const grandChild of child.latestChildStates) {
+                expect("source" in grandChild).eq(false);
+            }
+        }
 
         const stateWithAddedSource = addSourceToActivityState(
             prunedState,
             source,
         );
 
-        expect(stateWithAddedSource).eqls(expectedState);
+        expect(stateWithAddedSource).toMatchObject(expectedState);
     });
 
     it("initialize state of select-multiple selects", () => {
@@ -217,8 +213,10 @@ describe("Activity state tests", () => {
         const source = selMult1doc as SelectSource;
         const docSource = source.items[0];
 
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
         const state = initializeActivityState({
-            source: source,
+            source,
             variant: 1,
             parentId: null,
             numActivityVariants,
@@ -305,6 +303,8 @@ describe("Activity state tests", () => {
     it("calc num variants", () => {
         const source = seq2sel as SequenceSource;
 
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
         const numVarSel1 = numActivityVariants.doc4 + numActivityVariants.doc5;
         const numVarSel2 =
             numActivityVariants.doc3 +
@@ -334,6 +334,9 @@ describe("Activity state tests", () => {
     });
 
     it("calc num variants from state", () => {
+        const source = seq2sel as SequenceSource;
+        let { numActivityVariants } = gatherDocumentStructure(source);
+
         const numVarSel1 = numActivityVariants.doc4 + numActivityVariants.doc5;
         const numVarSel2 =
             numActivityVariants.doc3 +
@@ -341,7 +344,6 @@ describe("Activity state tests", () => {
             numActivityVariants.doc1;
         const numVarSeq = Math.min(numVarSel1, numVarSel2);
 
-        const source = seq2sel as SequenceSource;
         const state = initializeActivityState({
             source,
             variant: 1,
@@ -366,6 +368,8 @@ describe("Activity state tests", () => {
         );
 
         const source2 = selMult2docs as SelectSource;
+        ({ numActivityVariants } = gatherDocumentStructure(source2));
+
         const state2 = initializeActivityState({
             source: source2,
             variant: 1,
@@ -414,6 +418,9 @@ describe("Activity state tests", () => {
 
     it("get item sequence", () => {
         const source = seq2sel as SequenceSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
+
         const initialState = initializeActivityState({
             source,
             variant: 1,
@@ -456,6 +463,9 @@ describe("Activity state tests", () => {
 
     it("get item sequence, select from 0", () => {
         const source = sel0 as SelectSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
+
         const initialState = initializeActivityState({
             source,
             variant: 1,
@@ -476,6 +486,9 @@ describe("Activity state tests", () => {
 
     it("get item sequence, sequence of 0", () => {
         const source = seq0 as SequenceSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
+
         const initialState = initializeActivityState({
             source,
             variant: 1,
@@ -496,6 +509,9 @@ describe("Activity state tests", () => {
 
     it("get item sequence, sequence of two selects from 0", () => {
         const source = seq2Sel0 as SequenceSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
+
         const initialState = initializeActivityState({
             source,
             variant: 1,
@@ -516,6 +532,9 @@ describe("Activity state tests", () => {
 
     it("get item sequence, sequence of select from 0 and select", () => {
         const source = seqSel0Sel as SequenceSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
+
         const initialState = initializeActivityState({
             source,
             variant: 1,
@@ -544,6 +563,8 @@ describe("Activity state tests", () => {
 
     it("error when select multiple from a single doc with selectByVariant=false", () => {
         const source = selMult1docNoVariant as SelectSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
 
         const initialState = initializeActivityState({
             source,

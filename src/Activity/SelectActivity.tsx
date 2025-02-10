@@ -16,7 +16,6 @@ export function SelectActivity({
     showAnswerTitles = false,
     state,
     reportScoreAndStateCallback,
-    documentStructureCallback,
     checkRender,
     checkHidden,
     allowItemAttemptButtons = false,
@@ -36,7 +35,6 @@ export function SelectActivity({
     showAnswerTitles?: boolean;
     state: SelectState;
     reportScoreAndStateCallback: (args: unknown) => void;
-    documentStructureCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
     allowItemAttemptButtons?: boolean;
@@ -72,7 +70,6 @@ export function SelectActivity({
                     darkMode={darkMode}
                     showAnswerTitles={showAnswerTitles}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    documentStructureCallback={documentStructureCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
@@ -86,31 +83,6 @@ export function SelectActivity({
         }
     }
 
-    const unselectedActivities = state.latestChildStates
-        .filter((activity) => !selectedIds.includes(activity.id))
-        .map((activity) => (
-            <Activity
-                key={activity.id}
-                state={activity}
-                flags={flags}
-                baseId={baseId}
-                forceDisable={forceDisable}
-                forceShowCorrectness={forceShowCorrectness}
-                forceShowSolution={forceShowSolution}
-                forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                linkSettings={linkSettings}
-                darkMode={darkMode}
-                showAnswerTitles={showAnswerTitles}
-                reportScoreAndStateCallback={reportScoreAndStateCallback}
-                documentStructureCallback={documentStructureCallback}
-                checkRender={() => false}
-                checkHidden={checkHidden}
-                hasRenderedCallback={hasRenderedCallback}
-                reportVisibility={reportVisibility}
-                reportVisibilityCallback={reportVisibilityCallback}
-            />
-        ));
-
     return (
         <div
             key={
@@ -123,7 +95,6 @@ export function SelectActivity({
             hidden={!checkRender(state)}
         >
             <div>{selectedActivities}</div>
-            <div hidden={true}>{unselectedActivities}</div>
         </div>
     );
 }

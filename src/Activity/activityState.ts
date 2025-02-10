@@ -111,9 +111,8 @@ export function isExportedActivityState(
 /**
  * Initialize activity state from `source` so that it is ready to generate attempts.
  *
- * Populates all the activities through the `latestChildStates` field,
- * similar to the behavior of `getUninitializedActivityState`,
- * only this time it takes advantage of `numActivityVariants`,
+ * Populates all the activities through the `latestChildStates` field.
+ * Result is based on `numActivityVariants`,
  * which stores of the number of variants calculated for each single doc activity.
  *
  * Using the provided `variant` to create a seed, an initial variant is randomly selected for each activity.
@@ -501,59 +500,6 @@ export function calcNumVariantsFromState(
     return numVariants;
 }
 
-/**
- * Create an uninitialized activity state (with no attempts or variants) based on `source`.
- *
- * Used to populate all activities through the `latestChildStates fields,
- * which will add all activities to the DOM when the activity from this state is rendered,
- * initializing the activities and calculating their document structure, including number of variants.
- */
-export function getUninitializedActivityState(
-    source: ActivitySource,
-): ActivityState {
-    switch (source.type) {
-        case "singleDoc": {
-            return {
-                type: "singleDoc",
-                id: source.id,
-                parentId: null,
-                source: source,
-                initialVariant: 0,
-                creditAchieved: 0,
-                attempts: [],
-            };
-        }
-        case "select": {
-            return {
-                type: "select",
-                id: source.id,
-                parentId: null,
-                source: source,
-                initialVariant: 0,
-                creditAchieved: 0,
-                attempts: [],
-                latestChildStates: source.items.map(
-                    getUninitializedActivityState,
-                ),
-            };
-        }
-        case "sequence": {
-            return {
-                type: "sequence",
-                id: source.id,
-                parentId: null,
-                source: source,
-                initialVariant: 0,
-                creditAchieved: 0,
-                attempts: [],
-                latestChildStates: source.items.map(
-                    getUninitializedActivityState,
-                ),
-            };
-        }
-    }
-}
-
 /** Validate the ids in `source` to make sure no id contains a `|` and all ids are unique. */
 export function validateIds(source: ActivitySource): string[] {
     if (source.id.includes("|")) {
@@ -572,6 +518,43 @@ export function validateIds(source: ActivitySource): string[] {
     }
 
     return idsFound;
+}
+
+/**
+ * Given that the source stores the number of variants and
+ * base level component counts for each single doc,
+ * recurse though all activities to to form:
+ * - `numActivityVariants`: the number of variants of each single doc activity,
+ *    keyed by id
+ * - `questionCounts`: the total number of base question/problem/exercise tags
+ *    of each single doc activity, keyed by id
+ */
+export function gatherDocumentStructure(source: ActivitySource): {
+    numActivityVariants: ActivityVariantRecord;
+    questionCounts: QuestionCountRecord;
+} {
+    if (source.type === "singleDoc") {
+        return {
+            numActivityVariants: { [source.id]: source.numVariants ?? 1 },
+            questionCounts: {
+                [source.id]: source.baseLevelComponentCounts
+                    ? (source.baseLevelComponentCounts.question ?? 0) +
+                      (source.baseLevelComponentCounts.problem ?? 0) +
+                      (source.baseLevelComponentCounts.exercise ?? 0)
+                    : 1,
+            },
+        };
+    } else {
+        const numActivityVariants: ActivityVariantRecord = {};
+        const questionCounts: QuestionCountRecord = {};
+        for (const item of source.items) {
+            const res = gatherDocumentStructure(item);
+            Object.assign(numActivityVariants, res.numActivityVariants);
+            Object.assign(questionCounts, res.questionCounts);
+        }
+
+        return { numActivityVariants, questionCounts };
+    }
 }
 
 /** Validate `state` as an instance of `exportedActivityState`,

@@ -6,26 +6,17 @@ import {
     gatherStates,
     generateNewActivityAttempt,
     generateNewSubActivityAttempt,
-    getUninitializedActivityState,
     initializeActivityState,
     propagateStateChangeToRoot,
     pruneActivityStateForSave,
 } from "./activityState";
 import hash from "object-hash";
 
-type ResetStateAction = {
-    type: "reset";
-    source: ActivitySource;
-};
-
 type InitializeStateAction = {
     type: "initialize";
+    source: ActivitySource;
     variantIndex: number;
     numActivityVariants: ActivityVariantRecord;
-    initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
-    allowSaveState: boolean;
-    baseId: string;
 };
 
 type SetStateAction = {
@@ -55,7 +46,6 @@ type UpdateSingleDocStateAction = {
 };
 
 export type ActivityStateAction =
-    | ResetStateAction
     | InitializeStateAction
     | SetStateAction
     | GenerateActivityAttemptAction
@@ -66,36 +56,13 @@ export function activityStateReducer(
     action: ActivityStateAction,
 ): ActivityState {
     switch (action.type) {
-        case "reset": {
-            return getUninitializedActivityState(action.source);
-        }
         case "initialize": {
-            const initialState = initializeActivityState({
+            return initializeActivityState({
                 source: state.source,
                 variant: action.variantIndex,
                 parentId: null,
                 numActivityVariants: action.numActivityVariants,
             });
-
-            const { state: newActivityState } = generateNewActivityAttempt({
-                state: initialState,
-                numActivityVariants: action.numActivityVariants,
-                initialQuestionCounter: action.initialQuestionCounter,
-                questionCounts: action.questionCounts,
-                parentAttempt: 1,
-            });
-
-            if (action.allowSaveState) {
-                const scoreByItem = extractActivityItemCredit(newActivityState);
-                window.postMessage({
-                    score: newActivityState.creditAchieved,
-                    scoreByItem,
-                    subject: "SPLICE.reportScoreByItem",
-                    activityId: action.baseId,
-                });
-            }
-
-            return newActivityState;
         }
         case "set": {
             const scoreByItem = extractActivityItemCredit(action.state);
@@ -111,7 +78,11 @@ export function activityStateReducer(
         }
         case "generateNewActivityAttempt": {
             let newActivityState: ActivityState;
+            let firstAttempt = false;
             if (!action.id || action.id === state.id) {
+                if (state.attempts.length === 0) {
+                    firstAttempt = true;
+                }
                 ({ state: newActivityState } = generateNewActivityAttempt({
                     state,
                     numActivityVariants: action.numActivityVariants,
@@ -131,21 +102,33 @@ export function activityStateReducer(
 
             if (action.allowSaveState) {
                 const scoreByItem = extractActivityItemCredit(newActivityState);
-                const sourceHash = hash(newActivityState.source);
 
-                window.postMessage({
-                    state: {
-                        state: pruneActivityStateForSave(
-                            newActivityState,
-                            false,
-                        ),
-                        sourceHash,
-                    },
-                    score: newActivityState.creditAchieved,
-                    scoreByItem,
-                    subject: "SPLICE.reportScoreAndState",
-                    activityId: action.baseId,
-                });
+                if (firstAttempt) {
+                    // If first attempt, no need to save state.
+                    // Just send score by item to indicate how many items are in the activity
+                    window.postMessage({
+                        score: newActivityState.creditAchieved,
+                        scoreByItem,
+                        subject: "SPLICE.reportScoreByItem",
+                        activityId: action.baseId,
+                    });
+                } else {
+                    const sourceHash = hash(newActivityState.source);
+
+                    window.postMessage({
+                        state: {
+                            state: pruneActivityStateForSave(
+                                newActivityState,
+                                false,
+                            ),
+                            sourceHash,
+                        },
+                        score: newActivityState.creditAchieved,
+                        scoreByItem,
+                        subject: "SPLICE.reportScoreAndState",
+                        activityId: action.baseId,
+                    });
+                }
             }
 
             return newActivityState;

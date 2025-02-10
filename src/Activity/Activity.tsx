@@ -16,7 +16,6 @@ export function Activity({
     showAnswerTitles = false,
     state,
     reportScoreAndStateCallback,
-    documentStructureCallback,
     checkRender,
     checkHidden,
     allowItemAttemptButtons = false,
@@ -36,7 +35,6 @@ export function Activity({
     showAnswerTitles?: boolean;
     state: ActivityState;
     reportScoreAndStateCallback: (args: unknown) => void;
-    documentStructureCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
     allowItemAttemptButtons?: boolean;
@@ -63,7 +61,6 @@ export function Activity({
                     showAnswerTitles={showAnswerTitles}
                     state={state}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    documentStructureCallback={documentStructureCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
@@ -88,7 +85,6 @@ export function Activity({
                     showAnswerTitles={showAnswerTitles}
                     state={state}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    documentStructureCallback={documentStructureCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
@@ -113,7 +109,6 @@ export function Activity({
                     showAnswerTitles={showAnswerTitles}
                     state={state}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    documentStructureCallback={documentStructureCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}
