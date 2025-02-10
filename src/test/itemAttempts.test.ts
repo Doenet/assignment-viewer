@@ -8,6 +8,7 @@ import selMult4docsNoVariant from "./testSources/selMult4docsNoVariant.json";
 
 import { SequenceSource, SequenceState } from "../Activity/sequenceState";
 import {
+    gatherDocumentStructure,
     generateNewActivityAttempt,
     generateNewSubActivityAttempt,
     initializeActivityState,
@@ -18,29 +19,11 @@ import {
 } from "../Activity/singleDocState";
 import { SelectSource, SelectState } from "../Activity/selectState";
 
-const numActivityVariants = {
-    doc1: 1,
-    doc2: 2,
-    doc3: 3,
-    doc4: 4,
-    doc5: 5,
-    doc1a: 1,
-    doc3a: 3,
-};
-
-const questionCounts = {
-    doc1: 1,
-    doc2: 1,
-    doc3: 1,
-    doc4: 1,
-    doc5: 1,
-    doc1a: 1,
-    doc3a: 1,
-};
-
 describe("Test of generating new item attempts", () => {
     it("sequence", () => {
         const source = seqShuf as SequenceSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][][] = [];
 
@@ -125,6 +108,8 @@ describe("Test of generating new item attempts", () => {
 
     it("select multiple from a single doc", () => {
         const source = selMult1doc as SelectSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][] = [];
 
@@ -227,6 +212,8 @@ describe("Test of generating new item attempts", () => {
 
     it("select multiple from two docs", () => {
         const source = selMult2docs as SelectSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
 
         const allQuestionIds: string[][] = [];
 
@@ -333,6 +320,8 @@ describe("Test of generating new item attempts", () => {
 
     it("sequence with selects", () => {
         const source = seq2sel as SequenceSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
 
         const allQuestionIds: string[][][] = [];
 
@@ -430,6 +419,8 @@ describe("Test of generating new item attempts", () => {
 
     it("sequence with selects, combine item and activity attempts", () => {
         const source = seq2sel as SequenceSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
 
         const allQuestionIds: string[][][] = [];
 
@@ -538,6 +529,8 @@ describe("Test of generating new item attempts", () => {
 
     it("select multiple from four docs, selectByVariant=false", () => {
         const source = selMult4docsNoVariant as SelectSource;
+        const { numActivityVariants, questionCounts } =
+            gatherDocumentStructure(source);
 
         const allQuestionIds: string[][] = [];
         const allQuestionVariants: number[][][] = [];

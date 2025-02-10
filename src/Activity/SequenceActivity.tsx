@@ -16,7 +16,6 @@ export function SequenceActivity({
     showAnswerTitles = false,
     state,
     reportScoreAndStateCallback,
-    documentStructureCallback,
     checkRender,
     checkHidden,
     allowItemAttemptButtons = false,
@@ -36,7 +35,6 @@ export function SequenceActivity({
     showAnswerTitles?: boolean;
     state: SequenceState;
     reportScoreAndStateCallback: (args: unknown) => void;
-    documentStructureCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
     allowItemAttemptButtons?: boolean;
@@ -71,35 +69,6 @@ export function SequenceActivity({
                     darkMode={darkMode}
                     showAnswerTitles={showAnswerTitles}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    documentStructureCallback={documentStructureCallback}
-                    checkRender={checkRender}
-                    checkHidden={checkHidden}
-                    allowItemAttemptButtons={allowItemAttemptButtons}
-                    generateNewItemAttempt={generateNewItemAttempt}
-                    hasRenderedCallback={hasRenderedCallback}
-                    reportVisibility={reportVisibility}
-                    reportVisibilityCallback={reportVisibilityCallback}
-                />,
-            );
-        }
-    } else {
-        // if don't have latest attempt, just create from the data we have
-        for (const activity of state.latestChildStates) {
-            activityList.push(
-                <Activity
-                    key={activity.id}
-                    state={activity}
-                    flags={flags}
-                    baseId={baseId}
-                    forceDisable={forceDisable}
-                    forceShowCorrectness={forceShowCorrectness}
-                    forceShowSolution={forceShowSolution}
-                    forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                    linkSettings={linkSettings}
-                    darkMode={darkMode}
-                    showAnswerTitles={showAnswerTitles}
-                    reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    documentStructureCallback={documentStructureCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
                     allowItemAttemptButtons={allowItemAttemptButtons}

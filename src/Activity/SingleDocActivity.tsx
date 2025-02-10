@@ -16,7 +16,6 @@ export function SingleDocActivity({
     showAnswerTitles = false,
     state,
     reportScoreAndStateCallback,
-    documentStructureCallback,
     checkRender,
     checkHidden,
     allowItemAttemptButtons = false,
@@ -36,7 +35,6 @@ export function SingleDocActivity({
     showAnswerTitles?: boolean;
     state: SingleDocState;
     reportScoreAndStateCallback: (args: unknown) => void;
-    documentStructureCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
     allowItemAttemptButtons?: boolean;
@@ -128,9 +126,6 @@ export function SingleDocActivity({
     return (
         <div ref={ref}>
             <div hidden={!render || hidden} style={{ minHeight: "100px" }}>
-                {/* <div style={{ marginLeft: "20px" }} hidden={rendered}>
-                    Initializing...
-                </div> */}
                 <DoenetViewer
                     key={state.attempts.length}
                     doenetML={source.doenetML}
@@ -152,9 +147,6 @@ export function SingleDocActivity({
                     initialState={initialDoenetState}
                     initializeCounters={initialCounters}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    documentStructureCallback={(args: unknown) => {
-                        documentStructureCallback(args);
-                    }}
                     initializedCallback={() => {
                         setRendered(true);
                         hasRenderedCallback(state.id);

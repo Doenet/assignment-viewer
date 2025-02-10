@@ -1,27 +1,27 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { DoenetMLFlags, isSingleDocReportStateMessage } from "../types";
 import {
-    ActivityVariantRecord,
-    DoenetMLFlags,
-    isDocumentStructureData,
-    isSingleDocReportStateMessage,
-    QuestionCountRecord,
-} from "../types";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 import { nanoid } from "nanoid";
 import { MdError } from "react-icons/md";
 import {
     ActivitySource,
     ActivityState,
     addSourceToActivityState,
-    getUninitializedActivityState,
     getItemSequence,
     isActivityState,
     validateIds,
     isExportedActivityState,
     validateStateAndSource,
+    gatherDocumentStructure,
+    initializeActivityState,
 } from "../Activity/activityState";
 import { Activity } from "../Activity/Activity";
 import { activityStateReducer } from "../Activity/activityStateReducer";
@@ -71,76 +71,31 @@ export function Viewer({
     showAnswerTitles?: boolean;
     showTitle?: boolean;
 }) {
-    const numSourceDocs = useMemo(() => getNumSourceDocs(source), [source]);
-
     const [errMsg, setErrMsg] = useState<string | null>(null);
 
-    const [numActivityVariants, setNumActivityVariants] =
-        useState<ActivityVariantRecord>({});
+    const initialPass = useRef(true);
 
-    const [questionCounts, setQuestionCounts] = useState<QuestionCountRecord>(
-        {},
-    );
-
-    const [initialized, setInitialized] = useState(false);
-    const [needNewAssignmentState, setNeedNewAssignmentState] = useState(false);
-
-    useEffect(() => {
-        setInitialized(false);
-        setNumActivityVariants({});
-        setQuestionCounts({});
-    }, [activityId, userId, source]);
-
-    useEffect(() => {
+    const { numActivityVariants, questionCounts } = useMemo(() => {
         try {
             validateIds(source);
+            return gatherDocumentStructure(source);
         } catch (e) {
             const message = e instanceof Error ? e.message : "";
             setErrMsg(`Error in activity source: ${message}`);
+            return { numActivityVariants: {}, questionCounts: {} };
         }
     }, [source]);
 
     const [activityState, activityStateDispatch] = useReducer(
         activityStateReducer,
-        source,
-        getUninitializedActivityState,
+        {
+            source,
+            variant: initialVariantIndex,
+            parentId: null,
+            numActivityVariants,
+        },
+        initializeActivityState,
     );
-
-    useEffect(() => {
-        if (
-            !initialized &&
-            Object.keys(numActivityVariants).length === numSourceDocs &&
-            Object.keys(questionCounts).length === numSourceDocs
-        ) {
-            if (needNewAssignmentState) {
-                try {
-                    activityStateDispatch({
-                        type: "initialize",
-                        variantIndex: initialVariantIndex,
-                        numActivityVariants,
-                        initialQuestionCounter: 1,
-                        questionCounts,
-                        allowSaveState: flags.allowSaveState,
-                        baseId: activityId,
-                    });
-                    setNeedNewAssignmentState(false);
-                } catch (e) {
-                    const message = e instanceof Error ? e.message : "";
-                    setErrMsg(`Error in activity: ${message}`);
-                }
-            }
-            setInitialized(true);
-        }
-    }, [
-        numActivityVariants,
-        questionCounts,
-        numSourceDocs,
-        flags.allowSaveState,
-        initialized,
-        activityId,
-        needNewAssignmentState,
-        initialVariantIndex,
-    ]);
 
     const itemSequence = getItemSequence(activityState);
     const numItems = itemSequence.length;
@@ -168,38 +123,38 @@ export function Viewer({
 
     const checkRender = useCallback(
         (state: ActivityState) => {
-            if (!initialized) {
-                return false;
-            }
             if (state.type === "singleDoc") {
                 return itemsToRender.includes(state.id);
             } else {
                 return true;
             }
         },
-        [initialized, itemsToRender],
+        [itemsToRender],
     );
 
     const checkHidden = useCallback(
         (state: ActivityState) => {
-            if (!initialized) {
-                return true;
-            }
             if (state.type === "singleDoc") {
                 return paginate && currentItemId !== state.id;
             } else {
                 return false;
             }
         },
-        [initialized, currentItemId, paginate],
+        [currentItemId, paginate],
     );
 
     useEffect(() => {
-        activityStateDispatch({
-            type: "reset",
-            source,
-        });
-    }, [activityId, source]);
+        if (initialPass.current) {
+            initialPass.current = false;
+        } else {
+            activityStateDispatch({
+                type: "initialize",
+                source,
+                variantIndex: initialVariantIndex,
+                numActivityVariants,
+            });
+        }
+    }, [activityId, source, initialVariantIndex, numActivityVariants]);
 
     useEffect(() => {
         const listenersAdded: ((event: MessageEvent) => void)[] = [];
@@ -284,6 +239,22 @@ export function Viewer({
             });
         }
 
+        function getNewActivityState() {
+            try {
+                activityStateDispatch({
+                    type: "generateNewActivityAttempt",
+                    numActivityVariants,
+                    initialQuestionCounter: 1,
+                    questionCounts,
+                    allowSaveState: flags.allowSaveState,
+                    baseId: activityId,
+                });
+            } catch (e) {
+                const message = e instanceof Error ? e.message : "";
+                setErrMsg(`Error in activity: ${message}`);
+            }
+        }
+
         if (flags.allowLoadState) {
             loadState()
                 .then((state) => {
@@ -295,7 +266,7 @@ export function Viewer({
                             baseId: activityId,
                         });
                     } else if (state === null) {
-                        setNeedNewAssignmentState(true);
+                        getNewActivityState();
                     } else {
                         setErrMsg(`Invalid state returned`);
                     }
@@ -306,7 +277,7 @@ export function Viewer({
                     );
                 });
         } else {
-            setNeedNewAssignmentState(true);
+            getNewActivityState();
         }
 
         return () => {
@@ -324,6 +295,8 @@ export function Viewer({
         activityId,
         userId,
         source,
+        numActivityVariants,
+        questionCounts,
     ]);
 
     function clickNext() {
@@ -331,33 +304,6 @@ export function Viewer({
     }
     function clickPrevious() {
         setCurrentItemIdx((was) => Math.max(0, was - 1));
-    }
-
-    function documentStructureCallback(data: unknown) {
-        if (isDocumentStructureData(data)) {
-            if (data.args.success) {
-                const docId = data.docId.split("|")[0];
-                setNumActivityVariants((was) => {
-                    if (docId in was) {
-                        return was;
-                    }
-                    const obj = { ...was };
-                    obj[docId] = data.args.allPossibleVariants.length;
-                    return obj;
-                });
-                setQuestionCounts((was) => {
-                    if (docId in was) {
-                        return was;
-                    }
-                    const obj = { ...was };
-                    obj[docId] =
-                        (data.args.baseLevelComponentCounts.question ?? 0) +
-                        (data.args.baseLevelComponentCounts.problem ?? 0) +
-                        (data.args.baseLevelComponentCounts.exercise ?? 0);
-                    return obj;
-                });
-            }
-        }
     }
 
     function reportScoreAndStateCallback(msg: unknown) {
@@ -377,37 +323,35 @@ export function Viewer({
         id: string,
         initialQuestionCounter: number,
     ) {
-        if (initialized) {
-            activityStateDispatch({
-                type: "generateNewActivityAttempt",
-                id,
-                numActivityVariants,
-                initialQuestionCounter,
-                questionCounts,
-                allowSaveState: flags.allowSaveState,
-                baseId: activityId,
-            });
-            setItemsRendered((was) => {
-                const idx = was.indexOf(id);
-                if (idx === -1) {
-                    return was;
-                } else {
-                    const arr = [...was];
-                    arr.splice(idx, 1);
-                    return arr;
-                }
-            });
-            setItemsToRender((was) => {
-                const idx = was.indexOf(id);
-                if (idx === -1) {
-                    return was;
-                } else {
-                    const arr = [...was];
-                    arr.splice(idx, 1);
-                    return arr;
-                }
-            });
-        }
+        activityStateDispatch({
+            type: "generateNewActivityAttempt",
+            id,
+            numActivityVariants,
+            initialQuestionCounter,
+            questionCounts,
+            allowSaveState: flags.allowSaveState,
+            baseId: activityId,
+        });
+        setItemsRendered((was) => {
+            const idx = was.indexOf(id);
+            if (idx === -1) {
+                return was;
+            } else {
+                const arr = [...was];
+                arr.splice(idx, 1);
+                return arr;
+            }
+        });
+        setItemsToRender((was) => {
+            const idx = was.indexOf(id);
+            if (idx === -1) {
+                return was;
+            } else {
+                const arr = [...was];
+                arr.splice(idx, 1);
+                return arr;
+            }
+        });
     }
 
     function hasRenderedCallback(id: string) {
@@ -476,36 +420,31 @@ export function Viewer({
         );
     }
 
-    if (initialized && !needNewAssignmentState) {
-        if (paginate) {
-            if (!itemsRendered.includes(currentItemId)) {
-                // the current item is always rendered
-                addItemToRender(currentItemId);
+    if (paginate) {
+        if (!itemsRendered.includes(currentItemId)) {
+            // the current item is always rendered
+            addItemToRender(currentItemId);
+        } else {
+            const nextItemId = itemSequence[currentItemIdx + 1];
+            if (
+                currentItemIdx < numItems - 1 &&
+                !itemsRendered.includes(nextItemId)
+            ) {
+                // render the next item if the current item is already rendered
+                addItemToRender(nextItemId);
             } else {
-                const nextItemId = itemSequence[currentItemIdx + 1];
-                if (
-                    currentItemIdx < numItems - 1 &&
-                    !itemsRendered.includes(nextItemId)
-                ) {
-                    // render the next item if the current item is already rendered
-                    addItemToRender(nextItemId);
-                } else {
-                    const prevItemId = itemSequence[currentItemIdx - 1];
-                    if (
-                        currentItemIdx > 0 &&
-                        !itemsRendered.includes(prevItemId)
-                    ) {
-                        // render the previous item if the current and next item are already rendered
-                        addItemToRender(prevItemId);
-                    }
+                const prevItemId = itemSequence[currentItemIdx - 1];
+                if (currentItemIdx > 0 && !itemsRendered.includes(prevItemId)) {
+                    // render the previous item if the current and next item are already rendered
+                    addItemToRender(prevItemId);
                 }
             }
-        } else {
-            for (const id of itemSequence) {
-                if (!itemsRendered.includes(id) && itemsVisible.includes(id)) {
-                    addItemToRender(id);
-                    break;
-                }
+        }
+    } else {
+        for (const id of itemSequence) {
+            if (!itemsRendered.includes(id) && itemsVisible.includes(id)) {
+                addItemToRender(id);
+                break;
             }
         }
     }
@@ -547,7 +486,7 @@ export function Viewer({
                     {activityLevelAttempts ? (
                         <button
                             onClick={generateActivityAttempt}
-                            disabled={!initialized || numItems === 0}
+                            disabled={numItems === 0}
                             style={{
                                 marginLeft: "30px",
                                 backgroundColor: "lightgray",
@@ -578,7 +517,6 @@ export function Viewer({
                 darkMode={darkMode}
                 showAnswerTitles={showAnswerTitles}
                 state={activityState}
-                documentStructureCallback={documentStructureCallback}
                 reportScoreAndStateCallback={reportScoreAndStateCallback}
                 checkRender={checkRender}
                 checkHidden={checkHidden}
@@ -590,18 +528,4 @@ export function Viewer({
             />
         </div>
     );
-}
-
-function getNumSourceDocs(activity: ActivitySource): number {
-    switch (activity.type) {
-        case "singleDoc": {
-            return 1;
-        }
-        case "select": {
-            return activity.items.reduce((a, c) => a + getNumSourceDocs(c), 0);
-        }
-        case "sequence": {
-            return activity.items.reduce((a, c) => a + getNumSourceDocs(c), 0);
-        }
-    }
 }
