@@ -11,7 +11,7 @@
             "doenetML": "Title page",
             "version": "0.7.0-alpha30",
             "numVariants": 1,
-            "baseLevelComponentCounts": {}
+            "baseComponentCounts": {}
         },
         {
             "id": "doc4",
@@ -20,7 +20,7 @@
             "doenetML": "<problem>Enter <selectFromSequence name='n' from='1' to='4' />: <answer name='ans'>$n</answer></problem>",
             "version": "0.7.0-alpha30",
             "numVariants": 4,
-            "baseLevelComponentCounts": { "problem": 1 }
+            "baseComponentCounts": { "problem": 1 }
         },
         {
             "id": "doc2",
@@ -29,7 +29,7 @@
             "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='h' to='i' />: <answer name='ans'>$a</answer></question>",
             "version": "0.7.0-alpha30",
             "numVariants": 2,
-            "baseLevelComponentCounts": { "question": 1 }
+            "baseComponentCounts": { "question": 1 }
         },
         {
             "id": "doc3a",
@@ -38,7 +38,7 @@
             "doenetML": "Intermediate instructions <selectFromSequence length='3' />",
             "version": "0.7.0-alpha30",
             "numVariants": 3,
-            "baseLevelComponentCounts": {}
+            "baseComponentCounts": {}
         },
         {
             "id": "doc5",
@@ -47,7 +47,7 @@
             "doenetML": "<problem>Enter <selectFromSequence name='n' from='11' to='15' />: <answer name='ans'>$n</answer></problem>",
             "version": "0.7.0-alpha30",
             "numVariants": 5,
-            "baseLevelComponentCounts": { "problem": 1 }
+            "baseComponentCounts": { "problem": 1 }
         },
         {
             "id": "doc1",
@@ -56,7 +56,7 @@
             "doenetML": "<question>Enter <text name='a'>z</text>: <answer name='ans'>$a</answer></question>",
             "version": "0.7.0-alpha30",
             "numVariants": 1,
-            "baseLevelComponentCounts": { "question": 1 }
+            "baseComponentCounts": { "question": 1 }
         },
         {
             "id": "doc3",
@@ -65,7 +65,7 @@
             "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='a' to='c' />: <answer name='ans'>$a</answer></question>",
             "version": "0.7.0-alpha30",
             "numVariants": 3,
-            "baseLevelComponentCounts": { "question": 1 }
+            "baseComponentCounts": { "question": 1 }
         }
     ]
 }
