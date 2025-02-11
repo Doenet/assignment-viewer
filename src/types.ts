@@ -28,7 +28,7 @@ export type DocumentStructureData = {
     docId: string;
     args: {
         allPossibleVariants: string[];
-        baseLevelComponentCounts: QuestionCountRecord;
+        baseComponentCounts: QuestionCountRecord;
         success: boolean;
     };
 };
@@ -47,7 +47,7 @@ export function isDocumentStructureData(
         typeof typeObj.args === "object" &&
         Array.isArray(typeObj.args.allPossibleVariants) &&
         typeObj.args.allPossibleVariants.every((v) => typeof v === "string") &&
-        typeof typeObj.args.baseLevelComponentCounts === "object" &&
+        typeof typeObj.args.baseComponentCounts === "object" &&
         typeof typeObj.args.success === "boolean"
     );
 }

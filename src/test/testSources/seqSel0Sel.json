@@ -24,7 +24,7 @@
                     "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='a' to='c' />: <answer name='ans'>$a</answer></question>",
                     "version": "0.7.0-alpha30",
                     "numVariants": 3,
-                    "baseLevelComponentCounts": { "question": 1 }
+                    "baseComponentCounts": { "question": 1 }
                 },
                 {
                     "id": "doc2",
@@ -33,7 +33,7 @@
                     "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='h' to='i' />: <answer name='ans'>$a</answer></question>",
                     "version": "0.7.0-alpha30",
                     "numVariants": 2,
-                    "baseLevelComponentCounts": { "question": 1 }
+                    "baseComponentCounts": { "question": 1 }
                 },
                 {
                     "id": "doc1",
@@ -42,7 +42,7 @@
                     "doenetML": "<question>Enter <text name='a'>z</text>: <answer name='ans'>$a</answer></question>",
                     "version": "0.7.0-alpha30",
                     "numVariants": 1,
-                    "baseLevelComponentCounts": { "question": 1 }
+                    "baseComponentCounts": { "question": 1 }
                 }
             ]
         }

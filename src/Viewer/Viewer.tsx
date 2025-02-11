@@ -456,33 +456,35 @@ export function Viewer({
             ) : null}
 
             <div style={{ marginTop: "5px" }}>
-                <div hidden={!paginate}>
-                    <button
-                        onClick={clickPrevious}
-                        style={{
-                            marginLeft: "20px",
-                            marginRight: "10px",
-                            backgroundColor: "lightgray",
-                            borderRadius: "10px",
-                            padding: "5px 20px",
-                        }}
-                        disabled={currentItemIdx <= 0}
-                    >
-                        Previous
-                    </button>
-                    Page {currentItemIdx + 1} of {numItems}
-                    <button
-                        onClick={clickNext}
-                        style={{
-                            marginLeft: "10px",
-                            backgroundColor: "lightgray",
-                            borderRadius: "10px",
-                            padding: "5px 20px",
-                        }}
-                        disabled={currentItemIdx >= numItems - 1}
-                    >
-                        Next
-                    </button>
+                <div>
+                    <span hidden={!paginate}>
+                        <button
+                            onClick={clickPrevious}
+                            style={{
+                                marginLeft: "20px",
+                                marginRight: "10px",
+                                backgroundColor: "lightgray",
+                                borderRadius: "10px",
+                                padding: "5px 20px",
+                            }}
+                            disabled={currentItemIdx <= 0}
+                        >
+                            Previous
+                        </button>
+                        Page {currentItemIdx + 1} of {numItems}
+                        <button
+                            onClick={clickNext}
+                            style={{
+                                marginLeft: "10px",
+                                backgroundColor: "lightgray",
+                                borderRadius: "10px",
+                                padding: "5px 20px",
+                            }}
+                            disabled={currentItemIdx >= numItems - 1}
+                        >
+                            Next
+                        </button>
+                    </span>
                     {activityLevelAttempts ? (
                         <button
                             onClick={generateActivityAttempt}

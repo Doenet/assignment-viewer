@@ -537,10 +537,10 @@ export function gatherDocumentStructure(source: ActivitySource): {
         return {
             numActivityVariants: { [source.id]: source.numVariants ?? 1 },
             questionCounts: {
-                [source.id]: source.baseLevelComponentCounts
-                    ? (source.baseLevelComponentCounts.question ?? 0) +
-                      (source.baseLevelComponentCounts.problem ?? 0) +
-                      (source.baseLevelComponentCounts.exercise ?? 0)
+                [source.id]: source.baseComponentCounts
+                    ? (source.baseComponentCounts.question ?? 0) +
+                      (source.baseComponentCounts.problem ?? 0) +
+                      (source.baseComponentCounts.exercise ?? 0)
                     : 1,
             },
         };
