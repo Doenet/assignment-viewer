@@ -73,6 +73,7 @@ export type ActivityStateNoSource =
 export type ExportedActivityState = {
     state: ActivityStateNoSource;
     sourceHash: string;
+    onSubmission?: boolean;
 };
 
 // Type guards
@@ -104,7 +105,9 @@ export function isExportedActivityState(
         typedObj !== null &&
         typeof typedObj === "object" &&
         isActivityStateNoSource(typedObj.state) &&
-        typeof typedObj.sourceHash === "string"
+        typeof typedObj.sourceHash === "string" &&
+        (typedObj.onSubmission === undefined ||
+            typeof typedObj.onSubmission === "boolean")
     );
 }
 
