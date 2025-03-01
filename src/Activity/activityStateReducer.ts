@@ -141,6 +141,17 @@ export function activityStateReducer(
 
                 const sourceHash = hash(newActivityState.source);
 
+                let onSubmission = false;
+                const doenetState = action.doenetState;
+                if (
+                    typeof doenetState === "object" &&
+                    doenetState !== null &&
+                    "onSubmission" in doenetState &&
+                    typeof doenetState.onSubmission === "boolean"
+                ) {
+                    onSubmission = doenetState.onSubmission;
+                }
+
                 window.postMessage({
                     state: {
                         state: pruneActivityStateForSave(
@@ -148,6 +159,7 @@ export function activityStateReducer(
                             false,
                         ),
                         sourceHash,
+                        onSubmission,
                     },
                     score: newActivityState.creditAchieved,
                     scoreByItem,
