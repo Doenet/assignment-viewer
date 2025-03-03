@@ -5,14 +5,14 @@
         "parentId": null,
         "initialVariant": 445663,
         "creditAchieved": 0.5,
-        "latestChildStates": [
+        "allChildren": [
             {
                 "type": "select",
                 "id": "sel",
                 "parentId": "seq",
                 "initialVariant": 144857,
                 "creditAchieved": 0,
-                "latestChildStates": [
+                "allChildren": [
                     {
                         "type": "singleDoc",
                         "id": "qrf",
@@ -67,7 +67,7 @@
                 "parentId": "seq",
                 "initialVariant": 283829,
                 "creditAchieved": 1,
-                "latestChildStates": [
+                "allChildren": [
                     {
                         "type": "singleDoc",
                         "id": "sel2a",
@@ -142,7 +142,7 @@
                         "parentId": "seq",
                         "initialVariant": 144857,
                         "creditAchieved": 0,
-                        "latestChildStates": [
+                        "allChildren": [
                             {
                                 "type": "singleDoc",
                                 "id": "qrf",
@@ -197,7 +197,7 @@
                         "parentId": "seq",
                         "initialVariant": 283829,
                         "creditAchieved": 1,
-                        "latestChildStates": [
+                        "allChildren": [
                             {
                                 "type": "singleDoc",
                                 "id": "sel2a",

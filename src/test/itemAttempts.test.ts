@@ -13,10 +13,7 @@ import {
     generateNewSubActivityAttempt,
     initializeActivityState,
 } from "../Activity/activityState";
-import {
-    SingleDocAttemptState,
-    SingleDocState,
-} from "../Activity/singleDocState";
+import { SingleDocState } from "../Activity/singleDocState";
 import { SelectSource, SelectState } from "../Activity/selectState";
 
 describe("Test of generating new item attempts", () => {
@@ -46,7 +43,7 @@ describe("Test of generating new item attempts", () => {
             });
             const initialState = res.state as SequenceState;
 
-            const docIds = initialState.attempts[0].activities.map((a) => a.id);
+            const docIds = initialState.orderedChildren.map((a) => a.id);
             expect([...docIds].sort()).eqls(["doc1", "doc4", "doc5"]);
 
             const questionVariants: number[][] = [[], [], []];
@@ -57,18 +54,13 @@ describe("Test of generating new item attempts", () => {
             for (const [idx, docId] of docIds.entries()) {
                 const questionIdx = ["doc1", "doc4", "doc5"].indexOf(docId);
                 for (let i = 0; i < 10; i++) {
-                    expect(state.attempts.length).eq(1);
-
-                    const activities = state.attempts[0].activities;
+                    const activities = state.orderedChildren;
 
                     expect(activities.length).eq(3);
 
-                    expect(activities[idx].attempts.length).eq(i + 1);
+                    const doc = activities[idx] as SingleDocState;
 
-                    const attempt = activities[idx].attempts[
-                        i
-                    ] as SingleDocAttemptState;
-                    questionVariants[questionIdx].push(attempt.variant);
+                    questionVariants[questionIdx].push(doc.currentVariant);
 
                     state = generateNewSubActivityAttempt({
                         id: docId,
@@ -137,14 +129,8 @@ describe("Test of generating new item attempts", () => {
 
             let state = initialState;
 
-            let numAttempts = state.attempts.length;
-            let latestAttempt = state.attempts[numAttempts - 1];
-
-            const currentVariants = latestAttempt.activities.map((a) => {
-                const attempt = a.attempts[
-                    a.attempts.length - 1
-                ] as SingleDocAttemptState;
-                return attempt.variant;
+            const currentVariants = state.selectedChildren.map((a) => {
+                return (a as SingleDocState).currentVariant;
             });
 
             questionVariants.push(...currentVariants);
@@ -162,9 +148,7 @@ describe("Test of generating new item attempts", () => {
                     );
 
                     for (let k = 0; k < 3; k++) {
-                        const docIds = state.attempts[
-                            numAttempts - 1
-                        ].activities.map((a) => a.id);
+                        const docIds = state.selectedChildren.map((a) => a.id);
 
                         state = generateNewSubActivityAttempt({
                             id: docIds[j],
@@ -174,15 +158,9 @@ describe("Test of generating new item attempts", () => {
                             questionCounts,
                         }) as SelectState;
 
-                        numAttempts = state.attempts.length;
-                        latestAttempt = state.attempts[numAttempts - 1];
+                        const doc = state.selectedChildren[j] as SingleDocState;
 
-                        const docState = latestAttempt.activities[
-                            j
-                        ] as SingleDocState;
-                        const newVariant =
-                            docState.attempts[docState.attempts.length - 1]
-                                .variant;
+                        const newVariant = doc.currentVariant;
 
                         // should not get a variant that matches one of the other current variants
                         expect(validVariants.includes(newVariant)).eq(true);
@@ -245,10 +223,7 @@ describe("Test of generating new item attempts", () => {
 
             let state = initialState;
 
-            let numAttempts = state.attempts.length;
-            let latestAttempt = state.attempts[numAttempts - 1];
-
-            const currentDocIds = latestAttempt.activities.map((a) => a.id);
+            const currentDocIds = state.selectedChildren.map((a) => a.id);
 
             questionIds.push(...currentDocIds);
 
@@ -264,9 +239,7 @@ describe("Test of generating new item attempts", () => {
 
                     // with 8 valid variants, could take 15 to get all of them
                     for (let k = 0; k < 15; k++) {
-                        const docIds = state.attempts[
-                            numAttempts - 1
-                        ].activities.map((a) => a.id);
+                        const docIds = state.selectedChildren.map((a) => a.id);
 
                         state = generateNewSubActivityAttempt({
                             id: docIds[j],
@@ -276,10 +249,7 @@ describe("Test of generating new item attempts", () => {
                             questionCounts,
                         }) as SelectState;
 
-                        numAttempts = state.attempts.length;
-                        latestAttempt = state.attempts[numAttempts - 1];
-
-                        const newDocId = latestAttempt.activities[j].id;
+                        const newDocId = state.selectedChildren[j].id;
 
                         // should not get a variant that matches one of the other current variants
                         expect(validDocIds.includes(newDocId)).eq(true);
@@ -358,34 +328,25 @@ describe("Test of generating new item attempts", () => {
 
             let state = initialState;
 
-            const selIds = state.attempts[0].activities.map((a) => a.id);
+            const selIds = state.orderedChildren.map((a) => a.id);
             expect([...selIds].sort()).eqls(["sel1", "sel2"]);
 
             for (let k = 0; k < 6; k++) {
                 for (let i = 0; i < 2; i++) {
                     const selIdx = ["sel1", "sel2"].indexOf(selIds[i]);
                     for (let j = 0; j < 3; j++) {
-                        expect(state.attempts.length).eq(1);
-
-                        const activities = state.attempts[0].activities;
+                        const activities = state.orderedChildren;
                         expect(activities.length).eq(2);
 
                         const selState = activities[i] as SelectState;
-                        const numSelAttempts = selState.attempts.length;
-                        const latestSelAttempt =
-                            selState.attempts[numSelAttempts - 1];
+                        expect(selState.selectedChildren.length).eq(1);
 
-                        expect(latestSelAttempt.activities.length).eq(1);
-
-                        const docState = latestSelAttempt
-                            .activities[0] as SingleDocState;
-                        const numDocAttempts = docState.attempts.length;
-                        const latestDocAttempt =
-                            docState.attempts[numDocAttempts - 1];
+                        const docState = selState
+                            .selectedChildren[0] as SingleDocState;
                         const docExtendedId =
                             docState.id +
                             "|" +
-                            latestDocAttempt.variant.toString();
+                            docState.currentVariant.toString();
 
                         questionIds[selIdx].push(docExtendedId);
 
@@ -457,31 +418,24 @@ describe("Test of generating new item attempts", () => {
 
             let state = initialState;
 
-            let selIds = state.attempts[0].activities.map((a) => a.id);
+            let selIds = state.orderedChildren.map((a) => a.id);
             expect([...selIds].sort()).eqls(["sel1", "sel2"]);
 
             for (let k = 0; k < 12; k++) {
                 for (let i = 0; i < 4; i++) {
                     const selIdx = ["sel1", "sel2"].indexOf(selIds[i % 2]);
 
-                    const activities =
-                        state.attempts[state.attempts.length - 1].activities;
+                    const activities = state.orderedChildren;
                     expect(activities.length).eq(2);
 
                     const selState = activities[i % 2] as SelectState;
-                    const numSelAttempts = selState.attempts.length;
-                    const latestSelAttempt =
-                        selState.attempts[numSelAttempts - 1];
 
-                    expect(latestSelAttempt.activities.length).eq(1);
+                    expect(selState.selectedChildren.length).eq(1);
 
-                    const docState = latestSelAttempt
-                        .activities[0] as SingleDocState;
-                    const numDocAttempts = docState.attempts.length;
-                    const latestDocAttempt =
-                        docState.attempts[numDocAttempts - 1];
+                    const docState = selState
+                        .selectedChildren[0] as SingleDocState;
                     const docExtendedId =
-                        docState.id + "|" + latestDocAttempt.variant.toString();
+                        docState.id + "|" + docState.currentVariant.toString();
 
                     questionIds[selIdx].push(docExtendedId);
 
@@ -503,9 +457,7 @@ describe("Test of generating new item attempts", () => {
                         });
                         state = res.state as SequenceState;
 
-                        selIds = state.attempts[
-                            state.attempts.length - 1
-                        ].activities.map((a) => a.id);
+                        selIds = state.orderedChildren.map((a) => a.id);
                     }
                 }
             }
@@ -562,18 +514,12 @@ describe("Test of generating new item attempts", () => {
 
             let state = initialState;
 
-            let numAttempts = state.attempts.length;
-            let latestAttempt = state.attempts[numAttempts - 1];
-
-            const currentDocIds = latestAttempt.activities.map((a) => a.id);
+            const currentDocIds = state.selectedChildren.map((a) => a.id);
 
             questionIds.push(...currentDocIds);
-            for (const activity of latestAttempt.activities) {
-                const lastDocAttempt = activity.attempts[
-                    activity.attempts.length - 1
-                ] as SingleDocAttemptState;
+            for (const activity of state.selectedChildren) {
                 questionVariants[allDocIds.indexOf(activity.id)].push(
-                    lastDocAttempt.variant,
+                    (activity as SingleDocState).currentVariant,
                 );
             }
 
@@ -589,9 +535,7 @@ describe("Test of generating new item attempts", () => {
 
                     // with 3 valid doc choices, could take 5 to get all of them
                     for (let k = 0; k < 5; k++) {
-                        const docIds = state.attempts[
-                            numAttempts - 1
-                        ].activities.map((a) => a.id);
+                        const docIds = state.selectedChildren.map((a) => a.id);
 
                         state = generateNewSubActivityAttempt({
                             id: docIds[j],
@@ -601,11 +545,8 @@ describe("Test of generating new item attempts", () => {
                             questionCounts,
                         }) as SelectState;
 
-                        numAttempts = state.attempts.length;
-                        latestAttempt = state.attempts[numAttempts - 1];
-
-                        const activity = latestAttempt.activities[j];
-                        const newDocId = activity.id;
+                        const doc = state.selectedChildren[j] as SingleDocState;
+                        const newDocId = doc.id;
 
                         // should not get a variant that matches one of the other current variants
                         expect(validDocIds.includes(newDocId)).eq(true);
@@ -614,11 +555,8 @@ describe("Test of generating new item attempts", () => {
                         questionIds.push(newDocId);
                         currentDocIds[j] = newDocId;
 
-                        const lastDocAttempt = activity.attempts[
-                            activity.attempts.length - 1
-                        ] as SingleDocAttemptState;
                         questionVariants[allDocIds.indexOf(newDocId)].push(
-                            lastDocAttempt.variant,
+                            doc.currentVariant,
                         );
                     }
 

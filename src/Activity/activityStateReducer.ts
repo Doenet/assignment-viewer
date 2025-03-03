@@ -58,17 +58,18 @@ export function activityStateReducer(
     switch (action.type) {
         case "initialize": {
             return initializeActivityState({
-                source: state.source,
+                source: action.source,
                 variant: action.variantIndex,
                 parentId: null,
                 numActivityVariants: action.numActivityVariants,
             });
         }
         case "set": {
-            const scoreByItem = extractActivityItemCredit(action.state);
             if (action.allowSaveState) {
+                const scoreByItem = extractActivityItemCredit(action.state);
                 window.postMessage({
                     score: action.state.creditAchieved,
+                    latestScore: action.state.latestCreditAchieved,
                     scoreByItem,
                     subject: "SPLICE.reportScoreByItem",
                     activityId: action.baseId,
@@ -80,7 +81,7 @@ export function activityStateReducer(
             let newActivityState: ActivityState;
             let firstAttempt = false;
             if (!action.id || action.id === state.id) {
-                if (state.attempts.length === 0) {
+                if (state.attemptNumber === 0) {
                     firstAttempt = true;
                 }
                 ({ state: newActivityState } = generateNewActivityAttempt({
@@ -108,6 +109,7 @@ export function activityStateReducer(
                     // Just send score by item to indicate how many items are in the activity
                     window.postMessage({
                         score: newActivityState.creditAchieved,
+                        latestScore: newActivityState.latestCreditAchieved,
                         scoreByItem,
                         subject: "SPLICE.reportScoreByItem",
                         activityId: action.baseId,
@@ -124,6 +126,7 @@ export function activityStateReducer(
                             sourceHash,
                         },
                         score: newActivityState.creditAchieved,
+                        latestScore: newActivityState.latestCreditAchieved,
                         scoreByItem,
                         subject: "SPLICE.reportScoreAndState",
                         activityId: action.baseId,
@@ -162,6 +165,7 @@ export function activityStateReducer(
                         onSubmission,
                     },
                     score: newActivityState.creditAchieved,
+                    latestScore: newActivityState.latestCreditAchieved,
                     scoreByItem,
                     subject: "SPLICE.reportScoreAndState",
                     activityId: action.baseId,
@@ -200,21 +204,9 @@ function updateSingleDocState(
         newSingleDocState.creditAchieved,
         action.creditAchieved,
     );
+    newSingleDocState.latestCreditAchieved = action.creditAchieved;
 
-    const newAttempts = (newSingleDocState.attempts = [
-        ...newSingleDocState.attempts,
-    ]);
-
-    const lastAttempt = {
-        ...newAttempts[newSingleDocState.attempts.length - 1],
-        doenetState: action.doenetState,
-    };
-    lastAttempt.creditAchieved = Math.max(
-        lastAttempt.creditAchieved,
-        action.creditAchieved,
-    );
-
-    newAttempts[newSingleDocState.attempts.length - 1] = lastAttempt;
+    newSingleDocState.doenetState = action.doenetState;
 
     const rootActivityState = propagateStateChangeToRoot({
         allStates,

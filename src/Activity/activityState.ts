@@ -114,7 +114,7 @@ export function isExportedActivityState(
 /**
  * Initialize activity state from `source` so that it is ready to generate attempts.
  *
- * Populates all the activities through the `latestChildStates` field.
+ * Populates all the activities through the `allChildren` field.
  * Result is based on `numActivityVariants`,
  * which stores of the number of variants calculated for each single doc activity.
  *
@@ -189,14 +189,12 @@ export function generateNewActivityAttempt({
     initialQuestionCounter,
     questionCounts,
     parentAttempt,
-    resetCredit = false,
 }: {
     state: ActivityState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     questionCounts: QuestionCountRecord;
     parentAttempt: number;
-    resetCredit?: boolean;
 }): { finalQuestionCounter: number; state: ActivityState } {
     switch (state.type) {
         case "singleDoc": {
@@ -206,7 +204,6 @@ export function generateNewActivityAttempt({
                 initialQuestionCounter,
                 questionCounts,
                 parentAttempt,
-                resetCredit,
             });
         }
         case "select": {
@@ -216,7 +213,6 @@ export function generateNewActivityAttempt({
                 initialQuestionCounter,
                 questionCounts,
                 parentAttempt,
-                resetCredit,
             });
         }
         case "sequence": {
@@ -226,7 +222,6 @@ export function generateNewActivityAttempt({
                 initialQuestionCounter,
                 questionCounts,
                 parentAttempt,
-                resetCredit,
             });
         }
     }
@@ -245,14 +240,12 @@ export function generateNewSubActivityAttempt({
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
-    resetCredit = false,
 }: {
     id: string;
     state: ActivityState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     questionCounts: QuestionCountRecord;
-    resetCredit?: boolean;
 }): ActivityState {
     if (id === state.id) {
         // `id` does not correspond to a sub-activity, so generate full activity state
@@ -262,7 +255,6 @@ export function generateNewSubActivityAttempt({
             initialQuestionCounter,
             questionCounts,
             parentAttempt: 1,
-            resetCredit,
         });
         return newActivityState;
     }
@@ -283,12 +275,10 @@ export function generateNewSubActivityAttempt({
     if (
         subActivityState.type === "singleDoc" &&
         parentState.type === "select" &&
-        parentState.latestChildStates.every(
-            (child) => child.type === "singleDoc",
-        )
+        parentState.allChildren.every((child) => child.type === "singleDoc")
     ) {
         const grandParentAttempt = parentState.parentId
-            ? allStates[parentState.parentId].attempts.length
+            ? allStates[parentState.parentId].attemptNumber
             : 1;
 
         let newParentState: ActivityState;
@@ -304,6 +294,8 @@ export function generateNewSubActivityAttempt({
                     parentAttempt: grandParentAttempt,
                     childId: id,
                 }));
+
+            // Note: generateNewSingleDocAttemptForMultiSelect already preserves credit achieved
         } else {
             // for a select-one, just generate a new attempt of the select (rather than the single doc)
             // so that we pick a new single doc child rather than just a new variant of the original single doc
@@ -314,6 +306,10 @@ export function generateNewSubActivityAttempt({
                 questionCounts,
                 parentAttempt: grandParentAttempt,
             }));
+
+            // preserve the old credit achieved
+            newParentState.creditAchieved =
+                allStates[parentState.id].creditAchieved;
         }
 
         allStates[parentState.id] = newParentState;
@@ -328,8 +324,11 @@ export function generateNewSubActivityAttempt({
             numActivityVariants,
             initialQuestionCounter,
             questionCounts,
-            parentAttempt: parentState.attempts.length,
+            parentAttempt: parentState.attemptNumber,
         });
+
+        // preserve the old credit achieved
+        newSubActivityState.creditAchieved = allStates[id].creditAchieved;
 
         allStates[id] = newSubActivityState;
 
@@ -347,7 +346,7 @@ export function generateNewSubActivityAttempt({
  */
 export function extractActivityItemCredit(
     activityState: ActivityState,
-): { id: string; score: number }[] {
+): { id: string; score: number; latestScore: number; docId?: string }[] {
     switch (activityState.type) {
         case "singleDoc": {
             return extractSingleDocItemCredit(activityState);
@@ -368,7 +367,7 @@ export function extractActivityItemCredit(
  * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
  *
  * Even if `clearDoenetState` is `false``, still clear `doenetState` on all but the latest attempt
- * and clear it on all `latestChildStates`. In this way, the (potentially large) DoenetML state is saved
+ * and clear it on all `allChildren`. In this way, the (potentially large) DoenetML state is saved
  * only where needed to reconstitute the activity state.
  */
 export function pruneActivityStateForSave(
@@ -435,12 +434,12 @@ export function getItemSequence(state: ActivityState): string[] {
     if (state.type === "singleDoc") {
         return [state.id];
     } else {
-        const numAttempts = state.attempts.length;
+        const numAttempts = state.attemptNumber;
         if (numAttempts === 0) {
-            if (state.latestChildStates.length === 0) {
+            if (state.allChildren.length === 0) {
                 return [];
             } else {
-                const prelimResult = state.latestChildStates.flatMap((a) =>
+                const prelimResult = state.allChildren.flatMap((a) =>
                     getItemSequence(a),
                 );
                 if (state.type === "sequence") {
@@ -450,9 +449,11 @@ export function getItemSequence(state: ActivityState): string[] {
                 }
             }
         }
-        return state.attempts[numAttempts - 1].activities.flatMap((a) =>
-            getItemSequence(a),
-        );
+        if (state.type === "sequence") {
+            return state.orderedChildren.flatMap((a) => getItemSequence(a));
+        } else {
+            return state.selectedChildren.flatMap((a) => getItemSequence(a));
+        }
     }
 }
 
@@ -588,7 +589,7 @@ export function gatherStates(
     };
 
     if (state.type !== "singleDoc") {
-        for (const child of state.latestChildStates) {
+        for (const child of state.allChildren) {
             Object.assign(allStates, gatherStates(child));
         }
     }
@@ -599,7 +600,7 @@ export function gatherStates(
 /**
  * Given the changed state of activity with `id`, as stored in `allStates[id]`,
  * propagate the change to the activities ancestors, updating their
- * `latestChidStates`, `attempts`, and `creditAchieved` fields.
+ * `latestChidStates`, `attempts`, `latestCreditAchieved` and `creditAchieved` fields.
  *
  * Creates new state objects via shallow copies (and does not modify existing state objects),
  * adding the new state objects back to `allStates`.
@@ -627,42 +628,39 @@ export function propagateStateChangeToRoot({
         throw Error("Single doc activity cannot be a parent");
     }
 
-    const childIdx = newParentState.latestChildStates
+    const childIdx = newParentState.allChildren
         .map((child) => child.id)
         .indexOf(id);
 
     if (childIdx === -1) {
         throw Error("Something went wrong as parent didn't have child.");
     } else {
-        newParentState.latestChildStates = [
-            ...newParentState.latestChildStates,
-        ];
-        newParentState.latestChildStates[childIdx] = activityState;
+        newParentState.allChildren = [...newParentState.allChildren];
+        newParentState.allChildren[childIdx] = activityState;
     }
 
-    newParentState.attempts = [...newParentState.attempts];
-    const numAttempts = newParentState.attempts.length;
-    const lastAttempt = (newParentState.attempts[numAttempts - 1] = {
-        ...newParentState.attempts[numAttempts - 1],
-    });
+    const childActivities =
+        newParentState.type === "sequence"
+            ? [...newParentState.orderedChildren]
+            : [...newParentState.selectedChildren];
 
-    const childIdx2 = lastAttempt.activities
-        .map((child) => child.id)
-        .indexOf(id);
+    const childIdx2 = childActivities.map((child) => child.id).indexOf(id);
     if (childIdx2 === -1) {
         throw Error(
             "Something went wrong as parent didn't have child in last attempt.",
         );
     }
 
-    lastAttempt.activities = [...lastAttempt.activities];
-    lastAttempt.activities[childIdx2] = activityState;
+    childActivities[childIdx2] = activityState;
 
     let credit: number;
+    let latestCredit: number;
 
     if (newParentState.type === "sequence") {
+        newParentState.orderedChildren = childActivities;
+
         // calculate credit only from non-descriptions
-        const nonDescriptions = newParentState.latestChildStates.filter(
+        const nonDescriptions = newParentState.allChildren.filter(
             (activityState) =>
                 activityState.type !== "singleDoc" ||
                 !activityState.source.isDescription,
@@ -685,19 +683,27 @@ export function propagateStateChangeToRoot({
             (a, c, i) => a + c.creditAchieved * creditWeights[i],
             0,
         );
+        latestCredit = nonDescriptions.reduce(
+            (a, c, i) => a + c.latestCreditAchieved * creditWeights[i],
+            0,
+        );
     } else {
+        newParentState.selectedChildren = childActivities;
+
         // select: take average of credit from all last attempt activities
         credit =
-            lastAttempt.activities.reduce((a, c) => a + c.creditAchieved, 0) /
-            lastAttempt.activities.length;
+            childActivities.reduce((a, c) => a + c.creditAchieved, 0) /
+            childActivities.length;
+        latestCredit =
+            childActivities.reduce((a, c) => a + c.latestCreditAchieved, 0) /
+            childActivities.length;
     }
-
-    lastAttempt.creditAchieved = Math.max(lastAttempt.creditAchieved, credit);
 
     newParentState.creditAchieved = Math.max(
         newParentState.creditAchieved,
         credit,
     );
+    newParentState.latestCreditAchieved = latestCredit;
 
     return propagateStateChangeToRoot({
         allStates,

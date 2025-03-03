@@ -17,6 +17,7 @@ import seedrandom from "seedrandom";
 import { SingleDocSource } from "./singleDocState";
 import {
     ActivityVariantRecord,
+    isRestrictToVariantSlice,
     QuestionCountRecord,
     RestrictToVariantSlice,
 } from "../types";
@@ -50,19 +51,16 @@ export type SequenceState = {
     initialVariant: number;
     /** Credit achieved (between 0 and 1) over all attempts of this activity */
     creditAchieved: number;
-    /** The latest state of child activities, in their original order */
-    latestChildStates: ActivityState[];
-    attempts: SequenceAttemptState[];
+    /** Credit achieved from the latest submission */
+    latestCreditAchieved: number;
+    /** The state of child activities, in their original order */
+    allChildren: ActivityState[];
+    /** The number of the current attempt */
+    attemptNumber: number;
+    /** The activities as ordered for the current attempt */
+    orderedChildren: ActivityState[];
     /** See {@link RestrictToVariantSlice} */
     restrictToVariantSlice?: RestrictToVariantSlice;
-};
-
-/** The state of an attempt of a sequence activity. */
-export type SequenceAttemptState = {
-    /** The activities as ordered for this attempt */
-    activities: ActivityState[];
-    /** Credit achieved (between 0 and 1) on this attempt */
-    creditAchieved: number;
 };
 
 /**
@@ -72,10 +70,10 @@ export type SequenceAttemptState = {
  */
 export type SequenceStateNoSource = Omit<
     SequenceState,
-    "source" | "latestChildStates" | "attempts"
+    "source" | "allChildren" | "orderedChildren"
 > & {
-    latestChildStates: ActivityStateNoSource[];
-    attempts: { activities: ActivityStateNoSource[]; creditAchieved: number }[];
+    allChildren: ActivityStateNoSource[];
+    orderedChildren: ActivityStateNoSource[];
 };
 
 // type guards
@@ -113,18 +111,14 @@ export function isSequenceState(obj: unknown): obj is SequenceState {
         isSequenceSource(typedObj.source) &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        Array.isArray(typedObj.latestChildStates) &&
-        typedObj.latestChildStates.every(isActivityState) &&
-        Array.isArray(typedObj.attempts) &&
-        typedObj.attempts.every(
-            (attempt) =>
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                attempt !== null &&
-                typeof attempt === "object" &&
-                typeof attempt.creditAchieved === "number" &&
-                Array.isArray(attempt.activities) &&
-                attempt.activities.every(isActivityState),
-        )
+        typeof typedObj.latestCreditAchieved === "number" &&
+        Array.isArray(typedObj.allChildren) &&
+        typedObj.allChildren.every(isActivityState) &&
+        typeof typedObj.attemptNumber === "number" &&
+        Array.isArray(typedObj.orderedChildren) &&
+        typedObj.orderedChildren.every(isActivityState) &&
+        (typedObj.restrictToVariantSlice === undefined ||
+            isRestrictToVariantSlice(typedObj.restrictToVariantSlice))
     );
 }
 
@@ -142,25 +136,21 @@ export function isSequenceStateNoSource(
         (typedObj.parentId === null || typeof typedObj.parentId === "string") &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        Array.isArray(typedObj.latestChildStates) &&
-        typedObj.latestChildStates.every(isActivityStateNoSource) &&
-        Array.isArray(typedObj.attempts) &&
-        typedObj.attempts.every(
-            (attempt) =>
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                attempt !== null &&
-                typeof attempt === "object" &&
-                typeof attempt.creditAchieved === "number" &&
-                Array.isArray(attempt.activities) &&
-                attempt.activities.every(isActivityStateNoSource),
-        )
+        typeof typedObj.latestCreditAchieved === "number" &&
+        Array.isArray(typedObj.allChildren) &&
+        typedObj.allChildren.every(isActivityStateNoSource) &&
+        typeof typedObj.attemptNumber === "number" &&
+        Array.isArray(typedObj.orderedChildren) &&
+        typedObj.orderedChildren.every(isActivityStateNoSource) &&
+        (typedObj.restrictToVariantSlice === undefined ||
+            isRestrictToVariantSlice(typedObj.restrictToVariantSlice))
     );
 }
 
 /**
  * Initialize activity state from `source` so that it is ready to generate attempts.
  *
- * Populates all the activities through the `latestChildStates` field,
+ * Populates all the activities through the `allChildren` field,
  * similar to the behavior of `getUninitializedActivityState`,
  * only this time it takes advantage of `numActivityVariants`,
  * which stores of the number of variants calculated for each single doc activity.
@@ -209,8 +199,10 @@ export function initializeSequenceState({
         source,
         initialVariant: variant,
         creditAchieved: 0,
-        latestChildStates: childStates,
-        attempts: [],
+        latestCreditAchieved: 0,
+        allChildren: childStates,
+        attemptNumber: 0,
+        orderedChildren: [],
         restrictToVariantSlice,
     };
 }
@@ -232,18 +224,16 @@ export function generateNewSequenceAttempt({
     initialQuestionCounter,
     questionCounts,
     parentAttempt,
-    resetCredit = false,
 }: {
     state: SequenceState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     questionCounts: QuestionCountRecord;
     parentAttempt: number;
-    resetCredit?: boolean;
 }): { finalQuestionCounter: number; state: SequenceState } {
     const source = state.source;
 
-    const childOrder = state.latestChildStates.map((state) => state.id);
+    const childOrder = state.allChildren.map((state) => state.id);
 
     if (source.shuffle) {
         // Leave the descriptions in place and shuffle each group of activities between descriptions
@@ -252,7 +242,7 @@ export function generateNewSequenceAttempt({
             "|" +
             state.id.toString() +
             "|" +
-            state.attempts.length.toString() +
+            state.attemptNumber.toString() +
             "|" +
             parentAttempt.toString();
 
@@ -275,27 +265,26 @@ export function generateNewSequenceAttempt({
         }
 
         let startInd = 0;
-        while (startInd < state.latestChildStates.length) {
+        while (startInd < state.allChildren.length) {
             // find the first item that isn't a description
             while (
-                state.latestChildStates[startInd]?.type === "singleDoc" &&
-                (state.latestChildStates[startInd].source as SingleDocSource)
+                state.allChildren[startInd]?.type === "singleDoc" &&
+                (state.allChildren[startInd].source as SingleDocSource)
                     .isDescription
             ) {
                 startInd++;
             }
-            if (startInd >= state.latestChildStates.length) {
+            if (startInd >= state.allChildren.length) {
                 break;
             }
 
             // find the next item that is a description
             let numItems = 1;
             while (
-                state.latestChildStates[startInd + numItems] &&
-                (state.latestChildStates[startInd + numItems].type !==
-                    "singleDoc" ||
+                state.allChildren[startInd + numItems] &&
+                (state.allChildren[startInd + numItems].type !== "singleDoc" ||
                     !(
-                        state.latestChildStates[startInd + numItems]
+                        state.allChildren[startInd + numItems]
                             .source as SingleDocSource
                     ).isDescription)
             ) {
@@ -312,22 +301,21 @@ export function generateNewSequenceAttempt({
 
     // generate new attempts of the children in the final order so that the counters will be sequential
     const orderedChildStates: ActivityState[] = [];
-    const unorderedChildStates = [...state.latestChildStates];
+    const unorderedChildStates = [...state.allChildren];
 
     let questionCounter = initialQuestionCounter;
     for (const childId of childOrder) {
-        const childIdx = state.latestChildStates.findIndex(
+        const childIdx = state.allChildren.findIndex(
             (child) => child.id === childId,
         );
-        const originalState = state.latestChildStates[childIdx];
+        const originalState = state.allChildren[childIdx];
         const { finalQuestionCounter: endCounter, state: newState } =
             generateNewActivityAttempt({
                 state: originalState,
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
                 questionCounts,
-                parentAttempt: state.attempts.length + 1,
-                resetCredit: true,
+                parentAttempt: state.attemptNumber + 1,
             });
 
         questionCounter = endCounter;
@@ -335,40 +323,30 @@ export function generateNewSequenceAttempt({
         unorderedChildStates[childIdx] = newState;
     }
 
-    const newAttemptState: SequenceAttemptState = {
-        activities: orderedChildStates,
-        creditAchieved: 0,
-    };
-
     const newState: SequenceState = {
         ...state,
-        latestChildStates: unorderedChildStates,
+        creditAchieved: 0,
+        latestCreditAchieved: 0,
+        allChildren: unorderedChildStates,
+        attemptNumber: state.attemptNumber + 1,
+        orderedChildren: orderedChildStates,
     };
-
-    newState.attempts = [...newState.attempts, newAttemptState];
-
-    if (resetCredit) {
-        newState.creditAchieved = 0;
-    }
 
     return { finalQuestionCounter: questionCounter, state: newState };
 }
 
 /**
  * Recurse through the descendants of `activityState`,
- * returning an array of the `creditAchieved` of the latest single document activities,
+ * returning an array of the `creditAchieved` and `latestCreditAchieved` of the latest single document activities,
  * or of select activities that select a single document.
  */
 export function extractSequenceItemCredit(
     activityState: SequenceState,
-): { id: string; score: number }[] {
-    if (activityState.attempts.length === 0) {
-        return [{ id: activityState.id, score: 0 }];
+): { id: string; score: number; latestScore: number; docId?: string }[] {
+    if (activityState.attemptNumber === 0) {
+        return [{ id: activityState.id, score: 0, latestScore: 0 }];
     } else {
-        const latestAttempt =
-            activityState.attempts[activityState.attempts.length - 1];
-
-        return latestAttempt.activities.flatMap((state) =>
+        return activityState.orderedChildren.flatMap((state) =>
             extractActivityItemCredit(state),
         );
     }
@@ -380,8 +358,8 @@ export function extractSequenceItemCredit(
  *
  * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
  *
- * Even if `clearDoenetState` is `false``, still clear `doenetState` on all but the latest attempt
- * and clear it on all `latestChildStates`. In this way, the (potentially large) DoenetML state is saved
+ * Even if `clearDoenetState` is `false``, still clear `doenetState` on all `allChildren`.
+ * In this way, the (potentially large) DoenetML state is saved
  * only where needed to reconstitute the activity state.
  */
 export function pruneSequenceStateForSave(
@@ -390,23 +368,15 @@ export function pruneSequenceStateForSave(
 ): SequenceStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
 
-    const latestChildStates = newState.latestChildStates.map((child) =>
+    const allChildren = newState.allChildren.map((child) =>
         pruneActivityStateForSave(child, true),
     );
 
-    const numAttempts = newState.attempts.length;
+    const orderedChildren = newState.orderedChildren.map((child) =>
+        pruneActivityStateForSave(child, clearDoenetState),
+    );
 
-    const attempts = newState.attempts.map((attempt, i) => ({
-        ...attempt,
-        activities: attempt.activities.map((state) =>
-            pruneActivityStateForSave(
-                state,
-                i !== numAttempts - 1 || clearDoenetState,
-            ),
-        ),
-    }));
-
-    return { ...newState, latestChildStates, attempts };
+    return { ...newState, allChildren, orderedChildren };
 }
 
 /** Reverse the effect of `pruneSequenceStateForSave by adding back adding back references to the source */
@@ -414,28 +384,25 @@ export function addSourceToSequenceState(
     activityState: SequenceStateNoSource,
     source: SequenceSource,
 ): SequenceState {
-    const latestChildStates = activityState.latestChildStates.map((child) => {
+    const allChildren = activityState.allChildren.map((child) => {
         const idx = source.items.findIndex(
             (src) => src.id === extractSourceId(child.id),
         );
         return addSourceToActivityState(child, source.items[idx]);
     });
 
-    const attempts = activityState.attempts.map((attempt) => ({
-        ...attempt,
-        activities: attempt.activities.map((state) => {
-            const idx = source.items.findIndex(
-                (src) => src.id === extractSourceId(state.id),
-            );
-            return addSourceToActivityState(state, source.items[idx]);
-        }),
-    }));
+    const orderedChildren = activityState.orderedChildren.map((child) => {
+        const idx = source.items.findIndex(
+            (src) => src.id === extractSourceId(child.id),
+        );
+        return addSourceToActivityState(child, source.items[idx]);
+    });
 
     return {
         ...activityState,
         source,
-        latestChildStates,
-        attempts,
+        allChildren,
+        orderedChildren: orderedChildren,
     };
 }
 

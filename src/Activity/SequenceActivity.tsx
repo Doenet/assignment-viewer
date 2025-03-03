@@ -46,43 +46,36 @@ export function SequenceActivity({
     reportVisibility?: boolean;
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
 }) {
-    const latestAttempt =
-        state.attempts.length > 0
-            ? state.attempts[state.attempts.length - 1]
-            : null;
-
     const activityList: ReactElement[] = [];
 
-    if (latestAttempt) {
-        for (const activity of latestAttempt.activities) {
-            activityList.push(
-                <Activity
-                    key={activity.id}
-                    state={activity}
-                    flags={flags}
-                    baseId={baseId}
-                    forceDisable={forceDisable}
-                    forceShowCorrectness={forceShowCorrectness}
-                    forceShowSolution={forceShowSolution}
-                    forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                    linkSettings={linkSettings}
-                    darkMode={darkMode}
-                    showAnswerTitles={showAnswerTitles}
-                    reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    checkRender={checkRender}
-                    checkHidden={checkHidden}
-                    allowItemAttemptButtons={allowItemAttemptButtons}
-                    generateNewItemAttempt={generateNewItemAttempt}
-                    hasRenderedCallback={hasRenderedCallback}
-                    reportVisibility={reportVisibility}
-                    reportVisibilityCallback={reportVisibilityCallback}
-                />,
-            );
-        }
+    for (const activity of state.orderedChildren) {
+        activityList.push(
+            <Activity
+                key={activity.id}
+                state={activity}
+                flags={flags}
+                baseId={baseId}
+                forceDisable={forceDisable}
+                forceShowCorrectness={forceShowCorrectness}
+                forceShowSolution={forceShowSolution}
+                forceUnsuppressCheckwork={forceUnsuppressCheckwork}
+                linkSettings={linkSettings}
+                darkMode={darkMode}
+                showAnswerTitles={showAnswerTitles}
+                reportScoreAndStateCallback={reportScoreAndStateCallback}
+                checkRender={checkRender}
+                checkHidden={checkHidden}
+                allowItemAttemptButtons={allowItemAttemptButtons}
+                generateNewItemAttempt={generateNewItemAttempt}
+                hasRenderedCallback={hasRenderedCallback}
+                reportVisibility={reportVisibility}
+                reportVisibilityCallback={reportVisibilityCallback}
+            />,
+        );
     }
 
     return (
-        <div hidden={!checkRender(state)} key={state.attempts.length}>
+        <div hidden={!checkRender(state)} key={state.attemptNumber}>
             {activityList}
         </div>
     );

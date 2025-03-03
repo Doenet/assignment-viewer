@@ -161,3 +161,17 @@ export type QuestionCountRecord = Record<string, number>;
  * so each slice contains just a single variant.
  */
 export type RestrictToVariantSlice = { idx: number; numSlices: number };
+
+export function isRestrictToVariantSlice(
+    obj: unknown,
+): obj is RestrictToVariantSlice {
+    const typeObj = obj as RestrictToVariantSlice;
+
+    return (
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        typeObj !== null &&
+        typeof typeObj === "object" &&
+        typeof typeObj.idx === "number" &&
+        typeof typeObj.numSlices === "number"
+    );
+}

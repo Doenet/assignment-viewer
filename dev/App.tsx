@@ -319,7 +319,7 @@ function App() {
                 </div>
                 <div>
                     Assignment attempt number:{" "}
-                    {activityState?.state.attempts.length ?? 0 + 1}
+                    {activityState?.state.attemptNumber ?? 0 + 1}
                 </div>
             </div>
 

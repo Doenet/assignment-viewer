@@ -12,26 +12,14 @@ import sel2seq from "./testSources/sel2seq.json";
 import selMult2seq from "./testSources/selMult2seq.json";
 import selNoVariant from "./testSources/selNoVariant.json";
 import selMult4docsNoVariant from "./testSources/selMult4docsNoVariant.json";
-import {
-    SequenceAttemptState,
-    SequenceSource,
-    SequenceState,
-} from "../Activity/sequenceState";
+import { SequenceSource, SequenceState } from "../Activity/sequenceState";
 import {
     gatherDocumentStructure,
     generateNewActivityAttempt,
     initializeActivityState,
 } from "../Activity/activityState";
-import {
-    SingleDocAttemptState,
-    SingleDocSource,
-    SingleDocState,
-} from "../Activity/singleDocState";
-import {
-    SelectAttemptState,
-    SelectSource,
-    SelectState,
-} from "../Activity/selectState";
+import { SingleDocSource, SingleDocState } from "../Activity/singleDocState";
+import { SelectSource, SelectState } from "../Activity/selectState";
 
 describe("Test of generating activity variants", () => {
     it("single doc", () => {
@@ -66,9 +54,9 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SingleDocState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                questionVariants.push(state.attempts[i].variant);
+                questionVariants.push(state.currentVariant);
             }
 
             expect(questionVariants.slice(0, 5).sort((a, b) => a - b)).eqls([
@@ -126,19 +114,18 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SequenceState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.orderedChildren;
 
                 expect(activities.length).eq(3);
 
                 for (let j = 0; j < 3; j++) {
-                    expect(activities[j].id).eq(docIds[j]);
-                    expect(activities[j].attempts.length).eq(i + 1);
-                    const attempt = activities[j].attempts[
-                        i
-                    ] as SingleDocAttemptState;
-                    questionVariants[j].push(attempt.variant);
+                    const doc = activities[j] as SingleDocState;
+                    expect(doc.id).eq(docIds[j]);
+                    expect(doc.attemptNumber).eq(i + 1);
+
+                    questionVariants[j].push(doc.currentVariant);
                 }
             }
 
@@ -203,24 +190,22 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SequenceState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.orderedChildren;
 
                 expect(activities.length).eq(3);
 
                 expect(activities.map((a) => a.id).sort()).eqls(docIds);
 
                 for (let j = 0; j < 3; j++) {
-                    const questionIdx = docIds.indexOf(activities[j].id);
+                    const doc = activities[j] as SingleDocState;
+                    const questionIdx = docIds.indexOf(doc.id);
                     if (questionIdx !== j) {
                         numReordered++;
                     }
-                    expect(activities[j].attempts.length).eq(i + 1);
-                    const attempt = activities[j].attempts[
-                        i
-                    ] as SingleDocAttemptState;
-                    questionVariants[questionIdx].push(attempt.variant);
+                    expect(doc.attemptNumber).eq(i + 1);
+                    questionVariants[questionIdx].push(doc.currentVariant);
                 }
             }
 
@@ -287,20 +272,17 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SelectState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.selectedChildren;
 
                 expect(activities.length).eq(1);
 
-                const questionIdx = docIds.indexOf(activities[0].id);
+                const doc = activities[0] as SingleDocState;
+                const questionIdx = docIds.indexOf(doc.id);
                 expect(questionIdx).not.eq(-1);
 
-                const attemptNum = activities[0].attempts.length - 1;
-                const attempt = activities[0].attempts[
-                    attemptNum
-                ] as SingleDocAttemptState;
-                questionVariants.push(questionIdx * 10 + attempt.variant);
+                questionVariants.push(questionIdx * 10 + doc.currentVariant);
             }
 
             const variantSet = [1, 11, 12, 13, 14, 21, 22, 23, 24, 25];
@@ -355,9 +337,9 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SelectState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.selectedChildren;
 
                 expect(activities.length).eq(3);
 
@@ -365,15 +347,11 @@ describe("Test of generating activity variants", () => {
                     // since there are four possible variants, another attempt per variant will be added every 4
                     const attemptIdx = Math.floor((i * 3 + j) / 4);
 
-                    expect(activities[j].attempts.length).eq(attemptIdx + 1);
-                    const attempt = activities[j].attempts[
-                        attemptIdx
-                    ] as SingleDocAttemptState;
-                    questionVariants.push(attempt.variant);
+                    const doc = activities[j] as SingleDocState;
+                    expect(doc.attemptNumber).eq(attemptIdx + 1);
+                    questionVariants.push(doc.currentVariant);
 
-                    expect(activities[j].id).eq(
-                        `doc4|${attempt.variant.toString()}`,
-                    );
+                    expect(doc.id).eq(`doc4|${doc.currentVariant.toString()}`);
                 }
             }
 
@@ -433,9 +411,9 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SelectState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.selectedChildren;
 
                 expect(activities.length).eq(2);
 
@@ -443,19 +421,18 @@ describe("Test of generating activity variants", () => {
                     // since there are nine possible variants, another attempt per variant will be added every 9
                     const attemptIdx = Math.floor((i * 2 + j) / 9);
 
-                    const questionIdx = docIds.indexOf(
-                        activities[j].id.split("|")[0],
-                    );
+                    const doc = activities[j] as SingleDocState;
+
+                    const questionIdx = docIds.indexOf(doc.id.split("|")[0]);
                     expect(questionIdx).not.eq(-1);
 
-                    expect(activities[j].attempts.length).eq(attemptIdx + 1);
-                    const attempt = activities[j].attempts[
-                        attemptIdx
-                    ] as SingleDocAttemptState;
-                    questionVariants.push(questionIdx * 10 + attempt.variant);
+                    expect(doc.attemptNumber).eq(attemptIdx + 1);
+                    questionVariants.push(
+                        questionIdx * 10 + doc.currentVariant,
+                    );
 
-                    expect(activities[j].id).eq(
-                        `${docIds[questionIdx]}|${attempt.variant.toString()}`,
+                    expect(doc.id).eq(
+                        `${docIds[questionIdx]}|${doc.currentVariant.toString()}`,
                     );
                 }
             }
@@ -529,9 +506,9 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SequenceState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.orderedChildren;
 
                 expect(activities.length).eq(7);
 
@@ -551,15 +528,13 @@ describe("Test of generating activity variants", () => {
                 ).eqls(docIds2);
 
                 for (let j = 0; j < 7; j++) {
-                    const questionIdx = allDocIds.indexOf(activities[j].id);
+                    const doc = activities[j] as SingleDocState;
+                    const questionIdx = allDocIds.indexOf(doc.id);
                     if (questionIdx !== j) {
                         numReordered++;
                     }
-                    expect(activities[j].attempts.length).eq(i + 1);
-                    const attempt = activities[j].attempts[
-                        i
-                    ] as SingleDocAttemptState;
-                    questionVariants[questionIdx].push(attempt.variant);
+                    expect(doc.attemptNumber).eq(i + 1);
+                    questionVariants[questionIdx].push(doc.currentVariant);
                 }
             }
 
@@ -663,9 +638,9 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SequenceState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.orderedChildren;
 
                 expect(activities.length).eq(2);
 
@@ -677,26 +652,21 @@ describe("Test of generating activity variants", () => {
                 expect(activities.map((a) => a.id).sort()).eqls(selIds);
 
                 for (let j = 0; j < 2; j++) {
-                    const selAttemptNum = activities[j].attempts.length;
+                    const select = activities[j] as SelectState;
+                    const selAttemptNum = select.attemptNumber;
                     expect(selAttemptNum).eq(i + 1);
 
-                    const selAttempt = activities[j].attempts[
-                        selAttemptNum - 1
-                    ] as SelectAttemptState;
+                    expect(select.selectedChildren.length).eq(1);
 
-                    expect(selAttempt.activities.length).eq(1);
+                    const doc = select.selectedChildren[0] as SingleDocState;
 
-                    const activity = selAttempt.activities[0] as SingleDocState;
+                    expect(idOrders[j].includes(doc.id)).eq(true);
 
-                    expect(idOrders[j].includes(activity.id)).eq(true);
+                    const questionIdx = allDocIds.indexOf(doc.id);
 
-                    const questionIdx = allDocIds.indexOf(activity.id);
-
-                    const attempt =
-                        activity.attempts[activity.attempts.length - 1];
-                    questionVariants[
-                        docIds1.includes(activity.id) ? 0 : 1
-                    ].push(questionIdx * 10 + attempt.variant);
+                    questionVariants[docIds1.includes(doc.id) ? 0 : 1].push(
+                        questionIdx * 10 + doc.currentVariant,
+                    );
                 }
             }
 
@@ -772,48 +742,41 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SelectState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.selectedChildren;
 
                 expect(activities.length).eq(1);
+
+                const sequence = activities[0] as SequenceState;
                 expect(seqIds.includes(activities[0].id)).eq(true);
 
-                const seqAttemptNum = activities[0].attempts.length;
-                const seqAttempt = activities[0].attempts[
-                    seqAttemptNum - 1
-                ] as SequenceAttemptState;
-
-                if (activities[0].id === "seq1") {
-                    expect(seqAttempt.activities.length).eq(2);
-                    expect(seqAttempt.activities.map((a) => a.id)).eqls(
+                if (sequence.id === "seq1") {
+                    expect(sequence.orderedChildren.length).eq(2);
+                    expect(sequence.orderedChildren.map((a) => a.id)).eqls(
                         docIds1,
                     );
                     for (let j = 0; j < 2; j++) {
-                        const activity = seqAttempt.activities[
+                        const doc = sequence.orderedChildren[
                             j
                         ] as SingleDocState;
 
-                        const attempt =
-                            activity.attempts[activity.attempts.length - 1];
-                        questionVariants1[j].push(attempt.variant);
+                        questionVariants1[j].push(doc.currentVariant);
                     }
                 } else {
-                    expect(seqAttempt.activities.length).eq(3);
+                    expect(sequence.orderedChildren.length).eq(3);
                     for (let j = 0; j < 3; j++) {
-                        const activity = seqAttempt.activities[
+                        const doc = sequence.orderedChildren[
                             j
                         ] as SingleDocState;
 
-                        const questionIdx = docIds2.indexOf(activity.id);
+                        const questionIdx = docIds2.indexOf(doc.id);
 
                         if (questionIdx !== j) {
                             numReordered++;
                         }
 
-                        const attempt =
-                            activity.attempts[activity.attempts.length - 1];
-                        questionVariants2[questionIdx].push(attempt.variant);
+                        questionVariants2[questionIdx].push(doc.currentVariant);
                     }
                 }
             }
@@ -920,56 +883,48 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SelectState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.selectedChildren;
 
                 expect(activities.length).eq(3);
 
                 for (let k = 0; k < 3; k++) {
-                    const seqSourceId = activities[k].id.split("|")[0];
+                    const sequence = activities[k] as SequenceState;
+                    const seqSourceId = sequence.id.split("|")[0];
                     expect(seqIds.includes(seqSourceId)).eq(true);
 
-                    const seqAttemptNum = activities[k].attempts.length;
-                    const seqAttempt = activities[k].attempts[
-                        seqAttemptNum - 1
-                    ] as SequenceAttemptState;
-
                     if (seqSourceId === "seq1") {
-                        expect(seqAttempt.activities.length).eq(2);
+                        expect(sequence.orderedChildren.length).eq(2);
                         expect(
-                            seqAttempt.activities.map(
+                            sequence.orderedChildren.map(
                                 (a) => a.id.split("|")[0],
                             ),
                         ).eqls(docIds1);
                         for (let j = 0; j < 2; j++) {
-                            const activity = seqAttempt.activities[
+                            const doc = sequence.orderedChildren[
                                 j
                             ] as SingleDocState;
 
-                            const attempt =
-                                activity.attempts[activity.attempts.length - 1];
-                            questionVariants1[j].push(attempt.variant);
+                            questionVariants1[j].push(doc.currentVariant);
                         }
                     } else {
-                        expect(seqAttempt.activities.length).eq(2);
+                        expect(sequence.orderedChildren.length).eq(2);
                         for (let j = 0; j < 2; j++) {
-                            const activity = seqAttempt.activities[
+                            const doc = sequence.orderedChildren[
                                 j
                             ] as SingleDocState;
 
                             const questionIdx = docIds2.indexOf(
-                                activity.id.split("|")[0],
+                                doc.id.split("|")[0],
                             );
 
                             if (questionIdx !== j) {
                                 numReordered++;
                             }
 
-                            const attempt =
-                                activity.attempts[activity.attempts.length - 1];
                             questionVariants2[questionIdx].push(
-                                attempt.variant,
+                                doc.currentVariant,
                             );
                         }
                     }
@@ -1099,22 +1054,19 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SelectState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.selectedChildren;
 
                 expect(activities.length).eq(1);
 
-                const questionIdx = docIds.indexOf(activities[0].id);
+                const doc = activities[0] as SingleDocState;
+                const questionIdx = docIds.indexOf(doc.id);
                 expect(questionIdx).not.eq(-1);
 
-                const attemptNum = activities[0].attempts.length - 1;
-                const attempt = activities[0].attempts[
-                    attemptNum
-                ] as SingleDocAttemptState;
                 questions.push(questionIdx);
 
-                questionVariants[questionIdx].push(attempt.variant);
+                questionVariants[questionIdx].push(doc.currentVariant);
             }
 
             for (let i = 0; i < 10; i++) {
@@ -1186,22 +1138,19 @@ describe("Test of generating activity variants", () => {
 
                 state = res.state as SelectState;
 
-                expect(state.attempts.length).eq(i + 1);
+                expect(state.attemptNumber).eq(i + 1);
 
-                const activities = state.attempts[i].activities;
+                const activities = state.selectedChildren;
 
                 expect(activities.length).eq(2);
 
                 for (let j = 0; j < 2; j++) {
-                    const questionIdx = docIds.indexOf(activities[j].id);
+                    const doc = activities[j] as SingleDocState;
+                    const questionIdx = docIds.indexOf(doc.id);
                     expect(questionIdx).not.eq(-1);
 
-                    const attemptIdx = activities[j].attempts.length - 1;
-                    const attempt = activities[j].attempts[
-                        attemptIdx
-                    ] as SingleDocAttemptState;
                     questions.push(questionIdx);
-                    questionVariants[questionIdx].push(attempt.variant);
+                    questionVariants[questionIdx].push(doc.currentVariant);
                 }
             }
 
