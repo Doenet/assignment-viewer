@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { ActivityViewer } from "../src/activity-viewer";
 import activitySource from "./testActivity.json";
 
-import initialAssignmentState from "./testInitialState.json";
+// import initialAssignmentState from "./testInitialState.json";
+const initialAssignmentState = null;
 import {
     ExportedActivityState,
     isActivitySource,
@@ -224,7 +225,7 @@ function App() {
 
     const [_score, setScore] = useState(0);
     const [scoreByItem, setScoreByItem] = useState<
-        { id: string; score: number }[]
+        { id: string; score: number; maxScore: number; docId?: string }[]
     >([]);
 
     useEffect(() => {
@@ -307,7 +308,7 @@ function App() {
 
                 <div>
                     Assignment credit:{" "}
-                    {(activityState?.state.creditAchieved ?? 0) * 100}%
+                    {(activityState?.state.maxCreditAchieved ?? 0) * 100}%
                 </div>
                 <div>
                     Credit by item, latest attempt:

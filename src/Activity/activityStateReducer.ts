@@ -69,7 +69,7 @@ export function activityStateReducer(
                 const scoreByItem = extractActivityItemCredit(action.state);
                 window.postMessage({
                     score: action.state.creditAchieved,
-                    latestScore: action.state.latestCreditAchieved,
+                    maxScore: action.state.maxCreditAchieved,
                     scoreByItem,
                     subject: "SPLICE.reportScoreByItem",
                     activityId: action.baseId,
@@ -109,7 +109,7 @@ export function activityStateReducer(
                     // Just send score by item to indicate how many items are in the activity
                     window.postMessage({
                         score: newActivityState.creditAchieved,
-                        latestScore: newActivityState.latestCreditAchieved,
+                        maxScore: newActivityState.maxCreditAchieved,
                         scoreByItem,
                         subject: "SPLICE.reportScoreByItem",
                         activityId: action.baseId,
@@ -126,7 +126,7 @@ export function activityStateReducer(
                             sourceHash,
                         },
                         score: newActivityState.creditAchieved,
-                        latestScore: newActivityState.latestCreditAchieved,
+                        maxScore: newActivityState.maxCreditAchieved,
                         scoreByItem,
                         subject: "SPLICE.reportScoreAndState",
                         activityId: action.baseId,
@@ -165,7 +165,7 @@ export function activityStateReducer(
                         onSubmission,
                     },
                     score: newActivityState.creditAchieved,
-                    latestScore: newActivityState.latestCreditAchieved,
+                    maxScore: newActivityState.maxCreditAchieved,
                     scoreByItem,
                     subject: "SPLICE.reportScoreAndState",
                     activityId: action.baseId,
@@ -200,11 +200,11 @@ function updateSingleDocState(
         );
     }
 
-    newSingleDocState.creditAchieved = Math.max(
-        newSingleDocState.creditAchieved,
+    newSingleDocState.creditAchieved = action.creditAchieved;
+    newSingleDocState.maxCreditAchieved = Math.max(
+        newSingleDocState.maxCreditAchieved,
         action.creditAchieved,
     );
-    newSingleDocState.latestCreditAchieved = action.creditAchieved;
 
     newSingleDocState.doenetState = action.doenetState;
 

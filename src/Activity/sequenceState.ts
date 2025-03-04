@@ -49,10 +49,10 @@ export type SequenceState = {
     source: SequenceSource;
     /** Used to seed the random number generate to yield the actual variants of each attempt. */
     initialVariant: number;
-    /** Credit achieved (between 0 and 1) over all attempts of this activity */
+    /** Credit achieved (between 0 and 1) from the latest submission */
     creditAchieved: number;
-    /** Credit achieved from the latest submission */
-    latestCreditAchieved: number;
+    /** The maximum credit achieved over all submissions of this attempt of the activity */
+    maxCreditAchieved: number;
     /** The state of child activities, in their original order */
     allChildren: ActivityState[];
     /** The number of the current attempt */
@@ -111,7 +111,7 @@ export function isSequenceState(obj: unknown): obj is SequenceState {
         isSequenceSource(typedObj.source) &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        typeof typedObj.latestCreditAchieved === "number" &&
+        typeof typedObj.maxCreditAchieved === "number" &&
         Array.isArray(typedObj.allChildren) &&
         typedObj.allChildren.every(isActivityState) &&
         typeof typedObj.attemptNumber === "number" &&
@@ -136,7 +136,7 @@ export function isSequenceStateNoSource(
         (typedObj.parentId === null || typeof typedObj.parentId === "string") &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        typeof typedObj.latestCreditAchieved === "number" &&
+        typeof typedObj.maxCreditAchieved === "number" &&
         Array.isArray(typedObj.allChildren) &&
         typedObj.allChildren.every(isActivityStateNoSource) &&
         typeof typedObj.attemptNumber === "number" &&
@@ -199,7 +199,7 @@ export function initializeSequenceState({
         source,
         initialVariant: variant,
         creditAchieved: 0,
-        latestCreditAchieved: 0,
+        maxCreditAchieved: 0,
         allChildren: childStates,
         attemptNumber: 0,
         orderedChildren: [],
@@ -326,7 +326,7 @@ export function generateNewSequenceAttempt({
     const newState: SequenceState = {
         ...state,
         creditAchieved: 0,
-        latestCreditAchieved: 0,
+        maxCreditAchieved: 0,
         allChildren: unorderedChildStates,
         attemptNumber: state.attemptNumber + 1,
         orderedChildren: orderedChildStates,
@@ -337,14 +337,14 @@ export function generateNewSequenceAttempt({
 
 /**
  * Recurse through the descendants of `activityState`,
- * returning an array of the `creditAchieved` and `latestCreditAchieved` of the latest single document activities,
+ * returning an array of the `creditAchieved` and `maxCreditAchieved` of the latest single document activities,
  * or of select activities that select a single document.
  */
 export function extractSequenceItemCredit(
     activityState: SequenceState,
-): { id: string; score: number; latestScore: number; docId?: string }[] {
+): { id: string; score: number; maxScore: number; docId?: string }[] {
     if (activityState.attemptNumber === 0) {
-        return [{ id: activityState.id, score: 0, latestScore: 0 }];
+        return [{ id: activityState.id, score: 0, maxScore: 0 }];
     } else {
         return activityState.orderedChildren.flatMap((state) =>
             extractActivityItemCredit(state),

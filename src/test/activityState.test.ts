@@ -58,7 +58,7 @@ describe("Activity state tests", () => {
             source: (source.items[0] as SelectSource)
                 .items[0] as SingleDocSource,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -74,7 +74,7 @@ describe("Activity state tests", () => {
             source: (source.items[0] as SelectSource)
                 .items[1] as SingleDocSource,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -90,7 +90,7 @@ describe("Activity state tests", () => {
             parentId: "seq",
             source: source.items[0] as SelectSource,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -103,10 +103,10 @@ describe("Activity state tests", () => {
             type: "singleDoc",
             id: "doc3",
             parentId: "sel2",
-            creditAchieved: 0,
             source: (source.items[1] as SelectSource)
                 .items[0] as SingleDocSource,
-            latestCreditAchieved: 0,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -122,7 +122,7 @@ describe("Activity state tests", () => {
             source: (source.items[1] as SelectSource)
                 .items[1] as SingleDocSource,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -138,7 +138,7 @@ describe("Activity state tests", () => {
             source: (source.items[1] as SelectSource)
                 .items[2] as SingleDocSource,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -154,7 +154,7 @@ describe("Activity state tests", () => {
             parentId: "seq",
             source: source.items[1] as SelectSource,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -171,7 +171,7 @@ describe("Activity state tests", () => {
             source: source,
             initialVariant: 1,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             attemptNumber: 0,
             allChildren: [select1State, select2State],
             orderedChildren: [],
@@ -186,7 +186,7 @@ describe("Activity state tests", () => {
             id: "doc4",
             parentId: "sel1",
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -200,7 +200,7 @@ describe("Activity state tests", () => {
             id: "doc5",
             parentId: "sel1",
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -215,7 +215,7 @@ describe("Activity state tests", () => {
             id: "sel1",
             parentId: "seq",
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -229,7 +229,7 @@ describe("Activity state tests", () => {
             id: "doc3",
             parentId: "sel2",
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -243,7 +243,7 @@ describe("Activity state tests", () => {
             id: "doc2",
             parentId: "sel2",
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -257,7 +257,7 @@ describe("Activity state tests", () => {
             id: "doc1",
             parentId: "sel2",
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -272,7 +272,7 @@ describe("Activity state tests", () => {
             id: "sel2",
             parentId: "seq",
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             initialVariant: expect.any(Number),
@@ -288,7 +288,7 @@ describe("Activity state tests", () => {
             parentId: null,
             initialVariant: 1,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             attemptNumber: 0,
             allChildren: [select1StatePruned, select2StatePruned],
             orderedChildren: [],
@@ -345,7 +345,7 @@ describe("Activity state tests", () => {
             source: docSource,
             initialVariant: docVariant,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             attemptNumber: 0,
             doenetState: null,
             initialQuestionCounter: 0,
@@ -361,7 +361,7 @@ describe("Activity state tests", () => {
             source: docSource,
             initialVariant: docVariant,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             attemptNumber: 0,
             doenetState: null,
             initialQuestionCounter: 0,
@@ -377,7 +377,7 @@ describe("Activity state tests", () => {
             source: docSource,
             initialVariant: docVariant,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             attemptNumber: 0,
             doenetState: null,
             initialQuestionCounter: 0,
@@ -393,7 +393,7 @@ describe("Activity state tests", () => {
             source: docSource,
             initialVariant: docVariant,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             attemptNumber: 0,
             doenetState: null,
             initialQuestionCounter: 0,
@@ -409,7 +409,7 @@ describe("Activity state tests", () => {
             source,
             initialVariant: 1,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             attemptNumber: 0,
             initialQuestionCounter: 0,
             selectedChildren: [],

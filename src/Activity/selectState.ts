@@ -43,7 +43,7 @@ export type SelectSource = {
     selectByVariant: boolean;
 };
 
-/** The current state of a select activity, including all attempts. */
+/** The current state of a select activity */
 export type SelectState = {
     type: "select";
     id: string;
@@ -51,10 +51,10 @@ export type SelectState = {
     source: SelectSource;
     /** Used to seed the random number generate to yield the actual variants of each attempt. */
     initialVariant: number;
-    /** Credit achieved (between 0 and 1) over all attempts of this activity */
+    /** Credit achieved (between 0 and 1) from the latest submission */
     creditAchieved: number;
-    /** Credit achieved from the latest submission */
-    latestCreditAchieved: number;
+    /** The maximum credit achieved over all submissions of this attempt of the activity */
+    maxCreditAchieved: number;
     /** The state of all possible activities that could be selected from. */
     allChildren: ActivityState[];
     /** The number of the current attempt */
@@ -113,7 +113,7 @@ export function isSelectState(obj: unknown): obj is SelectState {
         isSelectSource(typedObj.source) &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        typeof typedObj.latestCreditAchieved === "number" &&
+        typeof typedObj.maxCreditAchieved === "number" &&
         Array.isArray(typedObj.allChildren) &&
         typedObj.allChildren.every(isActivityState) &&
         typeof typedObj.attemptNumber === "number" &&
@@ -141,7 +141,7 @@ export function isSelectStateNoSource(
         (typedObj.parentId === null || typeof typedObj.parentId === "string") &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        typeof typedObj.latestCreditAchieved === "number" &&
+        typeof typedObj.maxCreditAchieved === "number" &&
         Array.isArray(typedObj.allChildren) &&
         typedObj.allChildren.every(isActivityStateNoSource) &&
         typeof typedObj.attemptNumber === "number" &&
@@ -256,7 +256,7 @@ export function initializeSelectState({
         source,
         initialVariant: variant,
         creditAchieved: 0,
-        latestCreditAchieved: 0,
+        maxCreditAchieved: 0,
         allChildren: childStates,
         attemptNumber: 0,
         selectedChildren: [],
@@ -465,7 +465,7 @@ export function generateNewSelectAttempt({
     const newState: SelectState = {
         ...state,
         creditAchieved: 0,
-        latestCreditAchieved: 0,
+        maxCreditAchieved: 0,
         allChildren: newActivityOptionStates,
         attemptNumber: state.attemptNumber + 1,
         selectedChildren: newActivityStates,
@@ -593,21 +593,21 @@ export function generateNewSingleDocAttemptForMultiSelect({
             parentAttempt: state.attemptNumber + 1,
         });
 
-    // Give that child the credit achieved from the child we are replacing
+    // Give that child the max credit achieved from the child we are replacing
     // as it will be viewed as another attempt for that item.
-    const childStatePreserveCredit = { ...newChildState };
-    childStatePreserveCredit.creditAchieved =
-        state.selectedChildren[slotNum].creditAchieved;
-    childStatePreserveCredit.latestCreditAchieved = 0;
+    const childStatePreserveMaxCredit = { ...newChildState };
+    childStatePreserveMaxCredit.maxCreditAchieved =
+        state.selectedChildren[slotNum].maxCreditAchieved;
+    childStatePreserveMaxCredit.creditAchieved = 0;
 
-    newActivityOptionStates[selectedIdx] = childStatePreserveCredit;
-    newActivityStates[slotNum] = childStatePreserveCredit;
+    newActivityOptionStates[selectedIdx] = childStatePreserveMaxCredit;
+    newActivityStates[slotNum] = childStatePreserveMaxCredit;
 
-    // calculate the latest credit achieved assuming the score for `slotNum` is zero
+    // calculate the credit achieved assuming the score for `slotNum` is zero
     const latestOtherCreditAchieved = state.selectedChildren
         .filter((_, i) => i != slotNum)
-        .map((a) => a.latestCreditAchieved);
-    const latestCreditAchieved =
+        .map((a) => a.creditAchieved);
+    const creditAchieved =
         latestOtherCreditAchieved.reduce((a, c) => a + c, 0) /
         state.selectedChildren.length;
 
@@ -615,11 +615,11 @@ export function generateNewSingleDocAttemptForMultiSelect({
         ...state,
         allChildren: newActivityOptionStates,
         selectedChildren: newActivityStates,
-        creditAchieved: state.creditAchieved, // keep credit achieved the same
-        latestCreditAchieved,
+        maxCreditAchieved: state.maxCreditAchieved, // keep max credit achieved the same
+        creditAchieved,
         previousSelections: [
             ...state.previousSelections,
-            childStatePreserveCredit.id,
+            childStatePreserveMaxCredit.id,
         ],
         initialQuestionCounter,
     };
@@ -629,14 +629,14 @@ export function generateNewSingleDocAttemptForMultiSelect({
 
 /**
  * Recurse through the descendants of `activityState`,
- * returning an array of the `creditAchieved` and `latestCreditAchieved` of the latest single document activities,
+ * returning an array of the `creditAchieved` and `maxCreditAchieved` of the latest single document activities,
  * or of select activities that select a single document.
  */
 export function extractSelectItemCredit(
     activityState: SelectState,
-): { id: string; score: number; latestScore: number; docId?: string }[] {
+): { id: string; score: number; maxScore: number; docId?: string }[] {
     if (activityState.attemptNumber === 0) {
-        return [{ id: activityState.id, score: 0, latestScore: 0 }];
+        return [{ id: activityState.id, score: 0, maxScore: 0 }];
     }
     if (
         activityState.source.numToSelect === 1 &&
@@ -647,7 +647,7 @@ export function extractSelectItemCredit(
             {
                 id: activityState.id,
                 score: activityState.creditAchieved,
-                latestScore: activityState.latestCreditAchieved,
+                maxScore: activityState.maxCreditAchieved,
                 docId: activityState.selectedChildren[0].id,
             },
         ];

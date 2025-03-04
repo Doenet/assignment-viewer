@@ -28,7 +28,7 @@ export type SingleDocSource = {
     baseComponentCounts?: Record<string, number | undefined>;
 };
 
-/** The current state of a single doc activity, including all attempts. */
+/** The current state of a single doc activity */
 export type SingleDocState = {
     type: "singleDoc";
     id: string;
@@ -36,10 +36,10 @@ export type SingleDocState = {
     source: SingleDocSource;
     /** Used to seed the random number generate to yield the actual variants of each attempt. */
     initialVariant: number;
-    /** Credit achieved (between 0 and 1) over all attempts of this activity */
+    /** Credit achieved (between 0 and 1) from the latest submission */
     creditAchieved: number;
-    /** Credit achieved from the latest submission */
-    latestCreditAchieved: number;
+    /** The maximum credit achieved over all submissions of this attempt of the activity */
+    maxCreditAchieved: number;
     /** The number of the current attempt */
     attemptNumber: number;
     /** The variant selected for the current attempt */
@@ -91,7 +91,7 @@ export function isSingleDocState(obj: unknown): obj is SingleDocState {
         isSingleDocSource(typedObj.source) &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        typeof typedObj.latestCreditAchieved === "number" &&
+        typeof typedObj.maxCreditAchieved === "number" &&
         typeof typedObj.attemptNumber === "number" &&
         typeof typedObj.currentVariant === "number" &&
         Array.isArray(typedObj.previousVariants) &&
@@ -116,7 +116,7 @@ export function isSingleDocStateNoSource(
         (typedObj.parentId === null || typeof typedObj.parentId === "string") &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        typeof typedObj.latestCreditAchieved === "number" &&
+        typeof typedObj.maxCreditAchieved === "number" &&
         typeof typedObj.attemptNumber === "number" &&
         typeof typedObj.currentVariant === "number" &&
         Array.isArray(typedObj.previousVariants) &&
@@ -160,7 +160,7 @@ export function initializeSingleDocState({
         source,
         initialVariant: variant,
         creditAchieved: 0,
-        latestCreditAchieved: 0,
+        maxCreditAchieved: 0,
         attemptNumber: 0,
         currentVariant: 0,
         previousVariants: [],
@@ -186,7 +186,7 @@ export function initializeSingleDocState({
  * Calculates a value for the next question counter (`finalQuestionCounter`) based on
  * the numbers of questions in the new attempt, as specified by `questionCounts`.
  *
- * If `resetCredit` is true, set the `creditAchieved` of the new attempt to zero.
+ * If `resetCredit` is true, set the `maxCreditAchieved` of the new attempt to zero.
  *
  * The `parentAttempt` counter should be the current attempt number of the parent activity.
  * It is used to ensure that selected variants change with the parent's attempt number.
@@ -247,7 +247,7 @@ export function generateNewSingleDocAttempt({
     const newState: SingleDocState = {
         ...state,
         creditAchieved: 0,
-        latestCreditAchieved: 0,
+        maxCreditAchieved: 0,
         attemptNumber: state.attemptNumber + 1,
         currentVariant: selectedVariant,
         previousVariants: [...state.previousVariants, selectedVariant],
@@ -263,7 +263,7 @@ export function generateNewSingleDocAttempt({
  */
 export function extractSingleDocItemCredit(
     activityState: SingleDocState,
-): { id: string; score: number; latestScore: number; docId: string }[] {
+): { id: string; score: number; maxScore: number; docId: string }[] {
     if (activityState.source.isDescription) {
         return [];
     } else {
@@ -271,7 +271,7 @@ export function extractSingleDocItemCredit(
             {
                 id: activityState.id,
                 score: activityState.creditAchieved,
-                latestScore: activityState.latestCreditAchieved,
+                maxScore: activityState.maxCreditAchieved,
                 docId: activityState.id,
             },
         ];

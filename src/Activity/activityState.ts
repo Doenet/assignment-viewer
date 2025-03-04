@@ -50,7 +50,7 @@ import {
 /** The source for creating an activity */
 export type ActivitySource = SingleDocSource | SelectSource | SequenceSource;
 
-/** The current state of an activity, including all descendants and attempts. */
+/** The current state of an activity, including all descendants */
 export type ActivityState = SingleDocState | SelectState | SequenceState;
 
 /**
@@ -174,7 +174,7 @@ export function initializeActivityState({
  * Calculates a value for the next question counter (`finalQuestionCounter`) based on
  * the numbers of questions in the single documents of the new attempt, as specified by `questionCounts`.
  *
- * If `resetCredit` is true, set the `creditAchieved` of the new attempt to zero.
+ * If `resetCredit` is true, set the `maxCreditAchieved` of the new attempt to zero.
  *
  * The `parentAttempt` counter should be the current attempt number of the parent activity.
  * It is used to ensure that selected variants change with the parent's attempt number.
@@ -308,8 +308,8 @@ export function generateNewSubActivityAttempt({
             }));
 
             // preserve the old credit achieved
-            newParentState.creditAchieved =
-                allStates[parentState.id].creditAchieved;
+            newParentState.maxCreditAchieved =
+                allStates[parentState.id].maxCreditAchieved;
         }
 
         allStates[parentState.id] = newParentState;
@@ -328,7 +328,7 @@ export function generateNewSubActivityAttempt({
         });
 
         // preserve the old credit achieved
-        newSubActivityState.creditAchieved = allStates[id].creditAchieved;
+        newSubActivityState.maxCreditAchieved = allStates[id].maxCreditAchieved;
 
         allStates[id] = newSubActivityState;
 
@@ -341,12 +341,12 @@ export function generateNewSubActivityAttempt({
 
 /**
  * Recurse through the descendants of `activityState`,
- * returning an array of the `creditAchieved` of the latest single document activities,
+ * returning an array of the `maxCreditAchieved` of the latest single document activities,
  * or of select activities that select a single document.
  */
 export function extractActivityItemCredit(
     activityState: ActivityState,
-): { id: string; score: number; latestScore: number; docId?: string }[] {
+): { id: string; score: number; maxScore: number; docId?: string }[] {
     switch (activityState.type) {
         case "singleDoc": {
             return extractSingleDocItemCredit(activityState);
@@ -366,7 +366,7 @@ export function extractActivityItemCredit(
  *
  * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
  *
- * Even if `clearDoenetState` is `false``, still clear `doenetState` on all but the latest attempt
+ * Even if `clearDoenetState` is `false`, still clear `doenetState` on all but the latest attempt
  * and clear it on all `allChildren`. In this way, the (potentially large) DoenetML state is saved
  * only where needed to reconstitute the activity state.
  */
@@ -600,7 +600,7 @@ export function gatherStates(
 /**
  * Given the changed state of activity with `id`, as stored in `allStates[id]`,
  * propagate the change to the activities ancestors, updating their
- * `latestChidStates`, `attempts`, `latestCreditAchieved` and `creditAchieved` fields.
+ * `latestChidStates`, `attempts`, `creditAchieved` and `maxCreditAchieved` fields.
  *
  * Creates new state objects via shallow copies (and does not modify existing state objects),
  * adding the new state objects back to `allStates`.
@@ -653,8 +653,8 @@ export function propagateStateChangeToRoot({
 
     childActivities[childIdx2] = activityState;
 
-    let credit: number;
-    let latestCredit: number;
+    let maxCreditAchieved: number;
+    let creditAchieved: number;
 
     if (newParentState.type === "sequence") {
         newParentState.orderedChildren = childActivities;
@@ -679,31 +679,31 @@ export function propagateStateChangeToRoot({
         const totWeights = creditWeights.reduce((a, c) => a + c);
         creditWeights = creditWeights.map((w) => w / totWeights);
 
-        credit = nonDescriptions.reduce(
-            (a, c, i) => a + c.creditAchieved * creditWeights[i],
+        maxCreditAchieved = nonDescriptions.reduce(
+            (a, c, i) => a + c.maxCreditAchieved * creditWeights[i],
             0,
         );
-        latestCredit = nonDescriptions.reduce(
-            (a, c, i) => a + c.latestCreditAchieved * creditWeights[i],
+        creditAchieved = nonDescriptions.reduce(
+            (a, c, i) => a + c.creditAchieved * creditWeights[i],
             0,
         );
     } else {
         newParentState.selectedChildren = childActivities;
 
         // select: take average of credit from all last attempt activities
-        credit =
-            childActivities.reduce((a, c) => a + c.creditAchieved, 0) /
+        maxCreditAchieved =
+            childActivities.reduce((a, c) => a + c.maxCreditAchieved, 0) /
             childActivities.length;
-        latestCredit =
-            childActivities.reduce((a, c) => a + c.latestCreditAchieved, 0) /
+        creditAchieved =
+            childActivities.reduce((a, c) => a + c.creditAchieved, 0) /
             childActivities.length;
     }
 
-    newParentState.creditAchieved = Math.max(
-        newParentState.creditAchieved,
-        credit,
+    newParentState.maxCreditAchieved = Math.max(
+        newParentState.maxCreditAchieved,
+        maxCreditAchieved,
     );
-    newParentState.latestCreditAchieved = latestCredit;
+    newParentState.creditAchieved = creditAchieved;
 
     return propagateStateChangeToRoot({
         allStates,

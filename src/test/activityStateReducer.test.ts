@@ -46,7 +46,7 @@ describe("Activity reducer tests", () => {
             doenetState: null,
             initialVariant: 5,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
+            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             currentVariant: 0,
             previousVariants: [],
@@ -104,10 +104,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreByItem",
+                maxScore: 0,
                 score: 0,
-                latestScore: 0,
                 scoreByItem: [
-                    { id: "doc5", score: 0, latestScore: 0, docId: "doc5" },
+                    { id: "doc5", maxScore: 0, score: 0, docId: "doc5" },
                 ],
                 activityId: "newId",
             },
@@ -131,8 +131,8 @@ describe("Activity reducer tests", () => {
         }) as SingleDocState;
 
         // artificially set credit on state0
-        state0.creditAchieved = 0.9;
-        state0.latestCreditAchieved = 0.8;
+        state0.maxCreditAchieved = 0.9;
+        state0.creditAchieved = 0.8;
 
         let state = activityStateReducer(state0, {
             type: "generateNewActivityAttempt",
@@ -150,8 +150,8 @@ describe("Activity reducer tests", () => {
         let expectState: SingleDocState = {
             ...state0,
             initialQuestionCounter: 9,
+            maxCreditAchieved: 0,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
             attemptNumber: 1,
             currentVariant: previousVariants[0],
             previousVariants,
@@ -174,10 +174,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreByItem",
+                maxScore: 0,
                 score: 0,
-                latestScore: 0,
                 scoreByItem: [
-                    { id: "doc5", score: 0, latestScore: 0, docId: "doc5" },
+                    { id: "doc5", maxScore: 0, score: 0, docId: "doc5" },
                 ],
                 activityId: "newId",
             },
@@ -198,8 +198,8 @@ describe("Activity reducer tests", () => {
         expectState = {
             ...state0,
             initialQuestionCounter: 6,
+            maxCreditAchieved: 0,
             creditAchieved: 0,
-            latestCreditAchieved: 0,
             attemptNumber: 2,
             currentVariant: previousVariants[1],
             previousVariants,
@@ -210,10 +210,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
+                maxScore: 0,
                 score: 0,
-                latestScore: 0,
                 scoreByItem: [
-                    { id: "doc5", score: 0, latestScore: 0, docId: "doc5" },
+                    { id: "doc5", maxScore: 0, score: 0, docId: "doc5" },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -262,8 +262,8 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
+        expect(state.maxCreditAchieved).eq(0.2);
         expect(state.creditAchieved).eq(0.2);
-        expect(state.latestCreditAchieved).eq(0.2);
         expect(state.doenetState).eq("DoenetML state 1");
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -271,10 +271,15 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
+                maxScore: 0.2,
                 score: 0.2,
-                latestScore: 0.2,
                 scoreByItem: [
-                    { id: "doc5", score: 0.2, latestScore: 0.2, docId: "doc5" },
+                    {
+                        id: "doc5",
+                        maxScore: 0.2,
+                        score: 0.2,
+                        docId: "doc5",
+                    },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -297,8 +302,8 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.creditAchieved).eq(0.2);
-        expect(state.latestCreditAchieved).eq(0.1);
+        expect(state.maxCreditAchieved).eq(0.2);
+        expect(state.creditAchieved).eq(0.1);
         expect(state.doenetState).eq("DoenetML state 2");
 
         expect(spy).toHaveBeenCalledTimes(2);
@@ -306,10 +311,15 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                score: 0.2,
-                latestScore: 0.1,
+                maxScore: 0.2,
+                score: 0.1,
                 scoreByItem: [
-                    { id: "doc5", score: 0.2, latestScore: 0.1, docId: "doc5" },
+                    {
+                        id: "doc5",
+                        maxScore: 0.2,
+                        score: 0.1,
+                        docId: "doc5",
+                    },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -332,8 +342,8 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
+        expect(state.maxCreditAchieved).eq(0.3);
         expect(state.creditAchieved).eq(0.3);
-        expect(state.latestCreditAchieved).eq(0.3);
         expect(state.doenetState).eq("DoenetML state 3");
 
         expect(spy).toHaveBeenCalledTimes(3);
@@ -341,10 +351,15 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
+                maxScore: 0.3,
                 score: 0.3,
-                latestScore: 0.3,
                 scoreByItem: [
-                    { id: "doc5", score: 0.3, latestScore: 0.3, docId: "doc5" },
+                    {
+                        id: "doc5",
+                        maxScore: 0.3,
+                        score: 0.3,
+                        docId: "doc5",
+                    },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -367,8 +382,8 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
+        expect(state.maxCreditAchieved).eq(0.0);
         expect(state.creditAchieved).eq(0.0);
-        expect(state.latestCreditAchieved).eq(0.0);
         expect(state.doenetState).eq(null);
 
         expect(spy).toHaveBeenCalledTimes(4);
@@ -376,10 +391,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
+                maxScore: 0,
                 score: 0,
-                latestScore: 0,
                 scoreByItem: [
-                    { id: "doc5", score: 0, latestScore: 0, docId: "doc5" },
+                    { id: "doc5", maxScore: 0, score: 0, docId: "doc5" },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -402,8 +417,8 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
+        expect(state.maxCreditAchieved).eq(0.1);
         expect(state.creditAchieved).eq(0.1);
-        expect(state.latestCreditAchieved).eq(0.1);
         expect(state.doenetState).eq("DoenetML state 4");
 
         expect(spy).toHaveBeenCalledTimes(5);
@@ -411,10 +426,15 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
+                maxScore: 0.1,
                 score: 0.1,
-                latestScore: 0.1,
                 scoreByItem: [
-                    { id: "doc5", score: 0.1, latestScore: 0.1, docId: "doc5" },
+                    {
+                        id: "doc5",
+                        maxScore: 0.1,
+                        score: 0.1,
+                        docId: "doc5",
+                    },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -437,8 +457,8 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
+        expect(state.maxCreditAchieved).eq(0.5);
         expect(state.creditAchieved).eq(0.5);
-        expect(state.latestCreditAchieved).eq(0.5);
         expect(state.doenetState).eq("DoenetML state 5");
 
         expect(spy).toHaveBeenCalledTimes(6);
@@ -446,10 +466,15 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
+                maxScore: 0.5,
                 score: 0.5,
-                latestScore: 0.5,
                 scoreByItem: [
-                    { id: "doc5", score: 0.5, latestScore: 0.5, docId: "doc5" },
+                    {
+                        id: "doc5",
+                        maxScore: 0.5,
+                        score: 0.5,
+                        docId: "doc5",
+                    },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -482,13 +507,13 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        const credit = state.creditAchieved;
-        expect(credit).closeTo(
+        const maxCreditAchieved = state.maxCreditAchieved;
+        expect(maxCreditAchieved).closeTo(
             docCredits.reduce((a, c) => a + c, 0) / 3,
             1e-12,
         );
-        const latestCredit = state.latestCreditAchieved;
-        expect(latestCredit).closeTo(
+        const creditAchieved = state.creditAchieved;
+        expect(creditAchieved).closeTo(
             docLatestCredits.reduce((a, c) => a + c, 0) / 3,
             1e-12,
         );
@@ -501,8 +526,8 @@ describe("Activity reducer tests", () => {
                 throw Error("Shouldn't happen");
             }
             expect(docState.id).eq(docIds[i]);
-            expect(docState.creditAchieved).eq(docCredits[i]);
-            expect(docState.latestCreditAchieved).eq(docLatestCredits[i]);
+            expect(docState.maxCreditAchieved).eq(docCredits[i]);
+            expect(docState.creditAchieved).eq(docLatestCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[i]);
             expect(docState.doenetState).eq(docStates[i]);
         }
@@ -510,25 +535,25 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                score: credit,
-                latestScore: latestCredit,
+                maxScore: maxCreditAchieved,
+                score: creditAchieved,
                 scoreByItem: [
                     {
                         id: docIds[0],
-                        score: docCredits[0],
-                        latestScore: docLatestCredits[0],
+                        maxScore: docCredits[0],
+                        score: docLatestCredits[0],
                         docId: docIds[0],
                     },
                     {
                         id: docIds[1],
-                        score: docCredits[1],
-                        latestScore: docLatestCredits[1],
+                        maxScore: docCredits[1],
+                        score: docLatestCredits[1],
                         docId: docIds[1],
                     },
                     {
                         id: docIds[2],
-                        score: docCredits[2],
-                        latestScore: docLatestCredits[2],
+                        maxScore: docCredits[2],
+                        score: docLatestCredits[2],
                         docId: docIds[2],
                     },
                 ],
@@ -977,13 +1002,13 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        const credit = state.creditAchieved;
-        expect(credit).closeTo(
+        const maxCreditAchieved = state.maxCreditAchieved;
+        expect(maxCreditAchieved).closeTo(
             selCredits.reduce((a, c) => a + c, 0) / 2,
             1e-12,
         );
-        const latestCredit = state.latestCreditAchieved;
-        expect(latestCredit).closeTo(
+        const creditAchieved = state.creditAchieved;
+        expect(creditAchieved).closeTo(
             selLatestCredits.reduce((a, c) => a + c, 0) / 2,
             1e-12,
         );
@@ -996,8 +1021,8 @@ describe("Activity reducer tests", () => {
                 throw Error("Shouldn't happen");
             }
             expect(selectState.id).eq(selIds[i]);
-            expect(selectState.creditAchieved).eq(selCredits[i]);
-            expect(selectState.latestCreditAchieved).eq(selLatestCredits[i]);
+            expect(selectState.maxCreditAchieved).eq(selCredits[i]);
+            expect(selectState.creditAchieved).eq(selLatestCredits[i]);
             expect(selectState.attemptNumber).eq(selAttemptNumbers[i]);
 
             const docState = selectState.selectedChildren[0];
@@ -1005,8 +1030,8 @@ describe("Activity reducer tests", () => {
                 throw Error("Shouldn't happen");
             }
             expect(docState.id).eq(docIds[i]);
-            expect(docState.creditAchieved).eq(docCredits[i]);
-            expect(docState.latestCreditAchieved).eq(docLatestCredits[i]);
+            expect(docState.maxCreditAchieved).eq(docCredits[i]);
+            expect(docState.creditAchieved).eq(docLatestCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[docIds[i]]);
             expect(docState.doenetState).eq(docStates[i]);
         }
@@ -1014,19 +1039,19 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                score: credit,
-                latestScore: latestCredit,
+                maxScore: maxCreditAchieved,
+                score: creditAchieved,
                 scoreByItem: [
                     {
                         id: selIds[0],
-                        score: selCredits[0],
-                        latestScore: selLatestCredits[0],
+                        maxScore: selCredits[0],
+                        score: selLatestCredits[0],
                         docId: docIds[0],
                     },
                     {
                         id: selIds[1],
-                        score: selCredits[1],
-                        latestScore: selLatestCredits[1],
+                        maxScore: selCredits[1],
+                        score: selLatestCredits[1],
                         docId: docIds[1],
                     },
                 ],
@@ -1582,13 +1607,13 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        const credit = state.creditAchieved;
-        expect(credit).closeTo(
+        const maxCreditAchieved = state.maxCreditAchieved;
+        expect(maxCreditAchieved).closeTo(
             docCredits.reduce((a, c) => a + c, 0) / 2,
             1e-12,
         );
-        const latestCredit = state.latestCreditAchieved;
-        expect(latestCredit).closeTo(
+        const creditAchieved = state.creditAchieved;
+        expect(creditAchieved).closeTo(
             docLatestCredits.reduce((a, c) => a + c, 0) / 2,
             1e-12,
         );
@@ -1601,8 +1626,8 @@ describe("Activity reducer tests", () => {
                 throw Error("Shouldn't happen");
             }
             expect(docState.id).eq(docIds[i]);
-            expect(docState.creditAchieved).eq(docCredits[i]);
-            expect(docState.latestCreditAchieved).eq(docLatestCredits[i]);
+            expect(docState.maxCreditAchieved).eq(docCredits[i]);
+            expect(docState.creditAchieved).eq(docLatestCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[docIds[i]]);
             expect(docState.doenetState).eq(docStates[i]);
         }
@@ -1610,19 +1635,19 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                score: credit,
-                latestScore: latestCredit,
+                maxScore: maxCreditAchieved,
+                score: creditAchieved,
                 scoreByItem: [
                     {
                         id: docIds[0],
-                        score: docCredits[0],
-                        latestScore: docLatestCredits[0],
+                        maxScore: docCredits[0],
+                        score: docLatestCredits[0],
                         docId: docIds[0],
                     },
                     {
                         id: docIds[1],
-                        score: docCredits[1],
-                        latestScore: docLatestCredits[1],
+                        maxScore: docCredits[1],
+                        score: docLatestCredits[1],
                         docId: docIds[1],
                     },
                 ],
