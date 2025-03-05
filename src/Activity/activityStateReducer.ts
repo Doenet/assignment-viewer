@@ -115,6 +115,22 @@ export function activityStateReducer(
                         activityId: action.baseId,
                     });
                 } else {
+                    let newAttemptForItem = {};
+
+                    if (action.id && action.id !== state.id) {
+                        // determine the item number for which we are generating a new attempt
+                        const scoreByItemOld = extractActivityItemCredit(state);
+
+                        newAttemptForItem = {
+                            newAttemptForItem:
+                                scoreByItemOld.findIndex(
+                                    (s) =>
+                                        s.id === action.id ||
+                                        s.docId === action.id,
+                                ) + 1,
+                        };
+                    }
+
                     const sourceHash = hash(newActivityState.source);
 
                     window.postMessage({
@@ -130,6 +146,8 @@ export function activityStateReducer(
                         scoreByItem,
                         subject: "SPLICE.reportScoreAndState",
                         activityId: action.baseId,
+                        newAttempt: true,
+                        ...newAttemptForItem,
                     });
                 }
             }
