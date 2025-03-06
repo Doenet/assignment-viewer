@@ -2,6 +2,7 @@ import seedrandom from "seedrandom";
 import { calcNumVariantsFromState } from "./activityState";
 import {
     ActivityVariantRecord,
+    isRestrictToVariantSlice,
     QuestionCountRecord,
     RestrictToVariantSlice,
 } from "../types";
@@ -27,7 +28,7 @@ export type SingleDocSource = {
     baseComponentCounts?: Record<string, number | undefined>;
 };
 
-/** The current state of a single doc activity, including all attempts. */
+/** The current state of a single doc activity */
 export type SingleDocState = {
     type: "singleDoc";
     id: string;
@@ -35,23 +36,22 @@ export type SingleDocState = {
     source: SingleDocSource;
     /** Used to seed the random number generate to yield the actual variants of each attempt. */
     initialVariant: number;
-    /** Credit achieved (between 0 and 1) over all attempts of this activity */
+    /** Credit achieved (between 0 and 1) from the latest submission */
     creditAchieved: number;
-    attempts: SingleDocAttemptState[];
-    /** See {@link RestrictToVariantSlice} */
-    restrictToVariantSlice?: RestrictToVariantSlice;
-};
-
-/** The state of an attempt of a single doc activity. */
-export type SingleDocAttemptState = {
-    /** The variant selected for this attempt */
-    variant: number;
-    /** A json object containing the state need to reconstitute the activity */
+    /** The maximum credit achieved over all submissions of this attempt of the activity */
+    maxCreditAchieved: number;
+    /** The number of the current attempt */
+    attemptNumber: number;
+    /** The variant selected for the current attempt */
+    currentVariant: number;
+    /** A list of the the variants selected in all attempts, ordered by attempt number */
+    previousVariants: number[];
+    /** A json object containing the state needed to reconstitute the activity of the current attempt */
     doenetState: unknown;
-    /** Credit achieved (between 0 and 1) on this attempt */
-    creditAchieved: number;
     /** The value of the question counter set for the beginning of this activity */
     initialQuestionCounter: number;
+    /** See {@link RestrictToVariantSlice} */
+    restrictToVariantSlice?: RestrictToVariantSlice;
 };
 
 /**
@@ -91,15 +91,14 @@ export function isSingleDocState(obj: unknown): obj is SingleDocState {
         isSingleDocSource(typedObj.source) &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        Array.isArray(typedObj.attempts) &&
-        typedObj.attempts.every(
-            (attempt) =>
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                attempt !== null &&
-                typeof attempt === "object" &&
-                typeof attempt.creditAchieved === "number" &&
-                typeof attempt.variant === "number",
-        )
+        typeof typedObj.maxCreditAchieved === "number" &&
+        typeof typedObj.attemptNumber === "number" &&
+        typeof typedObj.currentVariant === "number" &&
+        Array.isArray(typedObj.previousVariants) &&
+        typedObj.previousVariants.every((x) => typeof x === "number") &&
+        typeof typedObj.initialQuestionCounter === "number" &&
+        (typedObj.restrictToVariantSlice === undefined ||
+            isRestrictToVariantSlice(typedObj.restrictToVariantSlice))
     );
 }
 
@@ -117,15 +116,14 @@ export function isSingleDocStateNoSource(
         (typedObj.parentId === null || typeof typedObj.parentId === "string") &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        Array.isArray(typedObj.attempts) &&
-        typedObj.attempts.every(
-            (attempt) =>
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                attempt !== null &&
-                typeof attempt === "object" &&
-                typeof attempt.creditAchieved === "number" &&
-                typeof attempt.variant === "number",
-        )
+        typeof typedObj.maxCreditAchieved === "number" &&
+        typeof typedObj.attemptNumber === "number" &&
+        typeof typedObj.currentVariant === "number" &&
+        Array.isArray(typedObj.previousVariants) &&
+        typedObj.previousVariants.every((x) => typeof x === "number") &&
+        typeof typedObj.initialQuestionCounter === "number" &&
+        (typedObj.restrictToVariantSlice === undefined ||
+            isRestrictToVariantSlice(typedObj.restrictToVariantSlice))
     );
 }
 
@@ -162,7 +160,12 @@ export function initializeSingleDocState({
         source,
         initialVariant: variant,
         creditAchieved: 0,
-        attempts: [],
+        maxCreditAchieved: 0,
+        attemptNumber: 0,
+        currentVariant: 0,
+        previousVariants: [],
+        initialQuestionCounter: 0,
+        doenetState: null,
         restrictToVariantSlice,
     };
 }
@@ -183,7 +186,7 @@ export function initializeSingleDocState({
  * Calculates a value for the next question counter (`finalQuestionCounter`) based on
  * the numbers of questions in the new attempt, as specified by `questionCounts`.
  *
- * If `resetCredit` is true, set the `creditAchieved` of the new attempt to zero.
+ * If `resetCredit` is true, set the `maxCreditAchieved` of the new attempt to zero.
  *
  * The `parentAttempt` counter should be the current attempt number of the parent activity.
  * It is used to ensure that selected variants change with the parent's attempt number.
@@ -198,16 +201,14 @@ export function generateNewSingleDocAttempt({
     initialQuestionCounter,
     questionCounts,
     parentAttempt,
-    resetCredit = false,
 }: {
     state: SingleDocState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     questionCounts: QuestionCountRecord;
     parentAttempt: number;
-    resetCredit?: boolean;
 }): { finalQuestionCounter: number; state: SingleDocState } {
-    const previousVariants = state.attempts.map((a) => a.variant);
+    const previousVariants = state.previousVariants;
     const numVariants = calcNumVariantsFromState(state, numActivityVariants);
 
     const numPrevVariants = previousVariants.length;
@@ -222,7 +223,7 @@ export function generateNewSingleDocAttempt({
         "|" +
         state.id.toString() +
         "|" +
-        state.attempts.length.toString() +
+        state.attemptNumber.toString() +
         "|" +
         parentAttempt.toString();
 
@@ -240,23 +241,19 @@ export function generateNewSingleDocAttempt({
             state.restrictToVariantSlice.idx;
     }
 
-    const newAttemptState: SingleDocAttemptState = {
-        variant: selectedVariant,
-        doenetState: null,
-        creditAchieved: 0,
-        initialQuestionCounter,
-    };
-
     const finalQuestionCounter =
         initialQuestionCounter + questionCounts[state.source.id];
 
-    const newState = { ...state };
-
-    newState.attempts = [...newState.attempts, newAttemptState];
-
-    if (resetCredit) {
-        newState.creditAchieved = 0;
-    }
+    const newState: SingleDocState = {
+        ...state,
+        creditAchieved: 0,
+        maxCreditAchieved: 0,
+        attemptNumber: state.attemptNumber + 1,
+        currentVariant: selectedVariant,
+        previousVariants: [...state.previousVariants, selectedVariant],
+        doenetState: null,
+        initialQuestionCounter,
+    };
 
     return { finalQuestionCounter, state: newState };
 }
@@ -266,7 +263,7 @@ export function generateNewSingleDocAttempt({
  */
 export function extractSingleDocItemCredit(
     activityState: SingleDocState,
-): { id: string; score: number }[] {
+): { id: string; score: number; maxScore: number; docId: string }[] {
     if (activityState.source.isDescription) {
         return [];
     } else {
@@ -274,6 +271,8 @@ export function extractSingleDocItemCredit(
             {
                 id: activityState.id,
                 score: activityState.creditAchieved,
+                maxScore: activityState.maxCreditAchieved,
+                docId: activityState.id,
             },
         ];
     }
@@ -295,17 +294,9 @@ export function pruneSingleDocStateForSave(
 ): SingleDocStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
 
-    const numAttempts = newState.attempts.length;
+    const doenetState = clearDoenetState ? null : newState.doenetState;
 
-    const attempts = newState.attempts.map((attempt, i) => ({
-        ...attempt,
-        doenetState:
-            clearDoenetState || i !== numAttempts - 1
-                ? null
-                : attempt.doenetState,
-    }));
-
-    return { ...newState, attempts };
+    return { ...newState, doenetState };
 }
 
 /** Reverse the effect of `pruneSingleDocStateForSave by adding back adding back references to the source */

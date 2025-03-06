@@ -1,5 +1,6 @@
 import {
     ActivityVariantRecord,
+    isRestrictToVariantSlice,
     QuestionCountRecord,
     RestrictToVariantSlice,
 } from "../types";
@@ -42,7 +43,7 @@ export type SelectSource = {
     selectByVariant: boolean;
 };
 
-/** The current state of a select activity, including all attempts. */
+/** The current state of a select activity */
 export type SelectState = {
     type: "select";
     id: string;
@@ -50,29 +51,22 @@ export type SelectState = {
     source: SelectSource;
     /** Used to seed the random number generate to yield the actual variants of each attempt. */
     initialVariant: number;
-    /** Credit achieved (between 0 and 1) over all attempts of this activity */
+    /** Credit achieved (between 0 and 1) from the latest submission */
     creditAchieved: number;
-    /** The latest state of all possible activities that could be selected from. */
-    latestChildStates: ActivityState[];
-    attempts: SelectAttemptState[];
-    /** See {@link RestrictToVariantSlice} */
-    restrictToVariantSlice?: RestrictToVariantSlice;
-};
-
-/** The state of an attempt of a select activity. */
-export type SelectAttemptState = {
-    /** The activities that were selected for this attempt */
-    activities: ActivityState[];
-    /** Credit achieved (between 0 and 1) on this attempt */
-    creditAchieved: number;
+    /** The maximum credit achieved over all submissions of this attempt of the activity */
+    maxCreditAchieved: number;
+    /** The state of all possible activities that could be selected from. */
+    allChildren: ActivityState[];
+    /** The number of the current attempt */
+    attemptNumber: number;
+    /** The children selected for the current attempt  */
+    selectedChildren: ActivityState[];
+    /** A list of the the ids of the children selected in all attempts, ordered by attempt number */
+    previousSelections: string[];
     /** The value of the question counter set for the beginning of this activity */
     initialQuestionCounter: number;
-    /**
-     * If `numToSelect` > 1 and a new attempt was created (via `generateNewSingleDocAttemptForMultiSelect`)
-     * that replaced just one item and left the others unchanged,
-     * then `singleItemReplacementIdx` gives the index of that one item that was replaced.
-     */
-    singleItemReplacementIdx?: number;
+    /** See {@link RestrictToVariantSlice} */
+    restrictToVariantSlice?: RestrictToVariantSlice;
 };
 
 /**
@@ -82,15 +76,10 @@ export type SelectAttemptState = {
  */
 export type SelectStateNoSource = Omit<
     SelectState,
-    "source" | "latestChildStates" | "attempts"
+    "source" | "allChildren" | "selectedChildren"
 > & {
-    latestChildStates: ActivityStateNoSource[];
-    attempts: {
-        activities: ActivityStateNoSource[];
-        creditAchieved: number;
-        initialQuestionCounter: number;
-        singleItemReplacementIdx?: number;
-    }[];
+    allChildren: ActivityStateNoSource[];
+    selectedChildren: ActivityStateNoSource[];
 };
 
 // type guards
@@ -124,18 +113,17 @@ export function isSelectState(obj: unknown): obj is SelectState {
         isSelectSource(typedObj.source) &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        Array.isArray(typedObj.latestChildStates) &&
-        typedObj.latestChildStates.every(isActivityState) &&
-        Array.isArray(typedObj.attempts) &&
-        typedObj.attempts.every(
-            (attempt) =>
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                attempt !== null &&
-                typeof attempt === "object" &&
-                typeof attempt.creditAchieved === "number" &&
-                Array.isArray(attempt.activities) &&
-                attempt.activities.every(isActivityState),
-        )
+        typeof typedObj.maxCreditAchieved === "number" &&
+        Array.isArray(typedObj.allChildren) &&
+        typedObj.allChildren.every(isActivityState) &&
+        typeof typedObj.attemptNumber === "number" &&
+        Array.isArray(typedObj.selectedChildren) &&
+        typedObj.selectedChildren.every(isActivityState) &&
+        Array.isArray(typedObj.previousSelections) &&
+        typedObj.previousSelections.every((x) => typeof x === "string") &&
+        typeof typedObj.initialQuestionCounter === "number" &&
+        (typedObj.restrictToVariantSlice === undefined ||
+            isRestrictToVariantSlice(typedObj.restrictToVariantSlice))
     );
 }
 
@@ -153,25 +141,24 @@ export function isSelectStateNoSource(
         (typedObj.parentId === null || typeof typedObj.parentId === "string") &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        Array.isArray(typedObj.latestChildStates) &&
-        typedObj.latestChildStates.every(isActivityStateNoSource) &&
-        Array.isArray(typedObj.attempts) &&
-        typedObj.attempts.every(
-            (attempt) =>
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                attempt !== null &&
-                typeof attempt === "object" &&
-                typeof attempt.creditAchieved === "number" &&
-                Array.isArray(attempt.activities) &&
-                attempt.activities.every(isActivityStateNoSource),
-        )
+        typeof typedObj.maxCreditAchieved === "number" &&
+        Array.isArray(typedObj.allChildren) &&
+        typedObj.allChildren.every(isActivityStateNoSource) &&
+        typeof typedObj.attemptNumber === "number" &&
+        Array.isArray(typedObj.selectedChildren) &&
+        typedObj.selectedChildren.every(isActivityStateNoSource) &&
+        Array.isArray(typedObj.previousSelections) &&
+        typedObj.previousSelections.every((x) => typeof x === "string") &&
+        typeof typedObj.initialQuestionCounter === "number" &&
+        (typedObj.restrictToVariantSlice === undefined ||
+            isRestrictToVariantSlice(typedObj.restrictToVariantSlice))
     );
 }
 
 /**
  * Initialize activity state from `source` so that it is ready to generate attempts.
  *
- * Populates all the activities through the `latestChildStates` field,
+ * Populates all the activities through the `allChildren` field,
  * similar to the behavior of `getUninitializedActivityState`,
  * only this time it takes advantage of `numActivityVariants`,
  * which stores of the number of variants calculated for each single doc activity.
@@ -269,8 +256,12 @@ export function initializeSelectState({
         source,
         initialVariant: variant,
         creditAchieved: 0,
-        latestChildStates: childStates,
-        attempts: [],
+        maxCreditAchieved: 0,
+        allChildren: childStates,
+        attemptNumber: 0,
+        selectedChildren: [],
+        previousSelections: [],
+        initialQuestionCounter: 0,
         restrictToVariantSlice,
     };
 }
@@ -278,7 +269,7 @@ export function initializeSelectState({
 /**
  * Generate a new attempt for the base activity of `state`, recursing to child activities.
  *
- * For each attempt, a set of children from `state.latestChildStates` of size `state.source.numToSelect`
+ * For each attempt, a set of children from `state.allChildren` of size `state.source.numToSelect`
  * is selected. If `state.source.selectByVariant` is `true`, then the selection probability of each
  * child is weighted by its number of variants, and a child may be selected multiple times (but with different variants).
  *
@@ -294,18 +285,16 @@ export function generateNewSelectAttempt({
     initialQuestionCounter,
     questionCounts,
     parentAttempt,
-    resetCredit = false,
 }: {
     state: SelectState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     questionCounts: QuestionCountRecord;
     parentAttempt: number;
-    resetCredit?: boolean;
 }): { finalQuestionCounter: number; state: SelectState } {
     const source = state.source;
     const numToSelect = source.numToSelect;
-    const numChildren = state.latestChildStates.length;
+    const numChildren = state.allChildren.length;
 
     if (numChildren === 0) {
         return { finalQuestionCounter: initialQuestionCounter, state };
@@ -314,7 +303,7 @@ export function generateNewSelectAttempt({
     // If the child's variants have already been broken up into slices via `initializeSelectState`, above,
     // this calculation based on activity state will take that into account.
     // In particular, if `numToSelect` > 1, each child should report just one variant.
-    const numVariantsPerChild = state.latestChildStates.map((a) =>
+    const numVariantsPerChild = state.allChildren.map((a) =>
         calcNumVariantsFromState(a, numActivityVariants),
     );
 
@@ -347,7 +336,7 @@ export function generateNewSelectAttempt({
     }
 
     const childIdToIdx: Record<string, number> = {};
-    for (const [idx, child] of state.latestChildStates.entries()) {
+    for (const [idx, child] of state.allChildren.entries()) {
         childIdToIdx[child.id] = idx;
     }
 
@@ -368,7 +357,7 @@ export function generateNewSelectAttempt({
     // and the child activity has access to more information to select the variants.
 
     // total number of options selected in previous attempts
-    const numPrevSelected = numToSelect * state.attempts.length;
+    const numPrevSelected = numToSelect * state.attemptNumber;
 
     // The total number of options selected so far in our current group of size `totalNumOptions`
     const numInGroup = numPrevSelected % totalNumOptions;
@@ -378,8 +367,7 @@ export function generateNewSelectAttempt({
     // Go back to the previous `numInGroup` children
     // and count how many times each child has already been selected
     const childCountsInGroup = Array<number>(numChildren).fill(0);
-    for (const childId of state.attempts
-        .flatMap((attempt) => attempt.activities.map((activity) => activity.id))
+    for (const childId of [...state.previousSelections]
         .reverse()
         .slice(0, numInGroup)) {
         childCountsInGroup[childIdToIdx[childId]]++;
@@ -408,7 +396,7 @@ export function generateNewSelectAttempt({
         "|" +
         state.id.toString() +
         "|" +
-        state.attempts.length.toString() +
+        state.attemptNumber.toString() +
         "|" +
         parentAttempt.toString();
 
@@ -455,7 +443,7 @@ export function generateNewSelectAttempt({
     // storing the state representing this attempt in `newActivityOptionStates`,
     // and appending the state to `newActivityStates`.
     const newActivityStates: ActivityState[] = [];
-    const newActivityOptionStates = [...state.latestChildStates];
+    const newActivityOptionStates = [...state.allChildren];
     let questionCounter = initialQuestionCounter;
 
     for (const childIdx of childrenChosen) {
@@ -465,8 +453,7 @@ export function generateNewSelectAttempt({
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
                 questionCounts,
-                parentAttempt: state.attempts.length + 1,
-                resetCredit: true,
+                parentAttempt: state.attemptNumber + 1,
             });
         questionCounter = endCounter;
 
@@ -475,22 +462,19 @@ export function generateNewSelectAttempt({
         newActivityStates.push(newState);
     }
 
-    const newAttemptState: SelectAttemptState = {
-        activities: newActivityStates,
-        creditAchieved: 0,
-        initialQuestionCounter,
-    };
-
     const newState: SelectState = {
         ...state,
-        latestChildStates: newActivityOptionStates,
+        creditAchieved: 0,
+        maxCreditAchieved: 0,
+        allChildren: newActivityOptionStates,
+        attemptNumber: state.attemptNumber + 1,
+        selectedChildren: newActivityStates,
+        previousSelections: [
+            ...state.previousSelections,
+            ...newActivityStates.map((s) => s.id),
+        ],
+        initialQuestionCounter,
     };
-
-    newState.attempts = [...newState.attempts, newAttemptState];
-
-    if (resetCredit) {
-        newState.creditAchieved = 0;
-    }
 
     return { finalQuestionCounter: questionCounter, state: newState };
 }
@@ -517,16 +501,16 @@ export function generateNewSingleDocAttemptForMultiSelect({
     const source = state.source;
     const numToSelect = source.numToSelect;
 
-    if (numToSelect === 1 || state.attempts.length === 0) {
+    if (numToSelect === 1 || state.attemptNumber === 0) {
         throw Error(
             "no reason to call when selecting just one item or for first attempt",
         );
     }
 
-    const numChildren = state.latestChildStates.length;
+    const numChildren = state.allChildren.length;
 
     const childIdToIdx: Record<string, number> = {};
-    for (const [idx, child] of state.latestChildStates.entries()) {
+    for (const [idx, child] of state.allChildren.entries()) {
         childIdToIdx[child.id] = idx;
     }
 
@@ -538,8 +522,7 @@ export function generateNewSingleDocAttemptForMultiSelect({
     //    including previous replacements of other children and entire attempts via `generateNewSelectAttempt`.
 
     // First, we exclude all the currently selected sources for this attempt
-    const lastAttempt = state.attempts[state.attempts.length - 1];
-    const otherSelectedIds = lastAttempt.activities
+    const otherSelectedIds = state.selectedChildren
         .filter((a) => a.id !== childId)
         .map((a) => a.id);
 
@@ -548,7 +531,7 @@ export function generateNewSingleDocAttemptForMultiSelect({
     }
 
     // We'll select from all the other ids (which includes this child's id)
-    const idOptions = state.latestChildStates
+    const idOptions = state.allChildren
         .map((s) => s.id)
         .filter((id) => !otherSelectedIds.includes(id));
     const numOptions = idOptions.length;
@@ -557,25 +540,9 @@ export function generateNewSingleDocAttemptForMultiSelect({
     // We create a list of when these ids were selected, create groups of `numOptions`,
     // and exclude those id's that are in our current group.
     // (We don't worry that the current group might have duplicate ids.)
-    const prevSelectionOfOptions = state.attempts.flatMap((attempt) => {
-        if (attempt.singleItemReplacementIdx === undefined) {
-            // This attempt was from `generateNewSelectAttempt`, so count all items.
-            return attempt.activities
-                .map((activity) => activity.id)
-                .filter((id) => !otherSelectedIds.includes(id));
-        } else {
-            // This attempt replaced a single item,
-            // (i.e., was a previous call to `generateNewSingleDocAttemptForMultiSelect`)
-            // sp only count that item that was changed
-            const changedId =
-                attempt.activities[attempt.singleItemReplacementIdx].id;
-            if (otherSelectedIds.includes(changedId)) {
-                return [];
-            } else {
-                return [changedId];
-            }
-        }
-    });
+    const prevSelectionOfOptions = state.previousSelections.filter(
+        (id) => !otherSelectedIds.includes(id),
+    );
 
     const numPrevSelections = prevSelectionOfOptions.length;
     const numInGroup = numPrevSelections % numOptions;
@@ -585,20 +552,20 @@ export function generateNewSingleDocAttemptForMultiSelect({
     );
 
     // The complete list of all the activities were are excluding from selection,
-    // represented by their index into `latestChildStates`
+    // represented by their index into `allChildren`
     const idxOfAllExcluded = [...otherSelectedIds, ...additionalExcludes]
         .map((id) => childIdToIdx[id])
         .sort((a, b) => a - b);
 
     // The slot number (in the latest attempts activity) that we are replacing
-    const slotNum = lastAttempt.activities.map((a) => a.id).indexOf(childId);
+    const slotNum = state.selectedChildren.map((a) => a.id).indexOf(childId);
 
     const rngSeed =
         state.initialVariant.toString() +
         "|" +
         state.id.toString() +
         "|" +
-        state.attempts.length.toString() +
+        state.attemptNumber.toString() +
         "|" +
         parentAttempt.toString();
 
@@ -613,8 +580,8 @@ export function generateNewSingleDocAttemptForMultiSelect({
         }
     }
 
-    const newActivityStates = [...lastAttempt.activities];
-    const newActivityOptionStates = [...state.latestChildStates];
+    const newActivityStates = [...state.selectedChildren];
+    const newActivityOptionStates = [...state.allChildren];
 
     // Generate a new attempt for the selected child
     const { finalQuestionCounter, state: newChildState } =
@@ -623,30 +590,38 @@ export function generateNewSingleDocAttemptForMultiSelect({
             numActivityVariants,
             initialQuestionCounter,
             questionCounts,
-            parentAttempt: state.attempts.length + 1,
+            parentAttempt: state.attemptNumber + 1,
         });
 
-    // Give that child the credit achieved from the child we are replacing
+    // Give that child the max credit achieved from the child we are replacing
     // as it will be viewed as another attempt for that item.
-    const childStatePreserveCredit = { ...newChildState };
-    childStatePreserveCredit.creditAchieved =
-        lastAttempt.activities[slotNum].creditAchieved;
+    const childStatePreserveMaxCredit = { ...newChildState };
+    childStatePreserveMaxCredit.maxCreditAchieved =
+        state.selectedChildren[slotNum].maxCreditAchieved;
+    childStatePreserveMaxCredit.creditAchieved = 0;
 
-    newActivityOptionStates[selectedIdx] = childStatePreserveCredit;
-    newActivityStates[slotNum] = childStatePreserveCredit;
+    newActivityOptionStates[selectedIdx] = childStatePreserveMaxCredit;
+    newActivityStates[slotNum] = childStatePreserveMaxCredit;
 
-    const newAttemptState: SelectAttemptState = {
-        activities: newActivityStates,
-        creditAchieved: lastAttempt.creditAchieved, // keep credit achieved the same
-        initialQuestionCounter,
-        // indicate that this select attempt is really just about replacing the child from `slotNum`
-        singleItemReplacementIdx: slotNum,
-    };
+    // calculate the credit achieved assuming the score for `slotNum` is zero
+    const latestOtherCreditAchieved = state.selectedChildren
+        .filter((_, i) => i != slotNum)
+        .map((a) => a.creditAchieved);
+    const creditAchieved =
+        latestOtherCreditAchieved.reduce((a, c) => a + c, 0) /
+        state.selectedChildren.length;
 
     const newState: SelectState = {
         ...state,
-        latestChildStates: newActivityOptionStates,
-        attempts: [...state.attempts, newAttemptState],
+        allChildren: newActivityOptionStates,
+        selectedChildren: newActivityStates,
+        maxCreditAchieved: state.maxCreditAchieved, // keep max credit achieved the same
+        creditAchieved,
+        previousSelections: [
+            ...state.previousSelections,
+            childStatePreserveMaxCredit.id,
+        ],
+        initialQuestionCounter,
     };
 
     return { finalQuestionCounter, state: newState };
@@ -654,27 +629,30 @@ export function generateNewSingleDocAttemptForMultiSelect({
 
 /**
  * Recurse through the descendants of `activityState`,
- * returning an array of the `creditAchieved` of the latest single document activities,
+ * returning an array of the `creditAchieved` and `maxCreditAchieved` of the latest single document activities,
  * or of select activities that select a single document.
  */
 export function extractSelectItemCredit(
     activityState: SelectState,
-): { id: string; score: number }[] {
+): { id: string; score: number; maxScore: number; docId?: string }[] {
+    if (activityState.attemptNumber === 0) {
+        return [{ id: activityState.id, score: 0, maxScore: 0 }];
+    }
     if (
         activityState.source.numToSelect === 1 &&
-        activityState.latestChildStates.every(
-            (child) => child.type === "singleDoc",
-        )
+        activityState.allChildren.every((child) => child.type === "singleDoc")
     ) {
         // The select acts like a single question, so we just use it's credit achieved
-        return [{ id: activityState.id, score: activityState.creditAchieved }];
-    } else if (activityState.attempts.length === 0) {
-        return [{ id: activityState.id, score: 0 }];
+        return [
+            {
+                id: activityState.id,
+                score: activityState.creditAchieved,
+                maxScore: activityState.maxCreditAchieved,
+                docId: activityState.selectedChildren[0].id,
+            },
+        ];
     } else {
-        const latestAttempt =
-            activityState.attempts[activityState.attempts.length - 1];
-
-        return latestAttempt.activities.flatMap((state) =>
+        return activityState.selectedChildren.flatMap((state) =>
             extractActivityItemCredit(state),
         );
     }
@@ -686,8 +664,8 @@ export function extractSelectItemCredit(
  *
  * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
  *
- * Even if `clearDoenetState` is `false``, still clear `doenetState` on all but the latest attempt
- * and clear it on all `latestChildStates`. In this way, the (potentially large) DoenetML state is saved
+ * Even if `clearDoenetState` is `false``, still clear `doenetState` on all `allChildren`.
+ * In this way, the (potentially large) DoenetML state is saved
  * only where needed to reconstitute the activity state.
  */
 export function pruneSelectStateForSave(
@@ -696,23 +674,15 @@ export function pruneSelectStateForSave(
 ): SelectStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
 
-    const latestChildStates = newState.latestChildStates.map((child) =>
+    const allChildren = newState.allChildren.map((child) =>
         pruneActivityStateForSave(child, true),
     );
 
-    const numAttempts = newState.attempts.length;
+    const selectedChildren = newState.selectedChildren.map((child) =>
+        pruneActivityStateForSave(child, clearDoenetState),
+    );
 
-    const attempts = newState.attempts.map((attempt, i) => ({
-        ...attempt,
-        activities: attempt.activities.map((state) =>
-            pruneActivityStateForSave(
-                state,
-                i !== numAttempts - 1 || clearDoenetState,
-            ),
-        ),
-    }));
-
-    return { ...newState, latestChildStates, attempts };
+    return { ...newState, allChildren, selectedChildren };
 }
 
 /** Reverse the effect of `pruneSelectStateForSave by adding back adding back references to the source */
@@ -720,28 +690,25 @@ export function addSourceToSelectState(
     activityState: SelectStateNoSource,
     source: SelectSource,
 ): SelectState {
-    const latestChildStates = activityState.latestChildStates.map((child) => {
+    const allChildren = activityState.allChildren.map((child) => {
         const idx = source.items.findIndex(
             (src) => src.id === extractSourceId(child.id),
         );
         return addSourceToActivityState(child, source.items[idx]);
     });
 
-    const attempts = activityState.attempts.map((attempt) => ({
-        ...attempt,
-        activities: attempt.activities.map((state) => {
-            const idx = source.items.findIndex(
-                (src) => src.id === extractSourceId(state.id),
-            );
-            return addSourceToActivityState(state, source.items[idx]);
-        }),
-    }));
+    const selectedChildren = activityState.selectedChildren.map((child) => {
+        const idx = source.items.findIndex(
+            (src) => src.id === extractSourceId(child.id),
+        );
+        return addSourceToActivityState(child, source.items[idx]);
+    });
 
     return {
         ...activityState,
         source,
-        latestChildStates,
-        attempts,
+        allChildren,
+        selectedChildren,
     };
 }
 

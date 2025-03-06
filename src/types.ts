@@ -78,7 +78,13 @@ export type reportStateMessage = {
     subject: "SPLICE.reportScoreAndState";
     activityId: string;
     score: number;
-    scoreByItem: { id: string; score: number }[];
+    maxScore: number;
+    scoreByItem: {
+        id: string;
+        score: number;
+        maxScore: number;
+        docId?: string;
+    }[];
     state: ExportedActivityState;
 };
 
@@ -93,10 +99,14 @@ export function isReportStateMessage(obj: unknown): obj is reportStateMessage {
         typeObj.subject === "SPLICE.reportScoreAndState" &&
         typeof typeObj.activityId === "string" &&
         typeof typeObj.score === "number" &&
+        typeof typeObj.maxScore === "number" &&
         Array.isArray(typeObj.scoreByItem) &&
         typeObj.scoreByItem.every(
             (item) =>
-                typeof item.id === "string" && typeof item.score === "number",
+                typeof item.id === "string" &&
+                typeof item.score === "number" &&
+                typeof item.maxScore === "number" &&
+                (item.docId === undefined || typeof item.docId === "string"),
         ) &&
         isExportedActivityState(typeObj.state)
     );
@@ -106,7 +116,13 @@ export type reportScoreByItemMessage = {
     subject: "SPLICE.reportScoreByItem";
     activityId: string;
     score: number;
-    scoreByItem: { id: string; score: number }[];
+    maxScore: number;
+    scoreByItem: {
+        id: string;
+        score: number;
+        maxScore: number;
+        docId?: string;
+    }[];
 };
 
 export function isReportScoreByItemMessage(
@@ -122,10 +138,14 @@ export function isReportScoreByItemMessage(
         typeObj.subject === "SPLICE.reportScoreByItem" &&
         typeof typeObj.activityId === "string" &&
         typeof typeObj.score === "number" &&
+        typeof typeObj.maxScore === "number" &&
         Array.isArray(typeObj.scoreByItem) &&
         typeObj.scoreByItem.every(
             (item) =>
-                typeof item.id === "string" && typeof item.score === "number",
+                typeof item.id === "string" &&
+                typeof item.score === "number" &&
+                typeof item.maxScore === "number" &&
+                (item.docId === undefined || typeof item.docId === "string"),
         )
     );
 }
@@ -161,3 +181,17 @@ export type QuestionCountRecord = Record<string, number>;
  * so each slice contains just a single variant.
  */
 export type RestrictToVariantSlice = { idx: number; numSlices: number };
+
+export function isRestrictToVariantSlice(
+    obj: unknown,
+): obj is RestrictToVariantSlice {
+    const typeObj = obj as RestrictToVariantSlice;
+
+    return (
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        typeObj !== null &&
+        typeof typeObj === "object" &&
+        typeof typeObj.idx === "number" &&
+        typeof typeObj.numSlices === "number"
+    );
+}

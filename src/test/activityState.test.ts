@@ -22,16 +22,27 @@ import seq0 from "./testSources/seq0.json";
 import seq2Sel0 from "./testSources/seq2Sel0.json";
 import seqSel0Sel from "./testSources/seqSel0Sel.json";
 
-import { SelectSource, SelectState } from "../Activity/selectState";
-import { SequenceSource, SequenceState } from "../Activity/sequenceState";
+import {
+    SelectSource,
+    SelectState,
+    SelectStateNoSource,
+} from "../Activity/selectState";
+import {
+    SequenceSource,
+    SequenceState,
+    SequenceStateNoSource,
+} from "../Activity/sequenceState";
+import {
+    SingleDocSource,
+    SingleDocState,
+    SingleDocStateNoSource,
+} from "../Activity/singleDocState";
 
 describe("Activity state tests", () => {
     it("prune and add source back to uninitialized state", () => {
         const source = seq2sel as SequenceSource;
 
         const { numActivityVariants } = gatherDocumentStructure(source);
-
-        console.log({ numActivityVariants });
 
         const state = initializeActivityState({
             source,
@@ -40,144 +51,247 @@ describe("Activity state tests", () => {
             numActivityVariants,
         }) as SelectState;
 
-        const expectedState = {
+        const doc1State: SingleDocState = {
+            type: "singleDoc",
+            id: "doc4",
+            parentId: "sel1",
+            source: (source.items[0] as SelectSource)
+                .items[0] as SingleDocSource,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+        const doc2State: SingleDocState = {
+            type: "singleDoc",
+            id: "doc5",
+            parentId: "sel1",
+            source: (source.items[0] as SelectSource)
+                .items[1] as SingleDocSource,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+
+        const select1State: SelectState = {
+            type: "select",
+            id: "sel1",
+            parentId: "seq",
+            source: source.items[0] as SelectSource,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            attemptNumber: 0,
+            previousSelections: [],
+            selectedChildren: [],
+            allChildren: [doc1State, doc2State],
+        };
+        const doc3State: SingleDocState = {
+            type: "singleDoc",
+            id: "doc3",
+            parentId: "sel2",
+            source: (source.items[1] as SelectSource)
+                .items[0] as SingleDocSource,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+        const doc4State: SingleDocState = {
+            type: "singleDoc",
+            id: "doc2",
+            parentId: "sel2",
+            source: (source.items[1] as SelectSource)
+                .items[1] as SingleDocSource,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+        const doc5State: SingleDocState = {
+            type: "singleDoc",
+            id: "doc1",
+            parentId: "sel2",
+            source: (source.items[1] as SelectSource)
+                .items[2] as SingleDocSource,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+
+        const select2State: SelectState = {
+            type: "select",
+            id: "sel2",
+            parentId: "seq",
+            source: source.items[1] as SelectSource,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            attemptNumber: 0,
+            previousSelections: [],
+            selectedChildren: [],
+            allChildren: [doc3State, doc4State, doc5State],
+        };
+
+        const expectedState: SequenceState = {
             type: "sequence",
             id: "seq",
             parentId: null,
             source: source,
             initialVariant: 1,
             creditAchieved: 0,
-            attempts: [],
-            latestChildStates: [
-                {
-                    type: "select",
-                    id: "sel1",
-                    parentId: "seq",
-                    source: source.items[0],
-                    creditAchieved: 0,
-                    attempts: [],
-                    latestChildStates: [
-                        {
-                            type: "singleDoc",
-                            id: "doc4",
-                            parentId: "sel1",
-                            source: (source.items[0] as SelectSource).items[0],
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                        {
-                            type: "singleDoc",
-                            id: "doc5",
-                            parentId: "sel1",
-                            source: (source.items[0] as SelectSource).items[1],
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                    ],
-                },
-                {
-                    type: "select",
-                    id: "sel2",
-                    parentId: "seq",
-                    source: source.items[1],
-                    creditAchieved: 0,
-                    attempts: [],
-                    latestChildStates: [
-                        {
-                            type: "singleDoc",
-                            id: "doc3",
-                            parentId: "sel2",
-                            source: (source.items[1] as SelectSource).items[0],
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                        {
-                            type: "singleDoc",
-                            id: "doc2",
-                            parentId: "sel2",
-                            source: (source.items[1] as SelectSource).items[1],
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                        {
-                            type: "singleDoc",
-                            id: "doc1",
-                            parentId: "sel2",
-                            source: (source.items[1] as SelectSource).items[2],
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                    ],
-                },
-            ],
+            maxCreditAchieved: 0,
+            attemptNumber: 0,
+            allChildren: [select1State, select2State],
+            orderedChildren: [],
         };
 
         expect(state).toMatchObject(expectedState);
 
         const prunedState = pruneActivityStateForSave(state);
 
-        const expectedPrunedState = {
+        const doc1StatePruned: SingleDocStateNoSource = {
+            type: "singleDoc",
+            id: "doc4",
+            parentId: "sel1",
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+        const doc2StatePruned: SingleDocStateNoSource = {
+            type: "singleDoc",
+            id: "doc5",
+            parentId: "sel1",
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+
+        const select1StatePruned: SelectStateNoSource = {
+            type: "select",
+            id: "sel1",
+            parentId: "seq",
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            attemptNumber: 0,
+            previousSelections: [],
+            selectedChildren: [],
+            allChildren: [doc1StatePruned, doc2StatePruned],
+        };
+        const doc3StatePruned: SingleDocStateNoSource = {
+            type: "singleDoc",
+            id: "doc3",
+            parentId: "sel2",
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+        const doc4StatePruned: SingleDocStateNoSource = {
+            type: "singleDoc",
+            id: "doc2",
+            parentId: "sel2",
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+        const doc5StatePruned: SingleDocStateNoSource = {
+            type: "singleDoc",
+            id: "doc1",
+            parentId: "sel2",
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            currentVariant: 0,
+            attemptNumber: 0,
+            previousVariants: [],
+            doenetState: null,
+        };
+
+        const select2StatePruned: SelectStateNoSource = {
+            type: "select",
+            id: "sel2",
+            parentId: "seq",
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            initialQuestionCounter: 0,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            initialVariant: expect.any(Number),
+            attemptNumber: 0,
+            previousSelections: [],
+            selectedChildren: [],
+            allChildren: [doc3StatePruned, doc4StatePruned, doc5StatePruned],
+        };
+
+        const expectedPrunedState: SequenceStateNoSource = {
             type: "sequence",
             id: "seq",
             parentId: null,
             initialVariant: 1,
             creditAchieved: 0,
-            attempts: [],
-            latestChildStates: [
-                {
-                    type: "select",
-                    id: "sel1",
-                    parentId: "seq",
-                    creditAchieved: 0,
-                    attempts: [],
-                    latestChildStates: [
-                        {
-                            type: "singleDoc",
-                            id: "doc4",
-                            parentId: "sel1",
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                        {
-                            type: "singleDoc",
-                            id: "doc5",
-                            parentId: "sel1",
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                    ],
-                },
-                {
-                    type: "select",
-                    id: "sel2",
-                    parentId: "seq",
-                    creditAchieved: 0,
-                    attempts: [],
-                    latestChildStates: [
-                        {
-                            type: "singleDoc",
-                            id: "doc3",
-                            parentId: "sel2",
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                        {
-                            type: "singleDoc",
-                            id: "doc2",
-                            parentId: "sel2",
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                        {
-                            type: "singleDoc",
-                            id: "doc1",
-                            parentId: "sel2",
-                            creditAchieved: 0,
-                            attempts: [],
-                        },
-                    ],
-                },
-            ],
+            maxCreditAchieved: 0,
+            attemptNumber: 0,
+            allChildren: [select1StatePruned, select2StatePruned],
+            orderedChildren: [],
         };
 
         expect(prunedState).not.toMatchObject(expectedState);
@@ -188,12 +302,12 @@ describe("Activity state tests", () => {
         }
 
         expect("source" in prunedState).eq(false);
-        for (const child of prunedState.latestChildStates) {
+        for (const child of prunedState.allChildren) {
             if (child.type !== "select") {
                 throw Error("nope");
             }
             expect("source" in child).eq(false);
-            for (const grandChild of child.latestChildStates) {
+            for (const grandChild of child.allChildren) {
                 expect("source" in grandChild).eq(false);
             }
         }
@@ -211,7 +325,7 @@ describe("Activity state tests", () => {
         // initializeActivityState breaks up its children into slices that have just 1 one variant
 
         const source = selMult1doc as SelectSource;
-        const docSource = source.items[0];
+        const docSource = source.items[0] as SingleDocSource;
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -222,58 +336,90 @@ describe("Activity state tests", () => {
             numActivityVariants,
         }) as SelectState;
 
-        const docVariant = state.latestChildStates[0].initialVariant;
+        const docVariant = state.allChildren[0].initialVariant;
 
-        const expectedState = {
+        const expectedChild1: SingleDocState = {
+            type: "singleDoc",
+            id: "doc4|1",
+            parentId: "sel",
+            source: docSource,
+            initialVariant: docVariant,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            attemptNumber: 0,
+            doenetState: null,
+            initialQuestionCounter: 0,
+            currentVariant: 0,
+            previousVariants: [],
+            restrictToVariantSlice: { idx: 1, numSlices: 4 },
+        };
+
+        const expectedChild2: SingleDocState = {
+            type: "singleDoc",
+            id: "doc4|2",
+            parentId: "sel",
+            source: docSource,
+            initialVariant: docVariant,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            attemptNumber: 0,
+            doenetState: null,
+            initialQuestionCounter: 0,
+            currentVariant: 0,
+            previousVariants: [],
+            restrictToVariantSlice: { idx: 2, numSlices: 4 },
+        };
+
+        const expectedChild3: SingleDocState = {
+            type: "singleDoc",
+            id: "doc4|3",
+            parentId: "sel",
+            source: docSource,
+            initialVariant: docVariant,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            attemptNumber: 0,
+            doenetState: null,
+            initialQuestionCounter: 0,
+            currentVariant: 0,
+            previousVariants: [],
+            restrictToVariantSlice: { idx: 3, numSlices: 4 },
+        };
+
+        const expectedChild4: SingleDocState = {
+            type: "singleDoc",
+            id: "doc4|4",
+            parentId: "sel",
+            source: docSource,
+            initialVariant: docVariant,
+            creditAchieved: 0,
+            maxCreditAchieved: 0,
+            attemptNumber: 0,
+            doenetState: null,
+            initialQuestionCounter: 0,
+            currentVariant: 0,
+            previousVariants: [],
+            restrictToVariantSlice: { idx: 4, numSlices: 4 },
+        };
+
+        const expectedState: SelectState = {
             type: "select",
             id: "sel",
             parentId: null,
             source,
             initialVariant: 1,
             creditAchieved: 0,
-            latestChildStates: [
-                {
-                    type: "singleDoc",
-                    id: "doc4|1",
-                    parentId: "sel",
-                    source: docSource,
-                    initialVariant: docVariant,
-                    creditAchieved: 0,
-                    attempts: [],
-                    restrictToVariantSlice: { idx: 1, numSlices: 4 },
-                },
-                {
-                    type: "singleDoc",
-                    id: "doc4|2",
-                    parentId: "sel",
-                    source: docSource,
-                    initialVariant: docVariant,
-                    creditAchieved: 0,
-                    attempts: [],
-                    restrictToVariantSlice: { idx: 2, numSlices: 4 },
-                },
-                {
-                    type: "singleDoc",
-                    id: "doc4|3",
-                    parentId: "sel",
-                    source: docSource,
-                    initialVariant: docVariant,
-                    creditAchieved: 0,
-                    attempts: [],
-                    restrictToVariantSlice: { idx: 3, numSlices: 4 },
-                },
-                {
-                    type: "singleDoc",
-                    id: "doc4|4",
-                    parentId: "sel",
-                    source: docSource,
-                    initialVariant: docVariant,
-                    creditAchieved: 0,
-                    attempts: [],
-                    restrictToVariantSlice: { idx: 4, numSlices: 4 },
-                },
+            maxCreditAchieved: 0,
+            attemptNumber: 0,
+            initialQuestionCounter: 0,
+            selectedChildren: [],
+            previousSelections: [],
+            allChildren: [
+                expectedChild1,
+                expectedChild2,
+                expectedChild3,
+                expectedChild4,
             ],
-            attempts: [],
             restrictToVariantSlice: undefined,
         };
 
@@ -352,16 +498,10 @@ describe("Activity state tests", () => {
         }) as SequenceState;
 
         expect(
-            calcNumVariantsFromState(
-                state.latestChildStates[0],
-                numActivityVariants,
-            ),
+            calcNumVariantsFromState(state.allChildren[0], numActivityVariants),
         ).eq(numVarSel1);
         expect(
-            calcNumVariantsFromState(
-                state.latestChildStates[1],
-                numActivityVariants,
-            ),
+            calcNumVariantsFromState(state.allChildren[1], numActivityVariants),
         ).eq(numVarSel2);
         expect(calcNumVariantsFromState(state, numActivityVariants)).eq(
             numVarSeq,
@@ -386,7 +526,7 @@ describe("Activity state tests", () => {
         for (let i = 0; i < numVarSel1; i++) {
             expect(
                 calcNumVariantsFromState(
-                    state2.latestChildStates[i],
+                    state2.allChildren[i],
                     numActivityVariants,
                 ),
             ).eq(1);
@@ -409,7 +549,7 @@ describe("Activity state tests", () => {
         for (let i = 0; i < numActivityVariants.doc4; i++) {
             expect(
                 calcNumVariantsFromState(
-                    state3.latestChildStates[i],
+                    state3.allChildren[i],
                     numActivityVariants,
                 ),
             ).eq(1);
@@ -438,17 +578,15 @@ describe("Activity state tests", () => {
 
         const state = newState as SequenceState;
 
-        const firstSelectState = state.latestChildStates[0] as SelectState;
-        const secondSelectState = state.latestChildStates[1] as SelectState;
+        const firstSelectState = state.allChildren[0] as SelectState;
+        const secondSelectState = state.allChildren[1] as SelectState;
 
-        const docFromFirstSelect =
-            firstSelectState.attempts[0].activities[0].id;
+        const docFromFirstSelect = firstSelectState.selectedChildren[0].id;
         expect(["doc4", "doc5"].includes(docFromFirstSelect)).eq(true);
-        const docFromSecondSelect =
-            secondSelectState.attempts[0].activities[0].id;
+        const docFromSecondSelect = secondSelectState.selectedChildren[0].id;
         expect(["doc3", "doc2", "doc1"].includes(docFromSecondSelect)).eq(true);
 
-        if (state.attempts[0].activities[0].id === firstSelectState.id) {
+        if (state.orderedChildren[0].id === firstSelectState.id) {
             expect(getItemSequence(state)).eqls([
                 docFromFirstSelect,
                 docFromSecondSelect,
@@ -552,10 +690,9 @@ describe("Activity state tests", () => {
 
         const state = newState as SequenceState;
 
-        const secondSelectState = state.latestChildStates[1] as SelectState;
+        const secondSelectState = state.allChildren[1] as SelectState;
 
-        const docFromSecondSelect =
-            secondSelectState.attempts[0].activities[0].id;
+        const docFromSecondSelect = secondSelectState.selectedChildren[0].id;
         expect(["doc3", "doc2", "doc1"].includes(docFromSecondSelect)).eq(true);
 
         expect(getItemSequence(state)).eqls([docFromSecondSelect]);

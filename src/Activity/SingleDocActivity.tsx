@@ -48,24 +48,17 @@ export function SingleDocActivity({
 }) {
     const [rendered, setRendered] = useState(false);
 
-    const latestAttempt =
-        state.attempts.length > 0
-            ? state.attempts[state.attempts.length - 1]
-            : null;
-
-    const [attemptNumber, setAttemptNumber] = useState(state.attempts.length);
+    const [attemptNumber, setAttemptNumber] = useState(state.attemptNumber);
     const [initialDoenetState, setInitialDoenetState] = useState<Record<
         string,
         unknown
     > | null>(
-        latestAttempt
-            ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (latestAttempt.doenetState as Record<string, any> | null)
-            : null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        state.doenetState as Record<string, any> | null,
     );
 
     const [requestedVariantIndex, setRequestedVariantIndex] = useState(
-        latestAttempt ? latestAttempt.variant : state.initialVariant,
+        state.currentVariant,
     );
 
     const ref = useRef<HTMLDivElement>(null);
@@ -90,28 +83,22 @@ export function SingleDocActivity({
     // Note: given the way the `<DoenetViewer>` iframe is set up, any changes in props
     // will reinitialize the activity. Hence, we make sure that no props change
     // unless the attempt number has changed.
-    if (state.attempts.length !== attemptNumber) {
-        setAttemptNumber(state.attempts.length);
+    if (state.attemptNumber !== attemptNumber) {
+        setAttemptNumber(state.attemptNumber);
 
         setInitialDoenetState(
-            latestAttempt
-                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (latestAttempt.doenetState as Record<string, any> | null)
-                : null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            state.doenetState as Record<string, any> | null,
         );
 
-        setRequestedVariantIndex(
-            latestAttempt ? latestAttempt.variant : state.initialVariant,
-        );
+        setRequestedVariantIndex(state.currentVariant);
     }
 
-    const initialCounters = latestAttempt
-        ? {
-              question: latestAttempt.initialQuestionCounter,
-              problem: latestAttempt.initialQuestionCounter,
-              exercise: latestAttempt.initialQuestionCounter,
-          }
-        : undefined;
+    const initialCounters = {
+        question: state.initialQuestionCounter,
+        problem: state.initialQuestionCounter,
+        exercise: state.initialQuestionCounter,
+    };
 
     const source = state.source;
 
@@ -127,7 +114,7 @@ export function SingleDocActivity({
         <div ref={ref}>
             <div hidden={!render || hidden} style={{ minHeight: "100px" }}>
                 <DoenetViewer
-                    key={state.attempts.length}
+                    key={state.attemptNumber}
                     doenetML={source.doenetML}
                     doenetmlVersion={source.version}
                     render={render}
@@ -158,7 +145,7 @@ export function SingleDocActivity({
                         onClick={() => {
                             generateNewItemAttempt(
                                 state.id,
-                                latestAttempt?.initialQuestionCounter ?? 1,
+                                state.initialQuestionCounter,
                             );
                         }}
                         style={{
