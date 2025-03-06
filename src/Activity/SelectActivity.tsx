@@ -81,7 +81,7 @@ export function SelectActivity({
         selectedIds.push(activity.id);
 
         if (nextRenderOnly !== null) {
-            // if have selected more than one, account for the items of previous selection(s)
+            // if `numToSelect` is larger than one, account for the items of previous selection(s)
             nextRenderOnly -= getNumItems(activity.source);
         }
     }

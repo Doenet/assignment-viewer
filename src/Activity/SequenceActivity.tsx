@@ -79,7 +79,7 @@ export function SequenceActivity({
         );
 
         if (nextRenderOnly !== null) {
-            // if than one item in sequence, account for the items of previous items(s)
+            // if more than one item in sequence, account for the items of previous items(s)
             nextRenderOnly -= getNumItems(activity.source);
         }
     }
