@@ -7,6 +7,7 @@ import {
     gatherDocumentStructure,
     generateNewActivityAttempt,
     getItemSequence,
+    getNumItems,
     initializeActivityState,
     pruneActivityStateForSave,
     validateIds,
@@ -21,6 +22,7 @@ import sel0 from "./testSources/sel0.json";
 import seq0 from "./testSources/seq0.json";
 import seq2Sel0 from "./testSources/seq2Sel0.json";
 import seqSel0Sel from "./testSources/seqSel0Sel.json";
+import sel2seq from "./testSources/sel2seq.json";
 
 import {
     SelectSource,
@@ -719,5 +721,19 @@ describe("Activity state tests", () => {
                 parentAttempt: 1,
             }),
         ).toThrowError("larger than the number of available activities");
+    });
+
+    it("return number of documents", () => {
+        expect(getNumItems(seq2sel as SequenceSource)).eq(2);
+
+        // upper bound when ambiguous
+        expect(getNumItems(sel2seq as SelectSource)).eq(3);
+
+        expect(getNumItems(selMult2docs as SelectSource)).eq(2);
+        expect(getNumItems(selMult1doc as SelectSource)).eq(3);
+
+        // handle cases with no items
+        expect(getNumItems(sel0 as SelectSource)).eq(0);
+        expect(getNumItems(seq0 as SequenceSource)).eq(0);
     });
 });

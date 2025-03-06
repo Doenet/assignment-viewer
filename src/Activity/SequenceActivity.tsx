@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import type { DoenetMLFlags } from "../types";
 import { Activity } from "./Activity";
 import { SequenceState } from "./sequenceState";
-import { ActivityState } from "./activityState";
+import { ActivityState, getNumItems } from "./activityState";
 
 export function SequenceActivity({
     flags,
@@ -23,6 +23,7 @@ export function SequenceActivity({
     hasRenderedCallback,
     reportVisibility = false,
     reportVisibilityCallback,
+    renderOnlyItem = null,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -45,8 +46,11 @@ export function SequenceActivity({
     hasRenderedCallback: (id: string) => void;
     reportVisibility?: boolean;
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
+    renderOnlyItem?: number | null;
 }) {
     const activityList: ReactElement[] = [];
+
+    let nextRenderOnly = renderOnlyItem;
 
     for (const activity of state.orderedChildren) {
         activityList.push(
@@ -70,8 +74,14 @@ export function SequenceActivity({
                 hasRenderedCallback={hasRenderedCallback}
                 reportVisibility={reportVisibility}
                 reportVisibilityCallback={reportVisibilityCallback}
+                renderOnlyItem={nextRenderOnly}
             />,
         );
+
+        if (nextRenderOnly !== null) {
+            // if more than one item in sequence, account for the items of previous items(s)
+            nextRenderOnly -= getNumItems(activity.source);
+        }
     }
 
     return (

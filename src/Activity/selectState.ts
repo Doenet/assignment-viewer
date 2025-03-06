@@ -14,6 +14,7 @@ import {
     extractActivityItemCredit,
     extractSourceId,
     generateNewActivityAttempt,
+    getNumItems,
     initializeActivityState,
     isActivitySource,
     isActivityState,
@@ -732,4 +733,24 @@ export function calcNumVariantsSelect(
     );
 
     return Math.floor(numVariantsTot / source.numToSelect);
+}
+
+/**
+ * Return the number of documents that will be rendered by this select.
+ *
+ * Since it is possible that the number of documents rendered will vary depending on which option(s) are selected,
+ * this number is an upper bound on the number of documents that could be rendered.
+ */
+export function getNumItemsInSelect(source: SelectSource): number {
+    const numToSelect = source.numToSelect;
+
+    const numDocumentsForEachItem = source.items.map(getNumItems);
+
+    // Take the maximum number of documents, so number returned is an upper bound
+    const numDocumentsPerItem = numDocumentsForEachItem.reduce(
+        (a, c) => Math.max(a, c),
+        0,
+    );
+
+    return numToSelect * numDocumentsPerItem;
 }

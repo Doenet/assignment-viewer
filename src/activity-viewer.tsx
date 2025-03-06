@@ -32,7 +32,7 @@ export function ActivityViewer({
     source,
     flags: specifiedFlags = {},
     activityId = "a",
-    userId,
+    userId = null,
     attemptNumber = 1,
     requestedVariantIndex,
     maxAttemptsAllowed = Infinity,
@@ -51,11 +51,12 @@ export function ActivityViewer({
     showAnswerTitles = false,
     includeVariantSelector: _includeVariantSelector = false,
     showTitle = true,
+    renderOnlyItem = null,
 }: {
     source: ActivitySource;
     flags?: DoenetMLFlagsSubset;
     activityId?: string;
-    userId?: string;
+    userId?: string | null;
     attemptNumber?: number;
     requestedVariantIndex?: number;
     maxAttemptsAllowed?: number;
@@ -74,6 +75,7 @@ export function ActivityViewer({
     showAnswerTitles?: boolean;
     includeVariantSelector?: boolean;
     showTitle?: boolean;
+    renderOnlyItem?: number | null;
 }) {
     // const [variants, setVariants] = useState({
     //     index: 1,
@@ -148,6 +150,7 @@ export function ActivityViewer({
                 darkMode={darkMode}
                 showAnswerTitles={showAnswerTitles}
                 showTitle={showTitle}
+                renderOnlyItem={renderOnlyItem}
             />
         </ErrorBoundary>
     );
