@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import type { DoenetMLFlags } from "../types";
 import { SelectState } from "./selectState";
 import { Activity } from "./Activity";
-import { ActivityState } from "./activityState";
+import { ActivityState, getNumItems } from "./activityState";
 
 export function SelectActivity({
     flags,
@@ -23,6 +23,7 @@ export function SelectActivity({
     hasRenderedCallback,
     reportVisibility = false,
     reportVisibilityCallback,
+    renderOnlyItem = null,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -45,9 +46,12 @@ export function SelectActivity({
     hasRenderedCallback: (id: string) => void;
     reportVisibility?: boolean;
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
+    renderOnlyItem?: number | null;
 }) {
     const selectedActivities: ReactElement[] = [];
     const selectedIds: string[] = [];
+
+    let nextRenderOnly = renderOnlyItem;
 
     for (const activity of state.selectedChildren) {
         selectedActivities.push(
@@ -71,9 +75,15 @@ export function SelectActivity({
                 hasRenderedCallback={hasRenderedCallback}
                 reportVisibility={reportVisibility}
                 reportVisibilityCallback={reportVisibilityCallback}
+                renderOnlyItem={nextRenderOnly}
             />,
         );
         selectedIds.push(activity.id);
+
+        if (nextRenderOnly !== null) {
+            // if have selected more than one, account for the items of previous selection(s)
+            nextRenderOnly -= getNumItems(activity.source);
+        }
     }
 
     return (

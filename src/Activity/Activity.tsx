@@ -23,6 +23,7 @@ export function Activity({
     hasRenderedCallback,
     reportVisibility = false,
     reportVisibilityCallback,
+    renderOnlyItem = null,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -45,9 +46,13 @@ export function Activity({
     hasRenderedCallback: (id: string) => void;
     reportVisibility?: boolean;
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
+    renderOnlyItem?: number | null;
 }) {
     switch (state.type) {
         case "singleDoc": {
+            if (renderOnlyItem !== null && renderOnlyItem !== 1) {
+                return null;
+            }
             return (
                 <SingleDocActivity
                     flags={flags}
@@ -92,6 +97,7 @@ export function Activity({
                     hasRenderedCallback={hasRenderedCallback}
                     reportVisibility={reportVisibility}
                     reportVisibilityCallback={reportVisibilityCallback}
+                    renderOnlyItem={renderOnlyItem}
                 />
             );
         }
@@ -116,6 +122,7 @@ export function Activity({
                     hasRenderedCallback={hasRenderedCallback}
                     reportVisibility={reportVisibility}
                     reportVisibilityCallback={reportVisibilityCallback}
+                    renderOnlyItem={renderOnlyItem}
                 />
             );
         }

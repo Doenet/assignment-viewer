@@ -30,7 +30,7 @@ export function Viewer({
     source,
     flags,
     activityId,
-    userId,
+    userId = null,
     attemptNumber: _attemptNumber = 1,
     variantIndex: initialVariantIndex,
     maxAttemptsAllowed: _maxAttemptsAllowed = Infinity,
@@ -48,11 +48,12 @@ export function Viewer({
     darkMode = "light",
     showAnswerTitles = false,
     showTitle = true,
+    renderOnlyItem = null,
 }: {
     source: ActivitySource;
     flags: DoenetMLFlags;
     activityId: string;
-    userId?: string;
+    userId?: string | null;
     attemptNumber?: number;
     variantIndex: number;
     maxAttemptsAllowed?: number;
@@ -70,6 +71,7 @@ export function Viewer({
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
     showTitle?: boolean;
+    renderOnlyItem?: number | null;
 }) {
     const [errMsg, setErrMsg] = useState<string | null>(null);
 
@@ -527,6 +529,7 @@ export function Viewer({
                 hasRenderedCallback={hasRenderedCallback}
                 reportVisibility={!paginate}
                 reportVisibilityCallback={reportVisibilityCallback}
+                renderOnlyItem={renderOnlyItem}
             />
         </div>
     );
