@@ -86,6 +86,8 @@ export type reportStateMessage = {
         docId?: string;
     }[];
     state: ExportedActivityState;
+    newAttempt?: boolean;
+    newAttemptForItem?: number;
 };
 
 export function isReportStateMessage(obj: unknown): obj is reportStateMessage {
@@ -108,7 +110,11 @@ export function isReportStateMessage(obj: unknown): obj is reportStateMessage {
                 typeof item.maxScore === "number" &&
                 (item.docId === undefined || typeof item.docId === "string"),
         ) &&
-        isExportedActivityState(typeObj.state)
+        isExportedActivityState(typeObj.state) &&
+        (typeObj.newAttempt === undefined ||
+            typeof typeObj.newAttempt === "boolean") &&
+        (typeObj.newAttemptForItem === undefined ||
+            typeof typeObj.newAttemptForItem === "number")
     );
 }
 
