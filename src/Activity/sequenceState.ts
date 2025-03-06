@@ -7,6 +7,7 @@ import {
     extractActivityItemCredit,
     extractSourceId,
     generateNewActivityAttempt,
+    getNumItems,
     initializeActivityState,
     isActivitySource,
     isActivityState,
@@ -434,4 +435,18 @@ export function calcNumVariantsSequence(
     }
 
     return numVariants;
+}
+
+/**
+ * Return the number of documents that will be rendered by this sequence.
+ */
+export function getNumItemsInSequence(source: SequenceSource): number {
+    const numDocumentsForEachItem = source.items.map(getNumItems);
+
+    const totalNumDocuments = numDocumentsForEachItem.reduce(
+        (a, c) => a + c,
+        0,
+    );
+
+    return totalNumDocuments;
 }

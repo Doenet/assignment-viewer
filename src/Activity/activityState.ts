@@ -25,12 +25,14 @@ import {
     SelectSource,
     SelectState,
     SelectStateNoSource,
+    getNumItemsInSelect,
 } from "./selectState";
 import {
     addSourceToSequenceState,
     calcNumVariantsSequence,
     extractSequenceItemCredit,
     generateNewSequenceAttempt,
+    getNumItemsInSequence,
     initializeSequenceState,
     isSequenceSource,
     isSequenceState,
@@ -502,6 +504,29 @@ export function calcNumVariantsFromState(
     }
 
     return numVariants;
+}
+
+/**
+ * Return the number of documents that will be rendered by this activity.
+ *
+ * Since it is possible that the number of documents rendered will vary
+ * depending on which option(s) are selected by any select,
+ * this number is an upper bound on the number of documents that could be rendered.
+ */
+export function getNumItems(source: ActivitySource): number {
+    switch (source.type) {
+        case "singleDoc": {
+            return 1;
+        }
+        case "select": {
+            return getNumItemsInSelect(source);
+        }
+        case "sequence": {
+            return getNumItemsInSequence(source);
+        }
+    }
+
+    throw Error("Invalid activity type");
 }
 
 /** Validate the ids in `source` to make sure no id contains a `|` and all ids are unique. */
