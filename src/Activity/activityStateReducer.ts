@@ -66,11 +66,11 @@ export function activityStateReducer(
         }
         case "set": {
             if (action.allowSaveState) {
-                const scoreByItem = extractActivityItemCredit(action.state);
+                const itemScores = extractActivityItemCredit(action.state);
                 window.postMessage({
                     score: action.state.creditAchieved,
                     maxScore: action.state.maxCreditAchieved,
-                    scoreByItem,
+                    itemScores,
                     subject: "SPLICE.reportScoreByItem",
                     activityId: action.baseId,
                 });
@@ -102,15 +102,14 @@ export function activityStateReducer(
             }
 
             if (action.allowSaveState) {
-                const scoreByItem = extractActivityItemCredit(newActivityState);
-
+                const itemScores = extractActivityItemCredit(newActivityState);
                 if (firstAttempt) {
                     // If first attempt, no need to save state.
                     // Just send score by item to indicate how many items are in the activity
                     window.postMessage({
                         score: newActivityState.creditAchieved,
                         maxScore: newActivityState.maxCreditAchieved,
-                        scoreByItem,
+                        itemScores,
                         subject: "SPLICE.reportScoreByItem",
                         activityId: action.baseId,
                     });
@@ -119,11 +118,11 @@ export function activityStateReducer(
 
                     if (action.id && action.id !== state.id) {
                         // determine the item number for which we are generating a new attempt
-                        const scoreByItemOld = extractActivityItemCredit(state);
+                        const itemScoresOld = extractActivityItemCredit(state);
 
                         newAttemptForItem = {
                             newAttemptForItem:
-                                scoreByItemOld.findIndex(
+                                itemScoresOld.findIndex(
                                     (s) =>
                                         s.id === action.id ||
                                         s.docId === action.id,
@@ -143,7 +142,7 @@ export function activityStateReducer(
                         },
                         score: newActivityState.creditAchieved,
                         maxScore: newActivityState.maxCreditAchieved,
-                        scoreByItem,
+                        itemScores,
                         subject: "SPLICE.reportScoreAndState",
                         activityId: action.baseId,
                         newAttempt: true,
@@ -158,7 +157,7 @@ export function activityStateReducer(
             const newActivityState = updateSingleDocState(action, state);
 
             if (action.allowSaveState) {
-                const scoreByItem = extractActivityItemCredit(newActivityState);
+                const itemScores = extractActivityItemCredit(newActivityState);
 
                 const sourceHash = hash(newActivityState.source);
 
@@ -184,7 +183,7 @@ export function activityStateReducer(
                     },
                     score: newActivityState.creditAchieved,
                     maxScore: newActivityState.maxCreditAchieved,
-                    scoreByItem,
+                    itemScores,
                     subject: "SPLICE.reportScoreAndState",
                     activityId: action.baseId,
                 });

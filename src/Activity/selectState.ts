@@ -629,15 +629,29 @@ export function generateNewSingleDocAttemptForMultiSelect({
 }
 
 /**
- * Recurse through the descendants of `activityState`,
- * returning an array of the `creditAchieved` and `maxCreditAchieved` of the latest single document activities,
- * or of select activities that select a single document.
+//  * Recurse through the descendants of `activityState`,
+//  * returning an array of score information of the latest single document activities,
+//  * or of select activities that select a single document.
  */
 export function extractSelectItemCredit(
     activityState: SelectState,
-): { id: string; score: number; maxScore: number; docId?: string }[] {
+    nPrevInShuffleOrder = 0,
+): {
+    id: string;
+    score: number;
+    maxScore: number;
+    docId?: string;
+    shuffledOrder: number;
+}[] {
     if (activityState.attemptNumber === 0) {
-        return [{ id: activityState.id, score: 0, maxScore: 0 }];
+        return [
+            {
+                id: activityState.id,
+                score: 0,
+                maxScore: 0,
+                shuffledOrder: nPrevInShuffleOrder + 1,
+            },
+        ];
     }
     if (
         activityState.source.numToSelect === 1 &&
@@ -650,12 +664,16 @@ export function extractSelectItemCredit(
                 score: activityState.creditAchieved,
                 maxScore: activityState.maxCreditAchieved,
                 docId: activityState.selectedChildren[0].id,
+                shuffledOrder: nPrevInShuffleOrder + 1,
             },
         ];
     } else {
-        return activityState.selectedChildren.flatMap((state) =>
-            extractActivityItemCredit(state),
-        );
+        let nPrev = nPrevInShuffleOrder;
+        return activityState.selectedChildren.flatMap((state) => {
+            const next = extractActivityItemCredit(state, nPrev);
+            nPrev += next.length;
+            return next;
+        });
     }
 }
 

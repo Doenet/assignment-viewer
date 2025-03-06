@@ -259,11 +259,18 @@ export function generateNewSingleDocAttempt({
 }
 
 /**
- * Return the credit achieved of this single doc activity or an empty array if it is a description.
+ * Return score information of this single doc activity or an empty array if it is a description.
  */
 export function extractSingleDocItemCredit(
     activityState: SingleDocState,
-): { id: string; score: number; maxScore: number; docId: string }[] {
+    nPrevInShuffleOrder = 0,
+): {
+    id: string;
+    score: number;
+    maxScore: number;
+    docId: string;
+    shuffledOrder: number;
+}[] {
     if (activityState.source.isDescription) {
         return [];
     } else {
@@ -273,6 +280,7 @@ export function extractSingleDocItemCredit(
                 score: activityState.creditAchieved,
                 maxScore: activityState.maxCreditAchieved,
                 docId: activityState.id,
+                shuffledOrder: nPrevInShuffleOrder + 1,
             },
         ];
     }
