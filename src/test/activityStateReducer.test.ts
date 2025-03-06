@@ -106,8 +106,14 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreByItem",
                 maxScore: 0,
                 score: 0,
-                scoreByItem: [
-                    { id: "doc5", maxScore: 0, score: 0, docId: "doc5" },
+                itemScores: [
+                    {
+                        id: "doc5",
+                        maxScore: 0,
+                        score: 0,
+                        docId: "doc5",
+                        shuffledOrder: 1,
+                    },
                 ],
                 activityId: "newId",
             },
@@ -177,8 +183,14 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreByItem",
                 maxScore: 0,
                 score: 0,
-                scoreByItem: [
-                    { id: "doc5", maxScore: 0, score: 0, docId: "doc5" },
+                itemScores: [
+                    {
+                        id: "doc5",
+                        maxScore: 0,
+                        score: 0,
+                        docId: "doc5",
+                        shuffledOrder: 1,
+                    },
                 ],
                 activityId: "newId",
             },
@@ -213,8 +225,14 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: 0,
                 score: 0,
-                scoreByItem: [
-                    { id: "doc5", maxScore: 0, score: 0, docId: "doc5" },
+                itemScores: [
+                    {
+                        id: "doc5",
+                        maxScore: 0,
+                        score: 0,
+                        docId: "doc5",
+                        shuffledOrder: 1,
+                    },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -278,12 +296,13 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: 0.2,
                 score: 0.2,
-                scoreByItem: [
+                itemScores: [
                     {
                         id: "doc5",
                         maxScore: 0.2,
                         score: 0.2,
                         docId: "doc5",
+                        shuffledOrder: 1,
                     },
                 ],
                 state: {
@@ -323,12 +342,13 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: 0.2,
                 score: 0.1,
-                scoreByItem: [
+                itemScores: [
                     {
                         id: "doc5",
                         maxScore: 0.2,
                         score: 0.1,
                         docId: "doc5",
+                        shuffledOrder: 1,
                     },
                 ],
                 state: {
@@ -368,12 +388,13 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: 0.3,
                 score: 0.3,
-                scoreByItem: [
+                itemScores: [
                     {
                         id: "doc5",
                         maxScore: 0.3,
                         score: 0.3,
                         docId: "doc5",
+                        shuffledOrder: 1,
                     },
                 ],
                 state: {
@@ -413,8 +434,14 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: 0,
                 score: 0,
-                scoreByItem: [
-                    { id: "doc5", maxScore: 0, score: 0, docId: "doc5" },
+                itemScores: [
+                    {
+                        id: "doc5",
+                        maxScore: 0,
+                        score: 0,
+                        docId: "doc5",
+                        shuffledOrder: 1,
+                    },
                 ],
                 state: {
                     state: pruneActivityStateForSave(state),
@@ -452,12 +479,13 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: 0.1,
                 score: 0.1,
-                scoreByItem: [
+                itemScores: [
                     {
                         id: "doc5",
                         maxScore: 0.1,
                         score: 0.1,
                         docId: "doc5",
+                        shuffledOrder: 1,
                     },
                 ],
                 state: {
@@ -497,12 +525,13 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: 0.5,
                 score: 0.5,
-                scoreByItem: [
+                itemScores: [
                     {
                         id: "doc5",
                         maxScore: 0.5,
                         score: 0.5,
                         docId: "doc5",
+                        shuffledOrder: 1,
                     },
                 ],
                 state: {
@@ -586,26 +615,16 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: maxCreditAchieved,
                 score: creditAchieved,
-                scoreByItem: [
-                    {
-                        id: docIds[0],
-                        maxScore: docCredits[0],
-                        score: docLatestCredits[0],
-                        docId: docIds[0],
-                    },
-                    {
-                        id: docIds[1],
-                        maxScore: docCredits[1],
-                        score: docLatestCredits[1],
-                        docId: docIds[1],
-                    },
-                    {
-                        id: docIds[2],
-                        maxScore: docCredits[2],
-                        score: docLatestCredits[2],
-                        docId: docIds[2],
-                    },
-                ],
+                itemScores: state.allChildren.map((child) => {
+                    const idx = docIds.indexOf(child.id);
+                    return {
+                        id: docIds[idx],
+                        score: docLatestCredits[idx],
+                        maxScore: docCredits[idx],
+                        docId: docIds[idx],
+                        shuffledOrder: idx + 1,
+                    };
+                }),
                 state: {
                     state: pruneActivityStateForSave(state),
                 },
@@ -791,6 +810,8 @@ describe("Activity reducer tests", () => {
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
+        const childIds = source.items.map((c) => c.id);
+
         const state0 = initializeActivityState({
             source: source,
             variant: 5,
@@ -910,7 +931,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             newAttempt: true,
-            newAttemptForItem: 1,
+            newAttemptForItem: childIds.indexOf(docIds[0]) + 1,
             spy,
         });
 
@@ -1007,7 +1028,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             newAttempt: true,
-            newAttemptForItem: 2,
+            newAttemptForItem: childIds.indexOf(docIds[1]) + 1,
             spy,
         });
 
@@ -1120,20 +1141,16 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: maxCreditAchieved,
                 score: creditAchieved,
-                scoreByItem: [
-                    {
-                        id: selIds[0],
-                        maxScore: selCredits[0],
-                        score: selLatestCredits[0],
-                        docId: docIds[0],
-                    },
-                    {
-                        id: selIds[1],
-                        maxScore: selCredits[1],
-                        score: selLatestCredits[1],
-                        docId: docIds[1],
-                    },
-                ],
+                itemScores: state.allChildren.map((child) => {
+                    const idx = selIds.indexOf(child.id);
+                    return {
+                        id: selIds[idx],
+                        score: selLatestCredits[idx],
+                        maxScore: selCredits[idx],
+                        docId: docIds[idx],
+                        shuffledOrder: idx + 1,
+                    };
+                }),
                 state: {
                     state: pruneActivityStateForSave(state),
                 },
@@ -1377,6 +1394,8 @@ describe("Activity reducer tests", () => {
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
+        const childIds = source.items.map((c) => c.id);
+
         const state0 = initializeActivityState({
             source: source,
             variant: 5,
@@ -1543,7 +1562,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             newAttempt: true,
-            newAttemptForItem: 2,
+            newAttemptForItem: childIds.indexOf(selIds[1]) + 1,
             spy,
         });
 
@@ -1645,7 +1664,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             newAttempt: true,
-            newAttemptForItem: 1,
+            newAttemptForItem: childIds.indexOf(selIds[0]) + 1,
             spy,
         });
 
@@ -1687,6 +1706,8 @@ describe("Activity reducer tests", () => {
         const source = seq2sel as SequenceSource;
 
         const { numActivityVariants } = gatherDocumentStructure(source);
+
+        const childIds = source.items.map((c) => c.id);
 
         const state0 = initializeActivityState({
             source: source,
@@ -1854,7 +1875,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             newAttempt: true,
-            newAttemptForItem: 2,
+            newAttemptForItem: childIds.indexOf(selIds[1]) + 1,
             spy,
         });
 
@@ -1956,7 +1977,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             newAttempt: true,
-            newAttemptForItem: 1,
+            newAttemptForItem: childIds.indexOf(selIds[0]) + 1,
             spy,
         });
 
@@ -2057,18 +2078,20 @@ describe("Activity reducer tests", () => {
                 subject: "SPLICE.reportScoreAndState",
                 maxScore: maxCreditAchieved,
                 score: creditAchieved,
-                scoreByItem: [
+                itemScores: [
                     {
                         id: docIds[0],
                         maxScore: docCredits[0],
                         score: docLatestCredits[0],
                         docId: docIds[0],
+                        shuffledOrder: 1,
                     },
                     {
                         id: docIds[1],
                         maxScore: docCredits[1],
                         score: docLatestCredits[1],
                         docId: docIds[1],
+                        shuffledOrder: 2,
                     },
                 ],
                 state: {

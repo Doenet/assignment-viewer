@@ -345,19 +345,35 @@ export function generateNewSubActivityAttempt({
  * Recurse through the descendants of `activityState`,
  * returning an array of the `maxCreditAchieved` of the latest single document activities,
  * or of select activities that select a single document.
+ *
+ * If `unshuffled` is `true`, then use the original order from sequences
+ * rather than (the potentially shuffled) `orderedChildren`
  */
 export function extractActivityItemCredit(
     activityState: ActivityState,
-): { id: string; score: number; maxScore: number; docId?: string }[] {
+    nPrevInShuffleOrder = 0,
+): {
+    id: string;
+    score: number;
+    maxScore: number;
+    docId?: string;
+    shuffledOrder: number;
+}[] {
     switch (activityState.type) {
         case "singleDoc": {
-            return extractSingleDocItemCredit(activityState);
+            return extractSingleDocItemCredit(
+                activityState,
+                nPrevInShuffleOrder,
+            );
         }
         case "select": {
-            return extractSelectItemCredit(activityState);
+            return extractSelectItemCredit(activityState, nPrevInShuffleOrder);
         }
         case "sequence": {
-            return extractSequenceItemCredit(activityState);
+            return extractSequenceItemCredit(
+                activityState,
+                nPrevInShuffleOrder,
+            );
         }
     }
 }

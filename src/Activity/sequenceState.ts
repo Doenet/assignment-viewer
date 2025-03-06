@@ -343,13 +343,42 @@ export function generateNewSequenceAttempt({
  */
 export function extractSequenceItemCredit(
     activityState: SequenceState,
-): { id: string; score: number; maxScore: number; docId?: string }[] {
+    nPrevInShuffleOrder = 0,
+): {
+    id: string;
+    score: number;
+    maxScore: number;
+    docId?: string;
+    shuffledOrder: number;
+}[] {
     if (activityState.attemptNumber === 0) {
-        return [{ id: activityState.id, score: 0, maxScore: 0 }];
+        return [
+            {
+                id: activityState.id,
+                score: 0,
+                maxScore: 0,
+                shuffledOrder: nPrevInShuffleOrder + 1,
+            },
+        ];
     } else {
-        return activityState.orderedChildren.flatMap((state) =>
-            extractActivityItemCredit(state),
-        );
+        let nPrev = nPrevInShuffleOrder;
+        const inShuffledOrder = activityState.orderedChildren.map((state) => {
+            const next = extractActivityItemCredit(state, nPrev);
+            nPrev += next.length;
+            return { childId: state.id, items: next };
+        });
+
+        const inOriginalOrder = activityState.allChildren.flatMap((state) => {
+            const childResults = inShuffledOrder.find(
+                (obj) => obj.childId === state.id,
+            );
+            if (!childResults) {
+                throw Error("Unreachable");
+            }
+            return childResults.items;
+        });
+
+        return inOriginalOrder;
     }
 }
 

@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { ActivityViewer } from "../src/activity-viewer";
 import activitySource from "./testActivity.json";
 
-// import initialAssignmentState from "./testInitialState.json";
-const initialAssignmentState = null;
+import initialAssignmentState from "./testInitialState.json";
 import {
     ExportedActivityState,
     isActivitySource,
@@ -224,9 +223,17 @@ function App() {
         );
 
     const [_score, setScore] = useState(0);
-    const [scoreByItem, setScoreByItem] = useState<
-        { id: string; score: number; maxScore: number; docId?: string }[]
+    const [itemScores, setItemScores] = useState<
+        {
+            id: string;
+            score: number;
+            maxScore: number;
+            docId?: string;
+            shuffledOrder: number;
+        }[]
     >([]);
+
+    console.log(activityState);
 
     useEffect(() => {
         const stateListener = function (e: MessageEvent) {
@@ -241,10 +248,10 @@ function App() {
             if (isReportStateMessage(msg)) {
                 setActivityState(msg.state);
                 setScore(msg.score);
-                setScoreByItem(msg.scoreByItem);
+                setItemScores(msg.itemScores);
             } else if (isReportScoreByItemMessage(msg)) {
                 setScore(msg.score);
-                setScoreByItem(msg.scoreByItem);
+                setItemScores(msg.itemScores);
             } else if (e.data.subject === "SPLICE.getState") {
                 const haveState = validateStateAndSource(
                     initialAssignmentState,
@@ -313,9 +320,11 @@ function App() {
                 <div>
                     Credit by item, latest attempt:
                     <ol>
-                        {scoreByItem.map((item) => (
-                            <li key={item.id}>{item.score * 100}%</li>
-                        ))}
+                        {[...itemScores]
+                            .sort((a, b) => a.shuffledOrder - b.shuffledOrder)
+                            .map((item) => (
+                                <li key={item.id}>{item.score * 100}%</li>
+                            ))}
                     </ol>
                 </div>
                 <div>
