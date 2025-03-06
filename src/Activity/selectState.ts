@@ -629,9 +629,9 @@ export function generateNewSingleDocAttemptForMultiSelect({
 }
 
 /**
- * Recurse through the descendants of `activityState`,
- * returning an array of the `creditAchieved` and `maxCreditAchieved` of the latest single document activities,
- * or of select activities that select a single document.
+//  * Recurse through the descendants of `activityState`,
+//  * returning an array of score information of the latest single document activities,
+//  * or of select activities that select a single document.
  */
 export function extractSelectItemCredit(
     activityState: SelectState,

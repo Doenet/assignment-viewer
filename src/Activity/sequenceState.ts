@@ -338,7 +338,7 @@ export function generateNewSequenceAttempt({
 
 /**
  * Recurse through the descendants of `activityState`,
- * returning an array of the `creditAchieved` and `maxCreditAchieved` of the latest single document activities,
+ * returning an array of score information of the latest single document activities,
  * or of select activities that select a single document.
  */
 export function extractSequenceItemCredit(

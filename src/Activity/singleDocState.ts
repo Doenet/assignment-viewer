@@ -259,7 +259,7 @@ export function generateNewSingleDocAttempt({
 }
 
 /**
- * Return the credit achieved of this single doc activity or an empty array if it is a description.
+ * Return score information of this single doc activity or an empty array if it is a description.
  */
 export function extractSingleDocItemCredit(
     activityState: SingleDocState,

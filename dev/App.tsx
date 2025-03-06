@@ -233,8 +233,6 @@ function App() {
         }[]
     >([]);
 
-    console.log(activityState);
-
     useEffect(() => {
         const stateListener = function (e: MessageEvent) {
             if (e.data.activityId !== activityId) {

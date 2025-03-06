@@ -343,20 +343,31 @@ export function generateNewSubActivityAttempt({
 
 /**
  * Recurse through the descendants of `activityState`,
- * returning an array of the `maxCreditAchieved` of the latest single document activities,
+ * returning an array of score information of the latest single document activities,
  * or of select activities that select a single document.
  *
- * If `unshuffled` is `true`, then use the original order from sequences
- * rather than (the potentially shuffled) `orderedChildren`
+ * The `nPrevInShuffleOrder` argument is only used in recursion to track the order of documents.
+ *
+ * The order of the results is based on the original order from sequences
+ * (i.e., ignoring any shuffling)
+ *
+ * Return an array of objects with the fields:
+ * - id: the id of the activity corresponding to the item. It is typically the document,
+ *   though it will be the id of the select when it selects a single document.
+ * - docId: the id of the document. It may be undefined if the first attempt has not yet generated.
+ * - score: the score (credit achieved, between 0 and 1) of the latest submission of the document
+ * - maxScore, the maximum score of the document achieved during the current attempt of the base activity
+ * - shuffleOrder: the (1-based) index of this item using the order
+ *   determined from (the potentially shuffled) `orderedChildren` of sequences
  */
 export function extractActivityItemCredit(
     activityState: ActivityState,
     nPrevInShuffleOrder = 0,
 ): {
     id: string;
+    docId?: string;
     score: number;
     maxScore: number;
-    docId?: string;
     shuffledOrder: number;
 }[] {
     switch (activityState.type) {
