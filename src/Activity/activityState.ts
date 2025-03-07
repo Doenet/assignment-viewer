@@ -176,8 +176,6 @@ export function initializeActivityState({
  * Calculates a value for the next question counter (`finalQuestionCounter`) based on
  * the numbers of questions in the single documents of the new attempt, as specified by `questionCounts`.
  *
- * If `resetCredit` is true, set the `maxCreditAchieved` of the new attempt to zero.
- *
  * The `parentAttempt` counter should be the current attempt number of the parent activity.
  * It is used to ensure that selected variants change with the parent's attempt number.
  *
@@ -308,10 +306,6 @@ export function generateNewSubActivityAttempt({
                 questionCounts,
                 parentAttempt: grandParentAttempt,
             }));
-
-            // preserve the old credit achieved
-            newParentState.maxCreditAchieved =
-                allStates[parentState.id].maxCreditAchieved;
         }
 
         allStates[parentState.id] = newParentState;
@@ -328,9 +322,6 @@ export function generateNewSubActivityAttempt({
             questionCounts,
             parentAttempt: parentState.attemptNumber,
         });
-
-        // preserve the old credit achieved
-        newSubActivityState.maxCreditAchieved = allStates[id].maxCreditAchieved;
 
         allStates[id] = newSubActivityState;
 
@@ -356,7 +347,6 @@ export function generateNewSubActivityAttempt({
  *   though it will be the id of the select when it selects a single document.
  * - docId: the id of the document. It may be undefined if the first attempt has not yet generated.
  * - score: the score (credit achieved, between 0 and 1) of the latest submission of the document
- * - maxScore, the maximum score of the document achieved during the current attempt of the base activity
  * - shuffleOrder: the (1-based) index of this item using the order
  *   determined from (the potentially shuffled) `orderedChildren` of sequences
  */
@@ -367,7 +357,6 @@ export function extractActivityItemCredit(
     id: string;
     docId?: string;
     score: number;
-    maxScore: number;
     shuffledOrder: number;
 }[] {
     switch (activityState.type) {
@@ -652,7 +641,7 @@ export function gatherStates(
 /**
  * Given the changed state of activity with `id`, as stored in `allStates[id]`,
  * propagate the change to the activities ancestors, updating their
- * `latestChidStates`, `attempts`, `creditAchieved` and `maxCreditAchieved` fields.
+ * `latestChidStates`, `attempts`, and `creditAchieved` fields.
  *
  * Creates new state objects via shallow copies (and does not modify existing state objects),
  * adding the new state objects back to `allStates`.
@@ -705,7 +694,6 @@ export function propagateStateChangeToRoot({
 
     childActivities[childIdx2] = activityState;
 
-    let maxCreditAchieved: number;
     let creditAchieved: number;
 
     if (newParentState.type === "sequence") {
@@ -731,10 +719,6 @@ export function propagateStateChangeToRoot({
         const totWeights = creditWeights.reduce((a, c) => a + c);
         creditWeights = creditWeights.map((w) => w / totWeights);
 
-        maxCreditAchieved = nonDescriptions.reduce(
-            (a, c, i) => a + c.maxCreditAchieved * creditWeights[i],
-            0,
-        );
         creditAchieved = nonDescriptions.reduce(
             (a, c, i) => a + c.creditAchieved * creditWeights[i],
             0,
@@ -743,18 +727,11 @@ export function propagateStateChangeToRoot({
         newParentState.selectedChildren = childActivities;
 
         // select: take average of credit from all last attempt activities
-        maxCreditAchieved =
-            childActivities.reduce((a, c) => a + c.maxCreditAchieved, 0) /
-            childActivities.length;
         creditAchieved =
             childActivities.reduce((a, c) => a + c.creditAchieved, 0) /
             childActivities.length;
     }
 
-    newParentState.maxCreditAchieved = Math.max(
-        newParentState.maxCreditAchieved,
-        maxCreditAchieved,
-    );
     newParentState.creditAchieved = creditAchieved;
 
     return propagateStateChangeToRoot({

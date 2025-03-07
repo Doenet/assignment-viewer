@@ -69,7 +69,6 @@ export function activityStateReducer(
                 const itemScores = extractActivityItemCredit(action.state);
                 window.postMessage({
                     score: action.state.creditAchieved,
-                    maxScore: action.state.maxCreditAchieved,
                     itemScores,
                     subject: "SPLICE.reportScoreByItem",
                     activityId: action.baseId,
@@ -108,7 +107,6 @@ export function activityStateReducer(
                     // Just send score by item to indicate how many items are in the activity
                     window.postMessage({
                         score: newActivityState.creditAchieved,
-                        maxScore: newActivityState.maxCreditAchieved,
                         itemScores,
                         subject: "SPLICE.reportScoreByItem",
                         activityId: action.baseId,
@@ -141,7 +139,6 @@ export function activityStateReducer(
                             sourceHash,
                         },
                         score: newActivityState.creditAchieved,
-                        maxScore: newActivityState.maxCreditAchieved,
                         itemScores,
                         subject: "SPLICE.reportScoreAndState",
                         activityId: action.baseId,
@@ -182,7 +179,6 @@ export function activityStateReducer(
                         onSubmission,
                     },
                     score: newActivityState.creditAchieved,
-                    maxScore: newActivityState.maxCreditAchieved,
                     itemScores,
                     subject: "SPLICE.reportScoreAndState",
                     activityId: action.baseId,
@@ -218,10 +214,6 @@ function updateSingleDocState(
     }
 
     newSingleDocState.creditAchieved = action.creditAchieved;
-    newSingleDocState.maxCreditAchieved = Math.max(
-        newSingleDocState.maxCreditAchieved,
-        action.creditAchieved,
-    );
 
     newSingleDocState.doenetState = action.doenetState;
 

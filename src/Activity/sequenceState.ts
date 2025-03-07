@@ -52,8 +52,6 @@ export type SequenceState = {
     initialVariant: number;
     /** Credit achieved (between 0 and 1) from the latest submission */
     creditAchieved: number;
-    /** The maximum credit achieved over all submissions of this attempt of the activity */
-    maxCreditAchieved: number;
     /** The state of child activities, in their original order */
     allChildren: ActivityState[];
     /** The number of the current attempt */
@@ -112,7 +110,6 @@ export function isSequenceState(obj: unknown): obj is SequenceState {
         isSequenceSource(typedObj.source) &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        typeof typedObj.maxCreditAchieved === "number" &&
         Array.isArray(typedObj.allChildren) &&
         typedObj.allChildren.every(isActivityState) &&
         typeof typedObj.attemptNumber === "number" &&
@@ -137,7 +134,6 @@ export function isSequenceStateNoSource(
         (typedObj.parentId === null || typeof typedObj.parentId === "string") &&
         typeof typedObj.initialVariant === "number" &&
         typeof typedObj.creditAchieved === "number" &&
-        typeof typedObj.maxCreditAchieved === "number" &&
         Array.isArray(typedObj.allChildren) &&
         typedObj.allChildren.every(isActivityStateNoSource) &&
         typeof typedObj.attemptNumber === "number" &&
@@ -200,7 +196,6 @@ export function initializeSequenceState({
         source,
         initialVariant: variant,
         creditAchieved: 0,
-        maxCreditAchieved: 0,
         allChildren: childStates,
         attemptNumber: 0,
         orderedChildren: [],
@@ -327,7 +322,6 @@ export function generateNewSequenceAttempt({
     const newState: SequenceState = {
         ...state,
         creditAchieved: 0,
-        maxCreditAchieved: 0,
         allChildren: unorderedChildStates,
         attemptNumber: state.attemptNumber + 1,
         orderedChildren: orderedChildStates,
@@ -347,7 +341,6 @@ export function extractSequenceItemCredit(
 ): {
     id: string;
     score: number;
-    maxScore: number;
     docId?: string;
     shuffledOrder: number;
 }[] {
@@ -356,7 +349,6 @@ export function extractSequenceItemCredit(
             {
                 id: activityState.id,
                 score: 0,
-                maxScore: 0,
                 shuffledOrder: nPrevInShuffleOrder + 1,
             },
         ];
