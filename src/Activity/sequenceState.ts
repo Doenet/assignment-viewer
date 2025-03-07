@@ -377,25 +377,18 @@ export function extractSequenceItemCredit(
 /**
  * Remove all references to source from `activityState`, forming an instance of `ActivityStateNoSource`
  * that is intended to be saved to a database.
- *
- * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
- *
- * Even if `clearDoenetState` is `false``, still clear `doenetState` on all `allChildren`.
- * In this way, the (potentially large) DoenetML state is saved
- * only where needed to reconstitute the activity state.
  */
 export function pruneSequenceStateForSave(
     activityState: SequenceState,
-    clearDoenetState: boolean,
 ): SequenceStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
 
     const allChildren = newState.allChildren.map((child) =>
-        pruneActivityStateForSave(child, true),
+        pruneActivityStateForSave(child),
     );
 
     const orderedChildren = newState.orderedChildren.map((child) =>
-        pruneActivityStateForSave(child, clearDoenetState),
+        pruneActivityStateForSave(child),
     );
 
     return { ...newState, allChildren, orderedChildren };

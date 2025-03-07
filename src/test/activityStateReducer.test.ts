@@ -1,18 +1,19 @@
 import { afterEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { SequenceSource } from "../Activity/sequenceState";
 import {
-    ActivityState,
+    ActivityAndDoenetState,
     gatherDocumentStructure,
     initializeActivityState,
     pruneActivityStateForSave,
 } from "../Activity/activityState";
-import { activityStateReducer } from "../Activity/activityStateReducer";
+import { activityDoenetStateReducer } from "../Activity/activityStateReducer";
 import seq2sel from "./testSources/seq2sel.json";
 import doc from "./testSources/doc.json";
 import seqShuf from "./testSources/seqShuf.json";
 import selMult2docs from "./testSources/selMult2docs.json";
 import { SingleDocSource, SingleDocState } from "../Activity/singleDocState";
 import { SelectSource, SelectState } from "../Activity/selectState";
+import hash from "object-hash";
 
 describe("Activity reducer tests", () => {
     afterEach(() => {
@@ -31,19 +32,22 @@ describe("Activity reducer tests", () => {
         const source = doc as SingleDocSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
 
-        const newState = activityStateReducer(state0, {
-            type: "initialize",
-            source,
-            variantIndex: 5,
-            numActivityVariants,
-        });
+        const newState = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "initialize",
+                source,
+                variantIndex: 5,
+                numActivityVariants,
+            },
+        );
 
-        const expectedState: SingleDocState = {
+        const expectedActivityState: SingleDocState = {
             type: "singleDoc",
             id: source.id,
             parentId: null,
             source,
-            doenetState: null,
+            doenetStateIdx: null,
             initialVariant: 5,
             creditAchieved: 0,
             initialQuestionCounter: 0,
@@ -53,7 +57,10 @@ describe("Activity reducer tests", () => {
             restrictToVariantSlice: undefined,
         };
 
-        expect(newState).eqls(expectedState);
+        expect(newState).eqls({
+            activityState: expectedActivityState,
+            doenetStates: [],
+        });
     });
 
     it("set", () => {
@@ -73,29 +80,37 @@ describe("Activity reducer tests", () => {
         const source = doc as SingleDocSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
 
-        const state = initializeActivityState({
+        const activityState = initializeActivityState({
             source: source,
             variant: 5,
             parentId: null,
             numActivityVariants,
         });
 
-        let newState = activityStateReducer(state0, {
-            type: "set",
-            state,
-            allowSaveState: false,
-            baseId: "newId",
-        });
+        const state = { activityState, doenetStates: [] };
+
+        let newState = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "set",
+                state,
+                allowSaveState: false,
+                baseId: "newId",
+            },
+        );
 
         expect(newState).eqls(state);
         expect(spy).toHaveBeenCalledTimes(0);
 
-        newState = activityStateReducer(state0, {
-            type: "set",
-            state,
-            allowSaveState: true,
-            baseId: "newId",
-        });
+        newState = activityDoenetStateReducer(
+            { activityState, doenetStates: [] },
+            {
+                type: "set",
+                state,
+                allowSaveState: true,
+                baseId: "newId",
+            },
+        );
 
         expect(newState).eqls(state);
         expect(spy).toHaveBeenCalledTimes(1);
@@ -125,6 +140,7 @@ describe("Activity reducer tests", () => {
 
         const source = doc as SingleDocSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
+        const sourceHash = hash(source);
 
         const state0 = initializeActivityState({
             source: source,
@@ -136,18 +152,24 @@ describe("Activity reducer tests", () => {
         // artificially set credit on state0
         state0.creditAchieved = 0.8;
 
-        let state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 9,
-            questionCounts: {},
-            allowSaveState: false,
-            baseId: "newId",
-        }) as SingleDocState;
+        let state = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 9,
+                questionCounts: {},
+                allowSaveState: false,
+                baseId: "newId",
+                sourceHash,
+            },
+        );
         expect(spy).toHaveBeenCalledTimes(0);
 
-        expect(typeof state.currentVariant).eq("number");
-        const previousVariants = [state.currentVariant];
+        let activityState = state.activityState as SingleDocState;
+
+        expect(typeof activityState.currentVariant).eq("number");
+        const previousVariants = [activityState.currentVariant];
 
         let expectState: SingleDocState = {
             ...state0,
@@ -158,18 +180,24 @@ describe("Activity reducer tests", () => {
             previousVariants,
         };
 
-        expect(state).eqls(expectState);
+        expect(activityState).eqls(expectState);
 
         // repeat creation of first attempt, this time with `allowSaveState`
-        state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 9,
-            questionCounts: {},
-            allowSaveState: true,
-            baseId: "newId",
-        }) as SingleDocState;
-        expect(state).eqls(expectState);
+        state = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 9,
+                questionCounts: {},
+                allowSaveState: true,
+                baseId: "newId",
+                sourceHash,
+            },
+        );
+        activityState = state.activityState as SingleDocState;
+
+        expect(activityState).eqls(expectState);
 
         expect(spy).toHaveBeenCalledTimes(1);
 
@@ -189,17 +217,19 @@ describe("Activity reducer tests", () => {
             },
         ]);
 
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "generateNewActivityAttempt",
             numActivityVariants,
             initialQuestionCounter: 6,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
-        }) as SingleDocState;
+            sourceHash,
+        });
+        activityState = state.activityState as SingleDocState;
 
-        expect(typeof state.currentVariant).eq("number");
-        previousVariants.push(state.currentVariant);
+        expect(typeof activityState.currentVariant).eq("number");
+        previousVariants.push(activityState.currentVariant);
 
         expectState = {
             ...state0,
@@ -212,7 +242,7 @@ describe("Activity reducer tests", () => {
 
         expect(spy).toHaveBeenCalledTimes(2);
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0,
@@ -225,7 +255,9 @@ describe("Activity reducer tests", () => {
                     },
                 ],
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    sourceHash,
+                    doenetStates: [],
                 },
                 activityId: "newId",
                 newAttempt: true,
@@ -244,6 +276,7 @@ describe("Activity reducer tests", () => {
 
         const source = doc as SingleDocSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
+        const sourceHash = hash(source);
 
         const state0 = initializeActivityState({
             source: source,
@@ -252,35 +285,49 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
-        let state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: false,
-            baseId: "newId",
-        });
+        let state = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 0,
+                questionCounts: {},
+                allowSaveState: false,
+                baseId: "newId",
+                sourceHash,
+            },
+        );
 
         // Get score of 0.2
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: "doc5",
+            doenetStateIdx: 0,
             doenetState: "DoenetML state 1",
             creditAchieved: 0.2,
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "singleDoc") {
+        let activityState = state.activityState;
+
+        if (activityState.type !== "singleDoc") {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.creditAchieved).eq(0.2);
-        expect(state.doenetState).eq("DoenetML state 1");
+        expect(activityState.creditAchieved).eq(0.2);
+        if (activityState.doenetStateIdx === null) {
+            throw Error("Should have a doenet state index");
+        }
+        expect(activityState.doenetStateIdx).eq(0);
+        expect(state.doenetStates[activityState.doenetStateIdx]).eq(
+            "DoenetML state 1",
+        );
 
         expect(spy).toHaveBeenCalledTimes(1);
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.2,
@@ -293,8 +340,11 @@ describe("Activity reducer tests", () => {
                     },
                 ],
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: ["DoenetML state 1"],
+                    sourceHash,
                 },
+                newDoenetStateIdx: 0,
                 activityId: "newId",
             },
         ]);
@@ -305,25 +355,35 @@ describe("Activity reducer tests", () => {
         expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
 
         // decrease score
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: "doc5",
             doenetState: "DoenetML state 2",
+            doenetStateIdx: 0,
             creditAchieved: 0.1,
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "singleDoc") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "singleDoc") {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.creditAchieved).eq(0.1);
-        expect(state.doenetState).eq("DoenetML state 2");
+        expect(activityState.creditAchieved).eq(0.1);
+        if (activityState.doenetStateIdx === null) {
+            throw Error("Should have a doenet state index");
+        }
+        expect(activityState.doenetStateIdx).eq(0);
+        expect(state.doenetStates[activityState.doenetStateIdx]).eq(
+            "DoenetML state 2",
+        );
 
         expect(spy).toHaveBeenCalledTimes(2);
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.1,
@@ -336,8 +396,11 @@ describe("Activity reducer tests", () => {
                     },
                 ],
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: ["DoenetML state 2"],
+                    sourceHash,
                 },
+                newDoenetStateIdx: 0,
                 activityId: "newId",
             },
         ]);
@@ -348,25 +411,35 @@ describe("Activity reducer tests", () => {
         expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
 
         // increase score
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: "doc5",
             doenetState: "DoenetML state 3",
+            doenetStateIdx: 0,
             creditAchieved: 0.3,
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "singleDoc") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "singleDoc") {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.creditAchieved).eq(0.3);
-        expect(state.doenetState).eq("DoenetML state 3");
+        expect(activityState.creditAchieved).eq(0.3);
+        if (activityState.doenetStateIdx === null) {
+            throw Error("Should have a doenet state index");
+        }
+        expect(activityState.doenetStateIdx).eq(0);
+        expect(state.doenetStates[activityState.doenetStateIdx]).eq(
+            "DoenetML state 3",
+        );
 
         expect(spy).toHaveBeenCalledTimes(3);
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.3,
@@ -379,8 +452,11 @@ describe("Activity reducer tests", () => {
                     },
                 ],
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: ["DoenetML state 3"],
+                    sourceHash,
                 },
+                newDoenetStateIdx: 0,
                 activityId: "newId",
             },
         ]);
@@ -391,25 +467,28 @@ describe("Activity reducer tests", () => {
         expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
 
         // generate new attempt
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "generateNewActivityAttempt",
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "singleDoc") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "singleDoc") {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.creditAchieved).eq(0.0);
-        expect(state.doenetState).eq(null);
+        expect(activityState.creditAchieved).eq(0.0);
+        expect(activityState.doenetStateIdx).eq(null);
 
         expect(spy).toHaveBeenCalledTimes(4);
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0,
@@ -422,7 +501,9 @@ describe("Activity reducer tests", () => {
                     },
                 ],
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: [],
+                    sourceHash,
                 },
                 activityId: "newId",
                 newAttempt: true,
@@ -433,21 +514,31 @@ describe("Activity reducer tests", () => {
         expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
 
         // start attempt with low score
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: "doc5",
             doenetState: "DoenetML state 4",
+            doenetStateIdx: 0,
             creditAchieved: 0.1,
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "singleDoc") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "singleDoc") {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.creditAchieved).eq(0.1);
-        expect(state.doenetState).eq("DoenetML state 4");
+        expect(activityState.creditAchieved).eq(0.1);
+        if (activityState.doenetStateIdx === null) {
+            throw Error("Should have a doenet state index");
+        }
+        expect(activityState.doenetStateIdx).eq(0);
+        expect(state.doenetStates[activityState.doenetStateIdx]).eq(
+            "DoenetML state 4",
+        );
 
         expect(spy).toHaveBeenCalledTimes(5);
 
@@ -464,8 +555,11 @@ describe("Activity reducer tests", () => {
                     },
                 ],
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: ["DoenetML state 4"],
+                    sourceHash,
                 },
+                newDoenetStateIdx: 0,
                 activityId: "newId",
             },
         ]);
@@ -476,21 +570,31 @@ describe("Activity reducer tests", () => {
         expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
 
         // increase score
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: "doc5",
             doenetState: "DoenetML state 5",
+            doenetStateIdx: 0,
             creditAchieved: 0.5,
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "singleDoc") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "singleDoc") {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.creditAchieved).eq(0.5);
-        expect(state.doenetState).eq("DoenetML state 5");
+        expect(activityState.creditAchieved).eq(0.5);
+        if (activityState.doenetStateIdx === null) {
+            throw Error("Should have a doenet state index");
+        }
+        expect(activityState.doenetStateIdx).eq(0);
+        expect(state.doenetStates[activityState.doenetStateIdx]).eq(
+            "DoenetML state 5",
+        );
 
         expect(spy).toHaveBeenCalledTimes(6);
 
@@ -507,8 +611,11 @@ describe("Activity reducer tests", () => {
                     },
                 ],
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: ["DoenetML state 5"],
+                    sourceHash,
                 },
+                newDoenetStateIdx: 0,
                 activityId: "newId",
             },
         ]);
@@ -528,57 +635,76 @@ describe("Activity reducer tests", () => {
         attemptNumber,
         newAttempt,
         newAttemptForItem,
+        newDoenetStateIdx,
+        sourceHash,
         spy,
     }: {
-        state: ActivityState;
+        state: ActivityAndDoenetState;
         docCredits: number[];
         docAttemptNumbers: number[];
-        docStates: (string | null)[];
+        docStates: (string | undefined)[];
         docIds: string[];
         attemptNumber: number;
         newAttempt?: boolean;
         newAttemptForItem?: number;
+        newDoenetStateIdx?: number;
+        sourceHash: string;
         spy: MockInstance;
     }) {
-        if (state.type !== "sequence") {
+        const activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
-        const creditAchieved = state.creditAchieved;
+        const creditAchieved = activityState.creditAchieved;
         expect(creditAchieved).closeTo(
             docCredits.reduce((a, c) => a + c, 0) / 3,
             1e-12,
         );
 
-        expect(state.attemptNumber).eq(attemptNumber);
+        expect(activityState.attemptNumber).eq(attemptNumber);
 
-        for (let i = 0; i < 2; i++) {
-            const docState = state.orderedChildren[i];
+        for (let i = 0; i < 3; i++) {
+            const docState = activityState.orderedChildren[i];
             if (docState.type !== "singleDoc") {
                 throw Error("Shouldn't happen");
             }
             expect(docState.id).eq(docIds[i]);
             expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[i]);
-            expect(docState.doenetState).eq(docStates[i]);
+            if (docStates[i] === undefined) {
+                expect(docState.doenetStateIdx === null);
+            } else {
+                if (docState.doenetStateIdx === null) {
+                    throw Error("Should have doenet state index");
+                }
+                expect(state.doenetStates[docState.doenetStateIdx]).eq(
+                    docStates[i],
+                );
+            }
         }
 
-        const newAttemptObj: {
+        const newInfoObj: {
             newAttempt?: boolean;
             newAttemptForItem?: number;
+            newDoenetStateIdx?: number;
         } = {};
         if (newAttempt) {
-            newAttemptObj.newAttempt = true;
+            newInfoObj.newAttempt = true;
         }
         if (newAttemptForItem) {
-            newAttemptObj.newAttemptForItem = newAttemptForItem;
+            newInfoObj.newAttemptForItem = newAttemptForItem;
+        }
+        if (newDoenetStateIdx !== undefined) {
+            newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
         }
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: creditAchieved,
-                itemScores: state.allChildren.map((child) => {
+                itemScores: activityState.allChildren.map((child) => {
                     const idx = docIds.indexOf(child.id);
                     return {
                         id: docIds[idx],
@@ -588,10 +714,12 @@ describe("Activity reducer tests", () => {
                     };
                 }),
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: docStates,
+                    sourceHash,
                 },
                 activityId: "newId",
-                ...newAttemptObj,
+                ...newInfoObj,
             },
         ]);
 
@@ -612,6 +740,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = seqShuf as SequenceSource;
+        const sourceHash = hash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -622,36 +751,44 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
-        let state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: false,
-            baseId: "newId",
-        });
+        let state = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 0,
+                questionCounts: {},
+                allowSaveState: false,
+                baseId: "newId",
+                sourceHash,
+            },
+        );
 
-        if (state.type !== "sequence") {
+        const activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
         // determine ordered documents
-        const docIds = state.orderedChildren.map((c) => c.id);
+        const docIds = activityState.orderedChildren.map((c) => c.id);
         let docCredits = [0, 0, 0];
         let docAttemptNumbers = [1, 1, 1];
-        let docStates: (string | null)[] = [null, null, null];
+        let docStates: (string | undefined)[] = [];
         let attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
         docCredits[0] = 0.4;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
+            doenetStateIdx: 0,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq3Docs({
@@ -661,19 +798,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
         docCredits[1] = 0.6;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
         testStateSeq3Docs({
             state,
@@ -682,19 +823,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            sourceHash,
+            newDoenetStateIdx: 1,
             spy,
         });
 
         // Decrease score of 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
         docCredits[1] = 0.2;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
         testStateSeq3Docs({
             state,
@@ -702,24 +847,27 @@ describe("Activity reducer tests", () => {
             docAttemptNumbers,
             docStates,
             docIds,
+            newDoenetStateIdx: 1,
             attemptNumber,
+            sourceHash,
             spy,
         });
 
         // Generate new attempt of entire activity
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "generateNewActivityAttempt",
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         attemptNumber++;
         docAttemptNumbers = docAttemptNumbers.map((x) => x + 1);
         docCredits = [0, 0, 0];
-        docStates = [null, null, null];
+        docStates = [];
 
         testStateSeq3Docs({
             state,
@@ -729,19 +877,22 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             newAttempt: true,
+            sourceHash,
             spy,
         });
 
         // get score of 0.8 on third doc
         docStates[2] = "DoenetML state 3.1";
         docCredits[2] = 0.8;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[2],
             doenetState: docStates[2],
+            doenetStateIdx: 2,
             creditAchieved: docCredits[2],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq3Docs({
@@ -751,6 +902,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 2,
+            sourceHash,
             spy,
         });
     });
@@ -762,6 +915,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = seqShuf as SequenceSource;
+        const sourceHash = hash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -774,36 +928,44 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
-        let state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: false,
-            baseId: "newId",
-        });
+        let state = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 0,
+                questionCounts: {},
+                allowSaveState: false,
+                baseId: "newId",
+                sourceHash,
+            },
+        );
 
-        if (state.type !== "sequence") {
+        const activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
         // determine ordered documents
-        const docIds = state.orderedChildren.map((c) => c.id);
+        const docIds = activityState.orderedChildren.map((c) => c.id);
         const docCredits = [0, 0, 0];
         const docAttemptNumbers = [1, 1, 1];
-        const docStates: (string | null)[] = [null, null, null];
+        const docStates: (string | undefined)[] = [];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
         docCredits[0] = 0.4;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
+            doenetStateIdx: 0,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq3Docs({
@@ -813,19 +975,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
         docCredits[1] = 0.6;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
         testStateSeq3Docs({
             state,
@@ -834,19 +1000,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Decrease score of 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
         docCredits[1] = 0.2;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
         testStateSeq3Docs({
             state,
@@ -855,23 +1025,27 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Generate new attempt of first document
-        state = activityStateReducer(state, {
-            type: "generateNewActivityAttempt",
-            id: docIds[0],
+        state = activityDoenetStateReducer(state, {
+            type: "generateSingleDocSubActivityAttempt",
+            docId: docIds[0],
+            doenetStateIdx: 0,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         docAttemptNumbers[0]++;
         docCredits[0] = 0;
-        docStates[0] = null;
+        docStates[0] = undefined;
 
         testStateSeq3Docs({
             state,
@@ -882,19 +1056,23 @@ describe("Activity reducer tests", () => {
             attemptNumber,
             newAttempt: true,
             newAttemptForItem: childIds.indexOf(docIds[0]) + 1,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
         // get score of 0.5 on first doc
         docStates[0] = "DoenetML state 1.2";
         docCredits[0] = 0.5;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
+            doenetStateIdx: 0,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq3Docs({
@@ -904,19 +1082,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
         // get score of 0.8 on third doc
         docStates[2] = "DoenetML state 3.1";
         docCredits[2] = 0.8;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[2],
             doenetState: docStates[2],
+            doenetStateIdx: 2,
             creditAchieved: docCredits[2],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq3Docs({
@@ -926,19 +1108,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 2,
+            sourceHash,
             spy,
         });
 
         // get score of 0 on second doc
         docStates[1] = "DoenetML state 2.3";
         docCredits[1] = 0;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq3Docs({
@@ -948,23 +1134,27 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Generate new attempt of second document
-        state = activityStateReducer(state, {
-            type: "generateNewActivityAttempt",
-            id: docIds[1],
+        state = activityDoenetStateReducer(state, {
+            type: "generateSingleDocSubActivityAttempt",
+            docId: docIds[1],
+            doenetStateIdx: 1,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         docAttemptNumbers[1]++;
         docCredits[1] = 0;
-        docStates[1] = null;
+        docStates[1] = undefined;
 
         testStateSeq3Docs({
             state,
@@ -975,19 +1165,23 @@ describe("Activity reducer tests", () => {
             attemptNumber,
             newAttempt: true,
             newAttemptForItem: childIds.indexOf(docIds[1]) + 1,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // get score of 0.9 on second doc
         docStates[1] = "DoenetML state 2.4";
         docCredits[1] = 0.9;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq3Docs({
@@ -997,6 +1191,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
     });
@@ -1013,35 +1209,41 @@ describe("Activity reducer tests", () => {
         attemptNumber,
         newAttempt,
         newAttemptForItem,
+        newDoenetStateIdx,
+        sourceHash,
         spy,
     }: {
-        state: ActivityState;
+        state: ActivityAndDoenetState;
         selCredits: number[];
         selAttemptNumbers: number[];
         selIds: string[];
         docCredits: number[];
         docAttemptNumbers: Record<string, number>;
-        docStates: (string | null)[];
+        docStates: (string | undefined)[];
         docIds: string[];
         attemptNumber: number;
         newAttempt?: boolean;
         newAttemptForItem?: number;
+        newDoenetStateIdx?: number;
+        sourceHash: string;
         spy: MockInstance;
     }) {
-        if (state.type !== "sequence") {
+        const activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
-        const creditAchieved = state.creditAchieved;
+        const creditAchieved = activityState.creditAchieved;
         expect(creditAchieved).closeTo(
             selCredits.reduce((a, c) => a + c, 0) / 2,
             1e-12,
         );
 
-        expect(state.attemptNumber).eq(attemptNumber);
+        expect(activityState.attemptNumber).eq(attemptNumber);
 
         for (let i = 0; i < 2; i++) {
-            const selectState = state.orderedChildren[i];
+            const selectState = activityState.orderedChildren[i];
             if (selectState.type !== "select") {
                 throw Error("Shouldn't happen");
             }
@@ -1056,25 +1258,38 @@ describe("Activity reducer tests", () => {
             expect(docState.id).eq(docIds[i]);
             expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[docIds[i]]);
-            expect(docState.doenetState).eq(docStates[i]);
+            if (docStates[i] === undefined) {
+                expect(docState.doenetStateIdx === null);
+            } else {
+                if (docState.doenetStateIdx === null) {
+                    throw Error("Should have doenet state index");
+                }
+                expect(state.doenetStates[docState.doenetStateIdx]).eq(
+                    docStates[i],
+                );
+            }
         }
 
-        const newAttemptObj: {
+        const newInfoObj: {
             newAttempt?: boolean;
             newAttemptForItem?: number;
+            newDoenetStateIdx?: number;
         } = {};
         if (newAttempt) {
-            newAttemptObj.newAttempt = true;
+            newInfoObj.newAttempt = true;
         }
         if (newAttemptForItem) {
-            newAttemptObj.newAttemptForItem = newAttemptForItem;
+            newInfoObj.newAttemptForItem = newAttemptForItem;
+        }
+        if (newDoenetStateIdx !== undefined) {
+            newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
         }
 
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: creditAchieved,
-                itemScores: state.allChildren.map((child) => {
+                itemScores: activityState.allChildren.map((child) => {
                     const idx = selIds.indexOf(child.id);
                     return {
                         id: selIds[idx],
@@ -1084,10 +1299,12 @@ describe("Activity reducer tests", () => {
                     };
                 }),
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: docStates,
+                    sourceHash,
                 },
                 activityId: "newId",
-                ...newAttemptObj,
+                ...newInfoObj,
             },
         ]);
 
@@ -1108,6 +1325,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = seq2sel as SequenceSource;
+        const sourceHash = hash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -1118,23 +1336,29 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
-        let state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: false,
-            baseId: "newId",
-        });
+        let state = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 0,
+                questionCounts: {},
+                allowSaveState: false,
+                baseId: "newId",
+                sourceHash,
+            },
+        );
 
-        if (state.type !== "sequence") {
+        let activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
         // determine ordered selects and the selected documents
-        let selIds = state.orderedChildren.map((c) => c.id);
+        let selIds = activityState.orderedChildren.map((c) => c.id);
         let docIds = [];
-        for (const a of state.orderedChildren) {
+        for (const a of activityState.orderedChildren) {
             if (a.type !== "select") {
                 throw Error("Shouldn't happen");
             }
@@ -1146,20 +1370,22 @@ describe("Activity reducer tests", () => {
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         let docCredits = [0, 0];
-        let docStates: (string | null)[] = [null, null];
+        let docStates: (string | undefined)[] = [];
         let attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
         docCredits[0] = 0.4;
         selCredits[0] = 0.4;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
+            doenetStateIdx: 0,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1172,6 +1398,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
@@ -1179,13 +1407,15 @@ describe("Activity reducer tests", () => {
         docStates[1] = "DoenetML state 2.1";
         docCredits[1] = 0.6;
         selCredits[1] = 0.6;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1198,6 +1428,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
@@ -1205,13 +1437,15 @@ describe("Activity reducer tests", () => {
         docStates[1] = "DoenetML state 2.2";
         docCredits[1] = 0.2;
         selCredits[1] = 0.2;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1224,27 +1458,32 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Generate new attempt of entire activity
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "generateNewActivityAttempt",
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "sequence") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
         // determine ordered selects and the selected documents
-        selIds = state.orderedChildren.map((c) => c.id);
+        selIds = activityState.orderedChildren.map((c) => c.id);
         docIds = [];
-        for (const a of state.orderedChildren) {
+        for (const a of activityState.orderedChildren) {
             if (a.type !== "select") {
                 throw Error("Shouldn't happen");
             }
@@ -1259,7 +1498,7 @@ describe("Activity reducer tests", () => {
         selCredits = [0, 0];
 
         docCredits = [0, 0];
-        docStates = [null, null];
+        docStates = [];
         attemptNumber++;
 
         testStateSeq2Sels({
@@ -1274,19 +1513,22 @@ describe("Activity reducer tests", () => {
             attemptNumber,
             newAttempt: true,
             spy,
+            sourceHash,
         });
 
         // get score of 0.8 second doc
         docStates[1] = "DoenetML state 2.3";
         docCredits[1] = 0.8;
         selCredits[1] = 0.8;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
         testStateSeq2Sels({
             state,
@@ -1298,299 +1540,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
-            spy,
-        });
-    });
-
-    it("update single state, sequence of two selects, new attempts for selects", () => {
-        vi.stubGlobal("window", {
-            postMessage: vi.fn(() => null),
-        });
-        const spy = vi.spyOn(window, "postMessage");
-
-        const source = seq2sel as SequenceSource;
-
-        const { numActivityVariants } = gatherDocumentStructure(source);
-
-        const childIds = source.items.map((c) => c.id);
-
-        const state0 = initializeActivityState({
-            source: source,
-            variant: 5,
-            parentId: null,
-            numActivityVariants,
-        });
-
-        let state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: false,
-            baseId: "newId",
-        });
-
-        if (state.type !== "sequence") {
-            throw Error("Shouldn't happen");
-        }
-
-        // determine ordered selects and the selected documents
-        const selIds = state.orderedChildren.map((c) => c.id);
-        const docIds = [];
-        for (const a of state.orderedChildren) {
-            if (a.type !== "select") {
-                throw Error("Shouldn't happen");
-            }
-            docIds.push(a.selectedChildren[0].id);
-        }
-
-        const selAttemptNumbers = [1, 1];
-        const selCredits = [0, 0];
-
-        const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
-        const docCredits = [0, 0];
-        const docStates: (string | null)[] = [null, null];
-        const attemptNumber = 1;
-
-        // Get score of 0.4 in first doc
-        docStates[0] = "DoenetML state 1.1";
-        docCredits[0] = 0.4;
-        selCredits[0] = 0.4;
-        state = activityStateReducer(state, {
-            type: "updateSingleState",
-            id: docIds[0],
-            doenetState: docStates[0],
-            creditAchieved: docCredits[0],
-            allowSaveState: true,
-            baseId: "newId",
-        });
-
-        testStateSeq2Sels({
-            state,
-            selCredits,
-            selAttemptNumbers,
-            selIds,
-            docCredits,
-            docAttemptNumbers,
-            docStates,
-            docIds,
-            attemptNumber,
-            spy,
-        });
-
-        // Get score of 0.6 in second doc
-        docStates[1] = "DoenetML state 2.1";
-        docCredits[1] = 0.6;
-        selCredits[1] = 0.6;
-        state = activityStateReducer(state, {
-            type: "updateSingleState",
-            id: docIds[1],
-            doenetState: docStates[1],
-            creditAchieved: docCredits[1],
-            allowSaveState: true,
-            baseId: "newId",
-        });
-
-        testStateSeq2Sels({
-            state,
-            selCredits,
-            selAttemptNumbers,
-            selIds,
-            docCredits,
-            docAttemptNumbers,
-            docStates,
-            docIds,
-            attemptNumber,
-            spy,
-        });
-
-        // Decrease score to 0.2 in second doc
-        docStates[1] = "DoenetML state 2.2";
-        docCredits[1] = 0.2;
-        selCredits[1] = 0.2;
-        state = activityStateReducer(state, {
-            type: "updateSingleState",
-            id: docIds[1],
-            doenetState: docStates[1],
-            creditAchieved: docCredits[1],
-            allowSaveState: true,
-            baseId: "newId",
-        });
-
-        testStateSeq2Sels({
-            state,
-            selCredits,
-            selAttemptNumbers,
-            selIds,
-            docCredits,
-            docAttemptNumbers,
-            docStates,
-            docIds,
-            attemptNumber,
-            spy,
-        });
-
-        // Generate new attempt the second select
-        state = activityStateReducer(state, {
-            type: "generateNewActivityAttempt",
-            id: selIds[1],
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: true,
-            baseId: "newId",
-        });
-
-        if (state.type !== "sequence") {
-            throw Error("Shouldn't happen");
-        }
-
-        const selectAttempts = [1, 2];
-
-        // determine the identity of the second document
-        docIds[1] = (
-            state.orderedChildren[1] as SelectState
-        ).selectedChildren[0].id;
-        docAttemptNumbers[docIds[1]] = (docAttemptNumbers[docIds[1]] ?? 0) + 1;
-
-        selAttemptNumbers[1]++;
-        selCredits[1] = 0; // don't change selCredit[1], as the credit achieved is remembered
-        docStates[1] = null;
-        docCredits[1] = 0;
-
-        testStateSeq2Sels({
-            state,
-            selCredits,
-            selAttemptNumbers,
-            selIds,
-            docCredits,
-            docAttemptNumbers,
-            docStates,
-            docIds,
-            attemptNumber,
-            newAttempt: true,
-            newAttemptForItem: childIds.indexOf(selIds[1]) + 1,
-            spy,
-        });
-
-        // get new high score of score of 0.8 in second doc
-        docStates[1] = "DoenetML state 2.3";
-        docCredits[1] = 0.8;
-        selCredits[1] = 0.8;
-        state = activityStateReducer(state, {
-            type: "updateSingleState",
-            id: docIds[1],
-            doenetState: docStates[1],
-            creditAchieved: docCredits[1],
-            allowSaveState: true,
-            baseId: "newId",
-        });
-
-        testStateSeq2Sels({
-            state,
-            selCredits,
-            selAttemptNumbers,
-            selIds,
-            docCredits,
-            docAttemptNumbers,
-            docStates,
-            docIds,
-            attemptNumber,
-            spy,
-        });
-
-        // decrease score to 0.2 on second doc
-        docStates[1] = "DoenetML state 2.4";
-        docCredits[1] = 0.2;
-        selCredits[1] = 0.2;
-        state = activityStateReducer(state, {
-            type: "updateSingleState",
-            id: docIds[1],
-            doenetState: docStates[1],
-            creditAchieved: docCredits[1],
-            allowSaveState: true,
-            baseId: "newId",
-        });
-
-        testStateSeq2Sels({
-            state,
-            selCredits,
-            selAttemptNumbers,
-            selIds,
-            docCredits,
-            docAttemptNumbers,
-            docStates,
-            docIds,
-            attemptNumber,
-            spy,
-        });
-
-        // Generate new attempt the first select
-        state = activityStateReducer(state, {
-            type: "generateNewActivityAttempt",
-            id: selIds[0],
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: true,
-            baseId: "newId",
-        });
-
-        if (state.type !== "sequence") {
-            throw Error("Shouldn't happen");
-        }
-
-        selectAttempts[0]++;
-
-        // determine the identity of the second document
-        docIds[0] = (
-            state.orderedChildren[0] as SelectState
-        ).selectedChildren[0].id;
-        docAttemptNumbers[docIds[0]] = (docAttemptNumbers[docIds[0]] ?? 0) + 1;
-
-        selAttemptNumbers[0]++;
-        selCredits[0] = 0; // don't change selCredit[0], as the credit achieved is remembered
-        docStates[0] = null;
-        docCredits[0] = 0;
-
-        testStateSeq2Sels({
-            state,
-            selCredits,
-            selAttemptNumbers,
-            selIds,
-            docCredits,
-            docAttemptNumbers,
-            docStates,
-            docIds,
-            attemptNumber,
-            newAttempt: true,
-            newAttemptForItem: childIds.indexOf(selIds[0]) + 1,
-            spy,
-        });
-
-        // get score of 0.3 on first doc
-        docStates[0] = "DoenetML state 1.2";
-        docCredits[0] = 0.3;
-        selCredits[0] = 0.3;
-        state = activityStateReducer(state, {
-            type: "updateSingleState",
-            id: docIds[0],
-            doenetState: docStates[0],
-            creditAchieved: docCredits[0],
-            allowSaveState: true,
-            baseId: "newId",
-        });
-
-        testStateSeq2Sels({
-            state,
-            selCredits,
-            selAttemptNumbers,
-            selIds,
-            docCredits,
-            docAttemptNumbers,
-            docStates,
-            docIds,
-            attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
     });
@@ -1602,6 +1553,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = seq2sel as SequenceSource;
+        const sourceHash = hash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -1614,23 +1566,29 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
-        let state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: false,
-            baseId: "newId",
-        });
+        let state = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 0,
+                questionCounts: {},
+                allowSaveState: false,
+                baseId: "newId",
+                sourceHash,
+            },
+        );
 
-        if (state.type !== "sequence") {
+        let activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
         // determine ordered selects and the selected documents
-        const selIds = state.orderedChildren.map((c) => c.id);
+        const selIds = activityState.orderedChildren.map((c) => c.id);
         const docIds = [];
-        for (const a of state.orderedChildren) {
+        for (const a of activityState.orderedChildren) {
             if (a.type !== "select") {
                 throw Error("Shouldn't happen");
             }
@@ -1642,20 +1600,22 @@ describe("Activity reducer tests", () => {
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         const docCredits = [0, 0];
-        const docStates: (string | null)[] = [null, null];
+        const docStates: (string | undefined)[] = [];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
         docCredits[0] = 0.4;
         selCredits[0] = 0.4;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
+            doenetStateIdx: 0,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1668,6 +1628,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
@@ -1675,13 +1637,15 @@ describe("Activity reducer tests", () => {
         docStates[1] = "DoenetML state 2.1";
         docCredits[1] = 0.6;
         selCredits[1] = 0.6;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1694,6 +1658,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
@@ -1701,13 +1667,15 @@ describe("Activity reducer tests", () => {
         docStates[1] = "DoenetML state 2.2";
         docCredits[1] = 0.2;
         selCredits[1] = 0.2;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1720,21 +1688,27 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Generate new attempt the second doc
-        state = activityStateReducer(state, {
-            type: "generateNewActivityAttempt",
-            id: docIds[1],
+        state = activityDoenetStateReducer(state, {
+            type: "generateSingleDocSubActivityAttempt",
+            docId: docIds[1],
+            doenetStateIdx: 1,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "sequence") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
@@ -1742,13 +1716,13 @@ describe("Activity reducer tests", () => {
 
         // determine the identity of the second document
         docIds[1] = (
-            state.orderedChildren[1] as SelectState
+            activityState.orderedChildren[1] as SelectState
         ).selectedChildren[0].id;
         docAttemptNumbers[docIds[1]] = (docAttemptNumbers[docIds[1]] ?? 0) + 1;
 
         selAttemptNumbers[1]++;
         selCredits[1] = 0; // don't change selCredit[1], as the credit achieved is remembered
-        docStates[1] = null;
+        docStates[1] = undefined;
         docCredits[1] = 0;
 
         testStateSeq2Sels({
@@ -1763,6 +1737,8 @@ describe("Activity reducer tests", () => {
             attemptNumber,
             newAttempt: true,
             newAttemptForItem: childIds.indexOf(selIds[1]) + 1,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
@@ -1770,13 +1746,15 @@ describe("Activity reducer tests", () => {
         docStates[1] = "DoenetML state 2.3";
         docCredits[1] = 0.8;
         selCredits[1] = 0.8;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1789,6 +1767,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
@@ -1796,13 +1776,15 @@ describe("Activity reducer tests", () => {
         docStates[1] = "DoenetML state 2.4";
         docCredits[1] = 0.2;
         selCredits[1] = 0.2;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1815,21 +1797,27 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Generate new attempt the first doc
-        state = activityStateReducer(state, {
-            type: "generateNewActivityAttempt",
-            id: docIds[0],
+        state = activityDoenetStateReducer(state, {
+            type: "generateSingleDocSubActivityAttempt",
+            docId: docIds[0],
+            doenetStateIdx: 0,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "sequence") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "sequence") {
             throw Error("Shouldn't happen");
         }
 
@@ -1837,13 +1825,13 @@ describe("Activity reducer tests", () => {
 
         // determine the identity of the second document
         docIds[0] = (
-            state.orderedChildren[0] as SelectState
+            activityState.orderedChildren[0] as SelectState
         ).selectedChildren[0].id;
         docAttemptNumbers[docIds[0]] = (docAttemptNumbers[docIds[0]] ?? 0) + 1;
 
         selAttemptNumbers[0]++;
         selCredits[0] = 0; // don't change selCredit[0], as the credit achieved is remembered
-        docStates[0] = null;
+        docStates[0] = undefined;
         docCredits[0] = 0;
 
         testStateSeq2Sels({
@@ -1858,6 +1846,8 @@ describe("Activity reducer tests", () => {
             attemptNumber,
             newAttempt: true,
             newAttemptForItem: childIds.indexOf(selIds[0]) + 1,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
@@ -1865,13 +1855,15 @@ describe("Activity reducer tests", () => {
         docStates[0] = "DoenetML state 1.2";
         docCredits[0] = 0.3;
         selCredits[0] = 0.3;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
+            doenetStateIdx: 0,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSeq2Sels({
@@ -1884,6 +1876,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
     });
@@ -1897,50 +1891,69 @@ describe("Activity reducer tests", () => {
         attemptNumber,
         newAttempt,
         newAttemptForItem,
+        newDoenetStateIdx,
+        sourceHash,
         spy,
     }: {
-        state: ActivityState;
+        state: ActivityAndDoenetState;
         docCredits: number[];
         docAttemptNumbers: Record<string, number>;
-        docStates: (string | null)[];
+        docStates: (string | undefined)[];
         docIds: string[];
         attemptNumber: number;
         newAttempt?: boolean;
         newAttemptForItem?: number;
+        newDoenetStateIdx?: number;
+        sourceHash: string;
         spy: MockInstance;
     }) {
-        if (state.type !== "select") {
+        const activityState = state.activityState;
+
+        if (activityState.type !== "select") {
             throw Error("Shouldn't happen");
         }
 
-        const creditAchieved = state.creditAchieved;
+        const creditAchieved = activityState.creditAchieved;
         expect(creditAchieved).closeTo(
             docCredits.reduce((a, c) => a + c, 0) / 2,
             1e-12,
         );
 
-        expect(state.attemptNumber).eq(attemptNumber);
+        expect(activityState.attemptNumber).eq(attemptNumber);
 
         for (let i = 0; i < 2; i++) {
-            const docState = state.selectedChildren[i];
+            const docState = activityState.selectedChildren[i];
             if (docState.type !== "singleDoc") {
                 throw Error("Shouldn't happen");
             }
             expect(docState.id).eq(docIds[i]);
             expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[docIds[i]]);
-            expect(docState.doenetState).eq(docStates[i]);
+            if (docStates[i] === undefined) {
+                expect(docState.doenetStateIdx === null);
+            } else {
+                if (docState.doenetStateIdx === null) {
+                    throw Error("Should have doenet state index");
+                }
+                expect(state.doenetStates[docState.doenetStateIdx]).eq(
+                    docStates[i],
+                );
+            }
         }
 
-        const newAttemptObj: {
+        const newInfoObj: {
             newAttempt?: boolean;
             newAttemptForItem?: number;
+            newDoenetStateIdx?: number;
         } = {};
         if (newAttempt) {
-            newAttemptObj.newAttempt = true;
+            newInfoObj.newAttempt = true;
         }
         if (newAttemptForItem) {
-            newAttemptObj.newAttemptForItem = newAttemptForItem;
+            newInfoObj.newAttemptForItem = newAttemptForItem;
+        }
+        if (newDoenetStateIdx !== undefined) {
+            newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
         }
 
         expect(spy.mock.lastCall).toMatchObject([
@@ -1962,10 +1975,12 @@ describe("Activity reducer tests", () => {
                     },
                 ],
                 state: {
-                    state: pruneActivityStateForSave(state),
+                    activityState: pruneActivityStateForSave(activityState),
+                    doenetStates: docStates,
+                    sourceHash,
                 },
                 activityId: "newId",
-                ...newAttemptObj,
+                ...newInfoObj,
             },
         ]);
 
@@ -1986,6 +2001,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = selMult2docs as SelectSource;
+        const sourceHash = hash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -1996,37 +2012,45 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
-        let state = activityStateReducer(state0, {
-            type: "generateNewActivityAttempt",
-            numActivityVariants,
-            initialQuestionCounter: 0,
-            questionCounts: {},
-            allowSaveState: false,
-            baseId: "newId",
-        });
+        let state = activityDoenetStateReducer(
+            { activityState: state0, doenetStates: [] },
+            {
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 0,
+                questionCounts: {},
+                allowSaveState: false,
+                baseId: "newId",
+                sourceHash,
+            },
+        );
 
-        if (state.type !== "select") {
+        let activityState = state.activityState;
+
+        if (activityState.type !== "select") {
             throw Error("Shouldn't happen");
         }
 
         // determine the selected documents
-        const docIds = state.selectedChildren.map((c) => c.id);
+        const docIds = activityState.selectedChildren.map((c) => c.id);
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         const docCredits = [0, 0];
-        const docStates: (string | null)[] = [null, null];
+        const docStates: (string | undefined)[] = [];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
         docCredits[0] = 0.4;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
+            doenetStateIdx: 0,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSelMult2Docs({
@@ -2036,19 +2060,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
         docCredits[1] = 0.6;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSelMult2Docs({
@@ -2058,19 +2086,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Decrease score to 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
         docCredits[1] = 0.2;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSelMult2Docs({
@@ -2080,29 +2112,35 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Generate new attempt the second document
-        state = activityStateReducer(state, {
-            type: "generateNewActivityAttempt",
-            id: docIds[1],
+        state = activityDoenetStateReducer(state, {
+            type: "generateSingleDocSubActivityAttempt",
+            docId: docIds[1],
+            doenetStateIdx: 1,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "select") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "select") {
             throw Error("Shouldn't happen");
         }
 
         // determine the identity of the second document
-        docIds[1] = state.selectedChildren[1].id;
+        docIds[1] = activityState.selectedChildren[1].id;
         docAttemptNumbers[docIds[1]] = (docAttemptNumbers[docIds[1]] ?? 0) + 1;
 
-        docStates[1] = null;
+        docStates[1] = undefined;
         docCredits[1] = 0;
 
         testStateSelMult2Docs({
@@ -2114,19 +2152,23 @@ describe("Activity reducer tests", () => {
             attemptNumber,
             newAttempt: true,
             newAttemptForItem: 2,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // get new high score of score of 0.8 in second doc
         docStates[1] = "DoenetML state 2.3";
         docCredits[1] = 0.8;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSelMult2Docs({
@@ -2136,19 +2178,23 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // decrease score to 0.2 on second doc
         docStates[1] = "DoenetML state 2.4";
         docCredits[1] = 0.2;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
+            doenetStateIdx: 1,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSelMult2Docs({
@@ -2158,29 +2204,35 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 1,
+            sourceHash,
             spy,
         });
 
         // Generate new attempt the first document
-        state = activityStateReducer(state, {
-            type: "generateNewActivityAttempt",
-            id: docIds[0],
+        state = activityDoenetStateReducer(state, {
+            type: "generateSingleDocSubActivityAttempt",
+            docId: docIds[0],
+            doenetStateIdx: 0,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
-        if (state.type !== "select") {
+        activityState = state.activityState;
+
+        if (activityState.type !== "select") {
             throw Error("Shouldn't happen");
         }
 
         // determine the identity of the second document
-        docIds[0] = state.selectedChildren[0].id;
+        docIds[0] = activityState.selectedChildren[0].id;
         docAttemptNumbers[docIds[0]] = (docAttemptNumbers[docIds[0]] ?? 0) + 1;
 
-        docStates[0] = null;
+        docStates[0] = undefined;
         docCredits[0] = 0;
 
         testStateSelMult2Docs({
@@ -2192,19 +2244,23 @@ describe("Activity reducer tests", () => {
             attemptNumber,
             newAttempt: true,
             newAttemptForItem: 1,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
 
         // get score of 0.3 on first doc
         docStates[0] = "DoenetML state 1.2";
         docCredits[0] = 0.3;
-        state = activityStateReducer(state, {
+        state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
+            doenetStateIdx: 0,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
+            sourceHash,
         });
 
         testStateSelMult2Docs({
@@ -2214,6 +2270,8 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            newDoenetStateIdx: 0,
+            sourceHash,
             spy,
         });
     });

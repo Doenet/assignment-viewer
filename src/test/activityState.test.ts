@@ -22,7 +22,6 @@ import sel0 from "./testSources/sel0.json";
 import seq0 from "./testSources/seq0.json";
 import seq2Sel0 from "./testSources/seq2Sel0.json";
 import seqSel0Sel from "./testSources/seqSel0Sel.json";
-import sel2seq from "./testSources/sel2seq.json";
 
 import {
     SelectSource,
@@ -66,7 +65,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
         const doc2State: SingleDocState = {
             type: "singleDoc",
@@ -81,7 +80,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
 
         const select1State: SelectState = {
@@ -111,7 +110,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
         const doc4State: SingleDocState = {
             type: "singleDoc",
@@ -126,7 +125,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
         const doc5State: SingleDocState = {
             type: "singleDoc",
@@ -141,7 +140,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
 
         const select2State: SelectState = {
@@ -186,7 +185,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
         const doc2StatePruned: SingleDocStateNoSource = {
             type: "singleDoc",
@@ -199,7 +198,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
 
         const select1StatePruned: SelectStateNoSource = {
@@ -226,7 +225,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
         const doc4StatePruned: SingleDocStateNoSource = {
             type: "singleDoc",
@@ -239,7 +238,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
         const doc5StatePruned: SingleDocStateNoSource = {
             type: "singleDoc",
@@ -252,7 +251,7 @@ describe("Activity state tests", () => {
             currentVariant: 0,
             attemptNumber: 0,
             previousVariants: [],
-            doenetState: null,
+            doenetStateIdx: null,
         };
 
         const select2StatePruned: SelectStateNoSource = {
@@ -332,7 +331,7 @@ describe("Activity state tests", () => {
             initialVariant: docVariant,
             creditAchieved: 0,
             attemptNumber: 0,
-            doenetState: null,
+            doenetStateIdx: null,
             initialQuestionCounter: 0,
             currentVariant: 0,
             previousVariants: [],
@@ -347,7 +346,7 @@ describe("Activity state tests", () => {
             initialVariant: docVariant,
             creditAchieved: 0,
             attemptNumber: 0,
-            doenetState: null,
+            doenetStateIdx: null,
             initialQuestionCounter: 0,
             currentVariant: 0,
             previousVariants: [],
@@ -362,7 +361,7 @@ describe("Activity state tests", () => {
             initialVariant: docVariant,
             creditAchieved: 0,
             attemptNumber: 0,
-            doenetState: null,
+            doenetStateIdx: null,
             initialQuestionCounter: 0,
             currentVariant: 0,
             previousVariants: [],
@@ -377,7 +376,7 @@ describe("Activity state tests", () => {
             initialVariant: docVariant,
             creditAchieved: 0,
             attemptNumber: 0,
-            doenetState: null,
+            doenetStateIdx: null,
             initialQuestionCounter: 0,
             currentVariant: 0,
             previousVariants: [],
@@ -704,9 +703,6 @@ describe("Activity state tests", () => {
 
     it("return number of documents", () => {
         expect(getNumItems(seq2sel as SequenceSource)).eq(2);
-
-        // upper bound when ambiguous
-        expect(getNumItems(sel2seq as SelectSource)).eq(3);
 
         expect(getNumItems(selMult2docs as SelectSource)).eq(2);
         expect(getNumItems(selMult1doc as SelectSource)).eq(3);

@@ -55,6 +55,11 @@ export type ActivitySource = SingleDocSource | SelectSource | SequenceSource;
 /** The current state of an activity, including all descendants */
 export type ActivityState = SingleDocState | SelectState | SequenceState;
 
+export type ActivityAndDoenetState = {
+    activityState: ActivityState;
+    doenetStates: unknown[];
+};
+
 /**
  * The current state of an activity, where references to the source have been eliminated.
  *
@@ -73,9 +78,9 @@ export type ActivityStateNoSource =
  * when loading in the state.
  */
 export type ExportedActivityState = {
-    state: ActivityStateNoSource;
+    activityState: ActivityStateNoSource;
+    doenetStates: unknown[];
     sourceHash: string;
-    onSubmission?: boolean;
 };
 
 // Type guards
@@ -89,6 +94,20 @@ export function isActivitySource(obj: unknown): obj is ActivitySource {
 export function isActivityState(obj: unknown): obj is ActivityState {
     return isSingleDocState(obj) || isSelectState(obj) || isSequenceState(obj);
 }
+
+export function isActivityAndDoenetState(
+    obj: unknown,
+): obj is ActivityAndDoenetState {
+    const typedObj = obj as ActivityAndDoenetState;
+    return (
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        typedObj !== null &&
+        typeof typedObj === "object" &&
+        isActivityState(typedObj.activityState) &&
+        Array.isArray(typedObj.doenetStates)
+    );
+}
+
 export function isActivityStateNoSource(
     obj: unknown,
 ): obj is ActivityStateNoSource {
@@ -106,10 +125,9 @@ export function isExportedActivityState(
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         typedObj !== null &&
         typeof typedObj === "object" &&
-        isActivityStateNoSource(typedObj.state) &&
-        typeof typedObj.sourceHash === "string" &&
-        (typedObj.onSubmission === undefined ||
-            typeof typedObj.onSubmission === "boolean")
+        isActivityStateNoSource(typedObj.activityState) &&
+        Array.isArray(typedObj.doenetStates) &&
+        typeof typedObj.sourceHash === "string"
     );
 }
 
@@ -165,6 +183,30 @@ export function initializeActivityState({
     }
 
     throw Error("Invalid activity type");
+}
+
+export function initializeActivityAndDoenetState({
+    source,
+    variant,
+    parentId,
+    numActivityVariants,
+    restrictToVariantSlice,
+}: {
+    source: ActivitySource;
+    variant: number;
+    parentId: string | null;
+    numActivityVariants: ActivityVariantRecord;
+    restrictToVariantSlice?: RestrictToVariantSlice;
+}): ActivityAndDoenetState {
+    const activityState = initializeActivityState({
+        source,
+        variant,
+        parentId,
+        numActivityVariants,
+        restrictToVariantSlice,
+    });
+
+    return { activityState, doenetStates: [] };
 }
 
 /**
@@ -230,50 +272,49 @@ export function generateNewActivityAttempt({
 }
 
 /**
- * Generate a new activity for the descendant activity `id` of the base activity `state`.
+ * Generate a new activity for the descendant single doc activity `singleDocId` of the base activity `state`.
  * Once the the new descendant activity is calculated, recurse to ancestors to create
  * a new state of the base activity, which is returned.
  */
-export function generateNewSubActivityAttempt({
-    id,
+export function generateNewSingleDocSubAttempt({
+    singleDocId,
     state,
     numActivityVariants,
     initialQuestionCounter,
     questionCounts,
 }: {
-    id: string;
+    singleDocId: string;
     state: ActivityState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     questionCounts: QuestionCountRecord;
 }): ActivityState {
-    if (id === state.id) {
-        // `id` does not correspond to a sub-activity, so generate full activity state
-        const { state: newActivityState } = generateNewActivityAttempt({
-            state,
-            numActivityVariants,
-            initialQuestionCounter,
-            questionCounts,
-            parentAttempt: 1,
-        });
-        return newActivityState;
+    if (singleDocId === state.id) {
+        throw Error(
+            "Should not call generateSingleDocSubActivityAttempt on entire activity",
+        );
     }
 
     // creating a new attempt at a lower level
     const allStates = gatherStates(state);
 
-    const subActivityState = allStates[id];
+    const singleDocActivityState = allStates[singleDocId];
 
-    if (subActivityState.parentId === null) {
+    if (singleDocActivityState.type !== "singleDoc") {
+        throw Error(
+            "generateNewSingleDocSubAttempt implemented only for single documents",
+        );
+    }
+
+    if (singleDocActivityState.parentId === null) {
         throw Error("Lower lever should have parent");
     }
 
-    const parentState = allStates[subActivityState.parentId];
+    const parentState = allStates[singleDocActivityState.parentId];
 
     // If the activity is a single doc whose parent is a select with only single doc children,
     // then we delegate the new attempt to the select parent.
     if (
-        subActivityState.type === "singleDoc" &&
         parentState.type === "select" &&
         parentState.allChildren.every((child) => child.type === "singleDoc")
     ) {
@@ -292,7 +333,7 @@ export function generateNewSubActivityAttempt({
                     initialQuestionCounter,
                     questionCounts,
                     parentAttempt: grandParentAttempt,
-                    childId: id,
+                    childId: singleDocId,
                 }));
 
             // Note: generateNewSingleDocAttemptForMultiSelect already preserves credit achieved
@@ -316,18 +357,18 @@ export function generateNewSubActivityAttempt({
         });
     } else {
         const { state: newSubActivityState } = generateNewActivityAttempt({
-            state: allStates[id],
+            state: allStates[singleDocId],
             numActivityVariants,
             initialQuestionCounter,
             questionCounts,
             parentAttempt: parentState.attemptNumber,
         });
 
-        allStates[id] = newSubActivityState;
+        allStates[singleDocId] = newSubActivityState;
 
         return propagateStateChangeToRoot({
             allStates,
-            id,
+            id: singleDocId,
         });
     }
 }
@@ -381,26 +422,19 @@ export function extractActivityItemCredit(
 /**
  * Remove all references to source from `activityState`, forming an instance of `ActivityStateNoSource`
  * that is intended to be saved to a database.
- *
- * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
- *
- * Even if `clearDoenetState` is `false`, still clear `doenetState` on all but the latest attempt
- * and clear it on all `allChildren`. In this way, the (potentially large) DoenetML state is saved
- * only where needed to reconstitute the activity state.
  */
 export function pruneActivityStateForSave(
     activityState: ActivityState,
-    clearDoenetState = false,
 ): ActivityStateNoSource {
     switch (activityState.type) {
         case "singleDoc": {
-            return pruneSingleDocStateForSave(activityState, clearDoenetState);
+            return pruneSingleDocStateForSave(activityState);
         }
         case "select": {
-            return pruneSelectStateForSave(activityState, clearDoenetState);
+            return pruneSelectStateForSave(activityState);
         }
         case "sequence": {
-            return pruneSequenceStateForSave(activityState, clearDoenetState);
+            return pruneSequenceStateForSave(activityState);
         }
     }
 }
@@ -525,9 +559,7 @@ export function calcNumVariantsFromState(
 /**
  * Return the number of documents that will be rendered by this activity.
  *
- * Since it is possible that the number of documents rendered will vary
- * depending on which option(s) are selected by any select,
- * this number is an upper bound on the number of documents that could be rendered.
+ * Throw an error if a select has options with different numbers of documents.
  */
 export function getNumItems(source: ActivitySource): number {
     switch (source.type) {

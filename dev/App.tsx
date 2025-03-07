@@ -312,7 +312,7 @@ function App() {
 
                 <div>
                     Assignment credit:{" "}
-                    {(activityState?.state.creditAchieved ?? 0) * 100}%
+                    {(activityState?.activityState.creditAchieved ?? 0) * 100}%
                 </div>
                 <div>
                     Credit by item, latest attempt:
@@ -326,7 +326,7 @@ function App() {
                 </div>
                 <div>
                     Assignment attempt number:{" "}
-                    {activityState?.state.attemptNumber ?? 0 + 1}
+                    {activityState?.activityState.attemptNumber ?? 0 + 1}
                 </div>
             </div>
 

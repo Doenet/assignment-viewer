@@ -45,15 +45,6 @@
                     "baseComponentCounts": { "question": 1 }
                 },
                 {
-                    "id": "doc2",
-                    "type": "singleDoc",
-                    "isDescription": false,
-                    "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='h' to='i' />: <answer name='ans'>$a</answer></question>",
-                    "version": "0.7.0-alpha30",
-                    "numVariants": 2,
-                    "baseComponentCounts": { "question": 1 }
-                },
-                {
                     "id": "doc1",
                     "type": "singleDoc",
                     "isDescription": false,

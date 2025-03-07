@@ -660,25 +660,18 @@ export function extractSelectItemCredit(
 /**
  * Remove all references to source from `activityState`, forming an instance of `ActivityStateNoSource`
  * that is intended to be saved to a database.
- *
- * If `clearDoenetState` is `true`, then also remove the `doenetState` in single documents.
- *
- * Even if `clearDoenetState` is `false``, still clear `doenetState` on all `allChildren`.
- * In this way, the (potentially large) DoenetML state is saved
- * only where needed to reconstitute the activity state.
  */
 export function pruneSelectStateForSave(
     activityState: SelectState,
-    clearDoenetState: boolean,
 ): SelectStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
 
     const allChildren = newState.allChildren.map((child) =>
-        pruneActivityStateForSave(child, true),
+        pruneActivityStateForSave(child),
     );
 
     const selectedChildren = newState.selectedChildren.map((child) =>
-        pruneActivityStateForSave(child, clearDoenetState),
+        pruneActivityStateForSave(child),
     );
 
     return { ...newState, allChildren, selectedChildren };
@@ -736,19 +729,24 @@ export function calcNumVariantsSelect(
 /**
  * Return the number of documents that will be rendered by this select.
  *
- * Since it is possible that the number of documents rendered will vary depending on which option(s) are selected,
- * this number is an upper bound on the number of documents that could be rendered.
+ * Throw an error if this select has options with different numbers of documents.
  */
 export function getNumItemsInSelect(source: SelectSource): number {
-    const numToSelect = source.numToSelect;
+    if (source.items.length === 0) {
+        return 0;
+    }
 
-    const numDocumentsForEachItem = source.items.map(getNumItems);
+    const numDocumentsPerItem = getNumItems(source.items[0]);
 
-    // Take the maximum number of documents, so number returned is an upper bound
-    const numDocumentsPerItem = numDocumentsForEachItem.reduce(
-        (a, c) => Math.max(a, c),
-        0,
-    );
+    if (source.items.length > 1) {
+        for (const item of source.items.slice(1)) {
+            if (getNumItems(item) !== numDocumentsPerItem) {
+                throw Error(
+                    "The case where a select has options with different numbers of documents is not implemented",
+                );
+            }
+        }
+    }
 
-    return numToSelect * numDocumentsPerItem;
+    return source.numToSelect * numDocumentsPerItem;
 }

@@ -1,16 +1,20 @@
-import { ActivityVariantRecord, QuestionCountRecord } from "../types";
 import {
+    ActivityVariantRecord,
+    QuestionCountRecord,
+    ReportScoreByItemMessage,
+    ReportStateMessage,
+} from "../types";
+import {
+    ActivityAndDoenetState,
     ActivitySource,
-    ActivityState,
     extractActivityItemCredit,
     gatherStates,
     generateNewActivityAttempt,
-    generateNewSubActivityAttempt,
+    generateNewSingleDocSubAttempt,
     initializeActivityState,
     propagateStateChangeToRoot,
     pruneActivityStateForSave,
 } from "./activityState";
-import hash from "object-hash";
 
 type InitializeStateAction = {
     type: "initialize";
@@ -21,171 +25,209 @@ type InitializeStateAction = {
 
 type SetStateAction = {
     type: "set";
-    state: ActivityState;
+    state: ActivityAndDoenetState;
     allowSaveState: boolean;
     baseId: string;
 };
 
 type GenerateActivityAttemptAction = {
     type: "generateNewActivityAttempt";
-    id?: string;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     questionCounts: QuestionCountRecord;
     allowSaveState: boolean;
     baseId: string;
+    sourceHash: string;
+};
+
+type GenerateSingleDocSubAttemptAction = {
+    type: "generateSingleDocSubActivityAttempt";
+    docId: string;
+    doenetStateIdx: number;
+    numActivityVariants: ActivityVariantRecord;
+    initialQuestionCounter: number;
+    questionCounts: QuestionCountRecord;
+    allowSaveState: boolean;
+    baseId: string;
+    sourceHash: string;
 };
 
 type UpdateSingleDocStateAction = {
     type: "updateSingleState";
     id: string;
     doenetState: unknown;
+    doenetStateIdx: number;
     creditAchieved: number;
     allowSaveState: boolean;
     baseId: string;
+    sourceHash: string;
 };
 
 export type ActivityStateAction =
     | InitializeStateAction
     | SetStateAction
     | GenerateActivityAttemptAction
+    | GenerateSingleDocSubAttemptAction
     | UpdateSingleDocStateAction;
 
-export function activityStateReducer(
-    state: ActivityState,
+export function activityDoenetStateReducer(
+    state: ActivityAndDoenetState,
     action: ActivityStateAction,
-): ActivityState {
+): ActivityAndDoenetState {
+    const activityState = state.activityState;
     switch (action.type) {
         case "initialize": {
-            return initializeActivityState({
-                source: action.source,
-                variant: action.variantIndex,
-                parentId: null,
-                numActivityVariants: action.numActivityVariants,
-            });
+            return {
+                activityState: initializeActivityState({
+                    source: action.source,
+                    variant: action.variantIndex,
+                    parentId: null,
+                    numActivityVariants: action.numActivityVariants,
+                }),
+                doenetStates: [],
+            };
         }
         case "set": {
             if (action.allowSaveState) {
-                const itemScores = extractActivityItemCredit(action.state);
-                window.postMessage({
-                    score: action.state.creditAchieved,
+                const itemScores = extractActivityItemCredit(
+                    action.state.activityState,
+                );
+                const message: ReportScoreByItemMessage = {
+                    score: action.state.activityState.creditAchieved,
                     itemScores,
                     subject: "SPLICE.reportScoreByItem",
                     activityId: action.baseId,
-                });
+                };
+                window.postMessage(message);
             }
             return action.state;
         }
         case "generateNewActivityAttempt": {
-            let newActivityState: ActivityState;
-            let firstAttempt = false;
-            if (!action.id || action.id === state.id) {
-                if (state.attemptNumber === 0) {
-                    firstAttempt = true;
-                }
-                ({ state: newActivityState } = generateNewActivityAttempt({
-                    state,
-                    numActivityVariants: action.numActivityVariants,
-                    initialQuestionCounter: action.initialQuestionCounter,
-                    questionCounts: action.questionCounts,
-                    parentAttempt: 1,
-                }));
-            } else {
-                newActivityState = generateNewSubActivityAttempt({
-                    id: action.id,
-                    state,
-                    numActivityVariants: action.numActivityVariants,
-                    initialQuestionCounter: action.initialQuestionCounter,
-                    questionCounts: action.questionCounts,
-                });
-            }
+            const firstAttempt = activityState.attemptNumber === 0;
+
+            const { state: newActivityState } = generateNewActivityAttempt({
+                state: activityState,
+                numActivityVariants: action.numActivityVariants,
+                initialQuestionCounter: action.initialQuestionCounter,
+                questionCounts: action.questionCounts,
+                parentAttempt: 1,
+            });
 
             if (action.allowSaveState) {
                 const itemScores = extractActivityItemCredit(newActivityState);
                 if (firstAttempt) {
                     // If first attempt, no need to save state.
                     // Just send score by item to indicate how many items are in the activity
-                    window.postMessage({
+                    const message: ReportScoreByItemMessage = {
                         score: newActivityState.creditAchieved,
                         itemScores,
                         subject: "SPLICE.reportScoreByItem",
                         activityId: action.baseId,
-                    });
+                    };
+                    window.postMessage(message);
                 } else {
-                    let newAttemptForItem = {};
-
-                    if (action.id && action.id !== state.id) {
-                        // determine the item number for which we are generating a new attempt
-                        const itemScoresOld = extractActivityItemCredit(state);
-
-                        newAttemptForItem = {
-                            newAttemptForItem:
-                                itemScoresOld.findIndex(
-                                    (s) =>
-                                        s.id === action.id ||
-                                        s.docId === action.id,
-                                ) + 1,
-                        };
-                    }
-
-                    const sourceHash = hash(newActivityState.source);
-
-                    window.postMessage({
+                    const message: ReportStateMessage = {
                         state: {
-                            state: pruneActivityStateForSave(
-                                newActivityState,
-                                false,
-                            ),
-                            sourceHash,
+                            activityState:
+                                pruneActivityStateForSave(newActivityState),
+                            doenetStates: [],
+                            sourceHash: action.sourceHash,
                         },
                         score: newActivityState.creditAchieved,
                         itemScores,
                         subject: "SPLICE.reportScoreAndState",
                         activityId: action.baseId,
                         newAttempt: true,
-                        ...newAttemptForItem,
-                    });
+                    };
+                    window.postMessage(message);
                 }
             }
 
-            return newActivityState;
+            return {
+                activityState: newActivityState,
+                doenetStates: [],
+            };
         }
-        case "updateSingleState": {
-            const newActivityState = updateSingleDocState(action, state);
+
+        case "generateSingleDocSubActivityAttempt": {
+            if (action.docId === activityState.id) {
+                throw Error(
+                    "Should not call generateSingleDocSubActivityAttempt on entire activity",
+                );
+            }
+
+            const newActivityState = generateNewSingleDocSubAttempt({
+                singleDocId: action.docId,
+                state: activityState,
+                numActivityVariants: action.numActivityVariants,
+                initialQuestionCounter: action.initialQuestionCounter,
+                questionCounts: action.questionCounts,
+            });
+
+            const newDoenetMLStates = [...state.doenetStates];
+            newDoenetMLStates[action.doenetStateIdx] = undefined;
 
             if (action.allowSaveState) {
                 const itemScores = extractActivityItemCredit(newActivityState);
 
-                const sourceHash = hash(newActivityState.source);
+                // determine the item number for which we are generating a new attempt
+                const itemScoresOld = extractActivityItemCredit(activityState);
 
-                let onSubmission = false;
-                const doenetState = action.doenetState;
-                if (
-                    typeof doenetState === "object" &&
-                    doenetState !== null &&
-                    "onSubmission" in doenetState &&
-                    typeof doenetState.onSubmission === "boolean"
-                ) {
-                    onSubmission = doenetState.onSubmission;
-                }
+                const newAttemptForItem =
+                    itemScoresOld.findIndex(
+                        (s) =>
+                            s.id === action.docId || s.docId === action.docId,
+                    ) + 1;
 
-                window.postMessage({
+                const message: ReportStateMessage = {
                     state: {
-                        state: pruneActivityStateForSave(
-                            newActivityState,
-                            false,
-                        ),
-                        sourceHash,
-                        onSubmission,
+                        activityState:
+                            pruneActivityStateForSave(newActivityState),
+                        doenetStates: newDoenetMLStates,
+                        sourceHash: action.sourceHash,
                     },
                     score: newActivityState.creditAchieved,
                     itemScores,
+                    newDoenetStateIdx: action.doenetStateIdx,
                     subject: "SPLICE.reportScoreAndState",
                     activityId: action.baseId,
-                });
+                    newAttempt: true,
+                    newAttemptForItem,
+                };
+
+                window.postMessage(message);
             }
 
-            return newActivityState;
+            return {
+                activityState: newActivityState,
+                doenetStates: newDoenetMLStates,
+            };
+        }
+        case "updateSingleState": {
+            const newActivityDoenetState = updateSingleDocState(action, state);
+
+            if (action.allowSaveState) {
+                const newActivityState = newActivityDoenetState.activityState;
+                const itemScores = extractActivityItemCredit(newActivityState);
+
+                const message: ReportStateMessage = {
+                    state: {
+                        activityState:
+                            pruneActivityStateForSave(newActivityState),
+                        sourceHash: action.sourceHash,
+                        doenetStates: newActivityDoenetState.doenetStates,
+                    },
+                    score: newActivityState.creditAchieved,
+                    itemScores,
+                    newDoenetStateIdx: action.doenetStateIdx,
+                    subject: "SPLICE.reportScoreAndState",
+                    activityId: action.baseId,
+                };
+
+                window.postMessage(message);
+            }
+
+            return newActivityDoenetState;
         }
     }
 
@@ -199,9 +241,9 @@ export function activityStateReducer(
  */
 function updateSingleDocState(
     action: UpdateSingleDocStateAction,
-    state: ActivityState,
-): ActivityState {
-    const allStates = gatherStates(state);
+    activityDoenetState: ActivityAndDoenetState,
+): ActivityAndDoenetState {
+    const allStates = gatherStates(activityDoenetState.activityState);
 
     const newSingleDocState = (allStates[action.id] = {
         ...allStates[action.id],
@@ -215,12 +257,14 @@ function updateSingleDocState(
 
     newSingleDocState.creditAchieved = action.creditAchieved;
 
-    newSingleDocState.doenetState = action.doenetState;
+    const doenetStates = [...activityDoenetState.doenetStates];
+    doenetStates[action.doenetStateIdx] = action.doenetState;
+    newSingleDocState.doenetStateIdx = action.doenetStateIdx;
 
     const rootActivityState = propagateStateChangeToRoot({
         allStates,
         id: newSingleDocState.id,
     });
 
-    return rootActivityState;
+    return { activityState: rootActivityState, doenetStates };
 }

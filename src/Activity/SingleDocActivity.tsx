@@ -15,6 +15,7 @@ export function SingleDocActivity({
     darkMode = "light",
     showAnswerTitles = false,
     state,
+    doenetStates,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -34,6 +35,7 @@ export function SingleDocActivity({
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
     state: SingleDocState;
+    doenetStates: unknown[];
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
@@ -53,8 +55,13 @@ export function SingleDocActivity({
         string,
         unknown
     > | null>(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        state.doenetState as Record<string, any> | null,
+        (state.doenetStateIdx === null
+            ? null
+            : (doenetStates[state.doenetStateIdx] ?? null)) as Record<
+            string,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            any
+        > | null,
     );
 
     const [requestedVariantIndex, setRequestedVariantIndex] = useState(
@@ -87,8 +94,13 @@ export function SingleDocActivity({
         setAttemptNumber(state.attemptNumber);
 
         setInitialDoenetState(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            state.doenetState as Record<string, any> | null,
+            (state.doenetStateIdx === null
+                ? null
+                : (doenetStates[state.doenetStateIdx] ?? null)) as Record<
+                string,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                any
+            > | null,
         );
 
         setRequestedVariantIndex(state.currentVariant);

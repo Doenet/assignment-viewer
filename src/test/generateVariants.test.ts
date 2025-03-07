@@ -726,7 +726,7 @@ describe("Test of generating activity variants", () => {
             allQuestionVariants2.push(questionVariants2);
 
             const docIds1 = ["doc4", "doc5"];
-            const docIds2 = ["doc3", "doc2", "doc1"];
+            const docIds2 = ["doc3", "doc1"];
 
             const seqIds = ["seq1", "seq2"];
 
@@ -764,8 +764,8 @@ describe("Test of generating activity variants", () => {
                         questionVariants1[j].push(doc.currentVariant);
                     }
                 } else {
-                    expect(sequence.orderedChildren.length).eq(3);
-                    for (let j = 0; j < 3; j++) {
+                    expect(sequence.orderedChildren.length).eq(2);
+                    for (let j = 0; j < 2; j++) {
                         const doc = sequence.orderedChildren[
                             j
                         ] as SingleDocState;
@@ -786,7 +786,7 @@ describe("Test of generating activity variants", () => {
             for (let i = 0; i < 2; i++) {
                 expect(questionVariants1[i].length).eq(32);
             }
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 2; i++) {
                 expect(questionVariants2[i].length).eq(8);
             }
 
@@ -813,18 +813,11 @@ describe("Test of generating activity variants", () => {
                 [1, 2, 3],
             );
 
-            for (let i = 0; i < 4; i++) {
-                expect(
-                    questionVariants2[1]
-                        .slice(2 * i, 2 * i + 2)
-                        .sort((a, b) => a - b),
-                ).eqls([1, 2]);
-            }
-            expect(questionVariants2[2]).eqls(Array(8).fill(1));
+            expect(questionVariants2[1]).eqls(Array(8).fill(1));
         }
 
-        // at least 40 of the 120 questions should have been shuffled away from their original position
-        expect(numReordered).greaterThan(40);
+        // at least 20 of the 80 questions should have been shuffled away from their original position
+        expect(numReordered).greaterThan(20);
 
         // different question variants for each base variant
         expect(allQuestionVariants1[0]).not.eqls(allQuestionVariants1[1]);

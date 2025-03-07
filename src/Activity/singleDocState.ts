@@ -44,8 +44,8 @@ export type SingleDocState = {
     currentVariant: number;
     /** A list of the the variants selected in all attempts, ordered by attempt number */
     previousVariants: number[];
-    /** A json object containing the state needed to reconstitute the activity of the current attempt */
-    doenetState: unknown;
+    /** Index indicating where to retrieve the json object of state needed to reconstitute the activity */
+    doenetStateIdx: number | null;
     /** The value of the question counter set for the beginning of this activity */
     initialQuestionCounter: number;
     /** See {@link RestrictToVariantSlice} */
@@ -160,7 +160,7 @@ export function initializeSingleDocState({
         currentVariant: 0,
         previousVariants: [],
         initialQuestionCounter: 0,
-        doenetState: null,
+        doenetStateIdx: null,
         restrictToVariantSlice,
     };
 }
@@ -243,7 +243,7 @@ export function generateNewSingleDocAttempt({
         attemptNumber: state.attemptNumber + 1,
         currentVariant: selectedVariant,
         previousVariants: [...state.previousVariants, selectedVariant],
-        doenetState: null,
+        doenetStateIdx: null,
         initialQuestionCounter,
     };
 
@@ -279,22 +279,13 @@ export function extractSingleDocItemCredit(
 /**
  * Remove all references to source from `activityState`, forming an instance of `ActivityStateNoSource`
  * that is intended to be saved to a database.
- *
- * If `clearDoenetState` is `true`, then also remove the `doenetState`.
- *
- * Even if `clearDoenetState` is `false`, still clear `doenetState` on all but the latest attempt,
- * so the (potentially large) DoenetML state is saved
- * only where needed to reconstitute the activity state.
  */
 export function pruneSingleDocStateForSave(
     activityState: SingleDocState,
-    clearDoenetState: boolean,
 ): SingleDocStateNoSource {
     const { source: _source, ...newState } = { ...activityState };
 
-    const doenetState = clearDoenetState ? null : newState.doenetState;
-
-    return { ...newState, doenetState };
+    return newState;
 }
 
 /** Reverse the effect of `pruneSingleDocStateForSave by adding back adding back references to the source */
