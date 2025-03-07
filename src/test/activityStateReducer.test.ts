@@ -46,7 +46,6 @@ describe("Activity reducer tests", () => {
             doenetState: null,
             initialVariant: 5,
             creditAchieved: 0,
-            maxCreditAchieved: 0,
             initialQuestionCounter: 0,
             currentVariant: 0,
             previousVariants: [],
@@ -104,12 +103,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreByItem",
-                maxScore: 0,
                 score: 0,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0,
                         score: 0,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -137,7 +134,6 @@ describe("Activity reducer tests", () => {
         }) as SingleDocState;
 
         // artificially set credit on state0
-        state0.maxCreditAchieved = 0.9;
         state0.creditAchieved = 0.8;
 
         let state = activityStateReducer(state0, {
@@ -156,7 +152,6 @@ describe("Activity reducer tests", () => {
         let expectState: SingleDocState = {
             ...state0,
             initialQuestionCounter: 9,
-            maxCreditAchieved: 0,
             creditAchieved: 0,
             attemptNumber: 1,
             currentVariant: previousVariants[0],
@@ -181,12 +176,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreByItem",
-                maxScore: 0,
                 score: 0,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0,
                         score: 0,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -211,7 +204,6 @@ describe("Activity reducer tests", () => {
         expectState = {
             ...state0,
             initialQuestionCounter: 6,
-            maxCreditAchieved: 0,
             creditAchieved: 0,
             attemptNumber: 2,
             currentVariant: previousVariants[1],
@@ -223,12 +215,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: 0,
                 score: 0,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0,
                         score: 0,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -285,7 +275,6 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.maxCreditAchieved).eq(0.2);
         expect(state.creditAchieved).eq(0.2);
         expect(state.doenetState).eq("DoenetML state 1");
 
@@ -294,12 +283,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: 0.2,
                 score: 0.2,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0.2,
                         score: 0.2,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -331,7 +318,6 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.maxCreditAchieved).eq(0.2);
         expect(state.creditAchieved).eq(0.1);
         expect(state.doenetState).eq("DoenetML state 2");
 
@@ -340,12 +326,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: 0.2,
                 score: 0.1,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0.2,
                         score: 0.1,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -377,7 +361,6 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.maxCreditAchieved).eq(0.3);
         expect(state.creditAchieved).eq(0.3);
         expect(state.doenetState).eq("DoenetML state 3");
 
@@ -386,12 +369,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: 0.3,
                 score: 0.3,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0.3,
                         score: 0.3,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -423,7 +404,6 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.maxCreditAchieved).eq(0.0);
         expect(state.creditAchieved).eq(0.0);
         expect(state.doenetState).eq(null);
 
@@ -432,12 +412,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: 0,
                 score: 0,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0,
                         score: 0,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -468,7 +446,6 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.maxCreditAchieved).eq(0.1);
         expect(state.creditAchieved).eq(0.1);
         expect(state.doenetState).eq("DoenetML state 4");
 
@@ -477,12 +454,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: 0.1,
                 score: 0.1,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0.1,
                         score: 0.1,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -514,7 +489,6 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        expect(state.maxCreditAchieved).eq(0.5);
         expect(state.creditAchieved).eq(0.5);
         expect(state.doenetState).eq("DoenetML state 5");
 
@@ -523,12 +497,10 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: 0.5,
                 score: 0.5,
                 itemScores: [
                     {
                         id: "doc5",
-                        maxScore: 0.5,
                         score: 0.5,
                         docId: "doc5",
                         shuffledOrder: 1,
@@ -550,7 +522,6 @@ describe("Activity reducer tests", () => {
     function testStateSeq3Docs({
         state,
         docCredits,
-        docLatestCredits,
         docAttemptNumbers,
         docStates,
         docIds,
@@ -561,7 +532,6 @@ describe("Activity reducer tests", () => {
     }: {
         state: ActivityState;
         docCredits: number[];
-        docLatestCredits: number[];
         docAttemptNumbers: number[];
         docStates: (string | null)[];
         docIds: string[];
@@ -574,14 +544,9 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        const maxCreditAchieved = state.maxCreditAchieved;
-        expect(maxCreditAchieved).closeTo(
-            docCredits.reduce((a, c) => a + c, 0) / 3,
-            1e-12,
-        );
         const creditAchieved = state.creditAchieved;
         expect(creditAchieved).closeTo(
-            docLatestCredits.reduce((a, c) => a + c, 0) / 3,
+            docCredits.reduce((a, c) => a + c, 0) / 3,
             1e-12,
         );
 
@@ -593,8 +558,7 @@ describe("Activity reducer tests", () => {
                 throw Error("Shouldn't happen");
             }
             expect(docState.id).eq(docIds[i]);
-            expect(docState.maxCreditAchieved).eq(docCredits[i]);
-            expect(docState.creditAchieved).eq(docLatestCredits[i]);
+            expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[i]);
             expect(docState.doenetState).eq(docStates[i]);
         }
@@ -613,14 +577,12 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: maxCreditAchieved,
                 score: creditAchieved,
                 itemScores: state.allChildren.map((child) => {
                     const idx = docIds.indexOf(child.id);
                     return {
                         id: docIds[idx],
-                        score: docLatestCredits[idx],
-                        maxScore: docCredits[idx],
+                        score: docCredits[idx],
                         docId: docIds[idx],
                         shuffledOrder: idx + 1,
                     };
@@ -676,19 +638,18 @@ describe("Activity reducer tests", () => {
         // determine ordered documents
         const docIds = state.orderedChildren.map((c) => c.id);
         let docCredits = [0, 0, 0];
-        let docLatestCredits = [0, 0, 0];
         let docAttemptNumbers = [1, 1, 1];
         let docStates: (string | null)[] = [null, null, null];
         let attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
-        docLatestCredits[0] = docCredits[0] = 0.4;
+        docCredits[0] = 0.4;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -696,7 +657,6 @@ describe("Activity reducer tests", () => {
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -706,19 +666,18 @@ describe("Activity reducer tests", () => {
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
-        docLatestCredits[1] = docCredits[1] = 0.6;
+        docCredits[1] = 0.6;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -728,19 +687,18 @@ describe("Activity reducer tests", () => {
 
         // Decrease score of 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
-        docLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -761,13 +719,11 @@ describe("Activity reducer tests", () => {
         attemptNumber++;
         docAttemptNumbers = docAttemptNumbers.map((x) => x + 1);
         docCredits = [0, 0, 0];
-        docLatestCredits = [0, 0, 0];
         docStates = [null, null, null];
 
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -778,12 +734,12 @@ describe("Activity reducer tests", () => {
 
         // get score of 0.8 on third doc
         docStates[2] = "DoenetML state 3.1";
-        docLatestCredits[2] = docCredits[2] = 0.8;
+        docCredits[2] = 0.8;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[2],
             doenetState: docStates[2],
-            creditAchieved: docLatestCredits[2],
+            creditAchieved: docCredits[2],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -791,7 +747,6 @@ describe("Activity reducer tests", () => {
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -835,19 +790,18 @@ describe("Activity reducer tests", () => {
         // determine ordered documents
         const docIds = state.orderedChildren.map((c) => c.id);
         const docCredits = [0, 0, 0];
-        const docLatestCredits = [0, 0, 0];
         const docAttemptNumbers = [1, 1, 1];
         const docStates: (string | null)[] = [null, null, null];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
-        docLatestCredits[0] = docCredits[0] = 0.4;
+        docCredits[0] = 0.4;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -855,7 +809,6 @@ describe("Activity reducer tests", () => {
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -865,19 +818,18 @@ describe("Activity reducer tests", () => {
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
-        docLatestCredits[1] = docCredits[1] = 0.6;
+        docCredits[1] = 0.6;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -887,19 +839,18 @@ describe("Activity reducer tests", () => {
 
         // Decrease score of 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
-        docLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -919,13 +870,12 @@ describe("Activity reducer tests", () => {
         });
 
         docAttemptNumbers[0]++;
-        docLatestCredits[0] = 0;
+        docCredits[0] = 0;
         docStates[0] = null;
 
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -937,12 +887,12 @@ describe("Activity reducer tests", () => {
 
         // get score of 0.5 on first doc
         docStates[0] = "DoenetML state 1.2";
-        docLatestCredits[0] = docCredits[0] = 0.5;
+        docCredits[0] = 0.5;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -950,7 +900,6 @@ describe("Activity reducer tests", () => {
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -960,12 +909,12 @@ describe("Activity reducer tests", () => {
 
         // get score of 0.8 on third doc
         docStates[2] = "DoenetML state 3.1";
-        docLatestCredits[2] = docCredits[2] = 0.8;
+        docCredits[2] = 0.8;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[2],
             doenetState: docStates[2],
-            creditAchieved: docLatestCredits[2],
+            creditAchieved: docCredits[2],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -973,7 +922,6 @@ describe("Activity reducer tests", () => {
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -983,12 +931,12 @@ describe("Activity reducer tests", () => {
 
         // get score of 0 on second doc
         docStates[1] = "DoenetML state 2.3";
-        docLatestCredits[1] = 0;
+        docCredits[1] = 0;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -996,7 +944,6 @@ describe("Activity reducer tests", () => {
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1016,13 +963,12 @@ describe("Activity reducer tests", () => {
         });
 
         docAttemptNumbers[1]++;
-        docLatestCredits[1] = 0;
+        docCredits[1] = 0;
         docStates[1] = null;
 
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1034,12 +980,12 @@ describe("Activity reducer tests", () => {
 
         // get score of 0.9 on second doc
         docStates[1] = "DoenetML state 2.4";
-        docLatestCredits[1] = docCredits[1] = 0.9;
+        docCredits[1] = 0.9;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1047,7 +993,6 @@ describe("Activity reducer tests", () => {
         testStateSeq3Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1059,11 +1004,9 @@ describe("Activity reducer tests", () => {
     function testStateSeq2Sels({
         state,
         selCredits,
-        selLatestCredits,
         selAttemptNumbers,
         selIds,
         docCredits,
-        docLatestCredits,
         docAttemptNumbers,
         docStates,
         docIds,
@@ -1074,11 +1017,9 @@ describe("Activity reducer tests", () => {
     }: {
         state: ActivityState;
         selCredits: number[];
-        selLatestCredits: number[];
         selAttemptNumbers: number[];
         selIds: string[];
         docCredits: number[];
-        docLatestCredits: number[];
         docAttemptNumbers: Record<string, number>;
         docStates: (string | null)[];
         docIds: string[];
@@ -1091,14 +1032,9 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        const maxCreditAchieved = state.maxCreditAchieved;
-        expect(maxCreditAchieved).closeTo(
-            selCredits.reduce((a, c) => a + c, 0) / 2,
-            1e-12,
-        );
         const creditAchieved = state.creditAchieved;
         expect(creditAchieved).closeTo(
-            selLatestCredits.reduce((a, c) => a + c, 0) / 2,
+            selCredits.reduce((a, c) => a + c, 0) / 2,
             1e-12,
         );
 
@@ -1110,8 +1046,7 @@ describe("Activity reducer tests", () => {
                 throw Error("Shouldn't happen");
             }
             expect(selectState.id).eq(selIds[i]);
-            expect(selectState.maxCreditAchieved).eq(selCredits[i]);
-            expect(selectState.creditAchieved).eq(selLatestCredits[i]);
+            expect(selectState.creditAchieved).eq(selCredits[i]);
             expect(selectState.attemptNumber).eq(selAttemptNumbers[i]);
 
             const docState = selectState.selectedChildren[0];
@@ -1119,8 +1054,7 @@ describe("Activity reducer tests", () => {
                 throw Error("Shouldn't happen");
             }
             expect(docState.id).eq(docIds[i]);
-            expect(docState.maxCreditAchieved).eq(docCredits[i]);
-            expect(docState.creditAchieved).eq(docLatestCredits[i]);
+            expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[docIds[i]]);
             expect(docState.doenetState).eq(docStates[i]);
         }
@@ -1139,14 +1073,12 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: maxCreditAchieved,
                 score: creditAchieved,
                 itemScores: state.allChildren.map((child) => {
                     const idx = selIds.indexOf(child.id);
                     return {
                         id: selIds[idx],
-                        score: selLatestCredits[idx],
-                        maxScore: selCredits[idx],
+                        score: selCredits[idx],
                         docId: docIds[idx],
                         shuffledOrder: idx + 1,
                     };
@@ -1211,23 +1143,21 @@ describe("Activity reducer tests", () => {
 
         let selAttemptNumbers = [1, 1];
         let selCredits = [0, 0];
-        let selLatestCredits = [0, 0];
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         let docCredits = [0, 0];
-        let docLatestCredits = [0, 0];
         let docStates: (string | null)[] = [null, null];
         let attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
-        docLatestCredits[0] = docCredits[0] = 0.4;
-        selLatestCredits[0] = selCredits[0] = 0.4;
+        docCredits[0] = 0.4;
+        selCredits[0] = 0.4;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1235,11 +1165,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1249,13 +1177,13 @@ describe("Activity reducer tests", () => {
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
-        docLatestCredits[1] = docCredits[1] = 0.6;
-        selLatestCredits[1] = selCredits[1] = 0.6;
+        docCredits[1] = 0.6;
+        selCredits[1] = 0.6;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1263,11 +1191,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1277,13 +1203,13 @@ describe("Activity reducer tests", () => {
 
         // Decrease score of 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
-        docLatestCredits[1] = 0.2;
-        selLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
+        selCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1291,11 +1217,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1333,21 +1257,17 @@ describe("Activity reducer tests", () => {
 
         selAttemptNumbers = [2, 2];
         selCredits = [0, 0];
-        selLatestCredits = [0, 0];
 
         docCredits = [0, 0];
-        docLatestCredits = [0, 0];
         docStates = [null, null];
         attemptNumber++;
 
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1358,24 +1278,22 @@ describe("Activity reducer tests", () => {
 
         // get score of 0.8 second doc
         docStates[1] = "DoenetML state 2.3";
-        docCredits[1] = docLatestCredits[1] = 0.8;
-        selCredits[1] = selLatestCredits[1] = 0.8;
+        docCredits[1] = 0.8;
+        selCredits[1] = 0.8;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1428,23 +1346,21 @@ describe("Activity reducer tests", () => {
 
         const selAttemptNumbers = [1, 1];
         const selCredits = [0, 0];
-        const selLatestCredits = [0, 0];
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         const docCredits = [0, 0];
-        const docLatestCredits = [0, 0];
         const docStates: (string | null)[] = [null, null];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
-        docLatestCredits[0] = docCredits[0] = 0.4;
-        selLatestCredits[0] = selCredits[0] = 0.4;
+        docCredits[0] = 0.4;
+        selCredits[0] = 0.4;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1452,11 +1368,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1466,13 +1380,13 @@ describe("Activity reducer tests", () => {
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
-        docLatestCredits[1] = docCredits[1] = 0.6;
-        selLatestCredits[1] = selCredits[1] = 0.6;
+        docCredits[1] = 0.6;
+        selCredits[1] = 0.6;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1480,11 +1394,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1494,13 +1406,13 @@ describe("Activity reducer tests", () => {
 
         // Decrease score to 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
-        docLatestCredits[1] = 0.2;
-        selLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
+        selCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1508,11 +1420,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1544,19 +1454,16 @@ describe("Activity reducer tests", () => {
         docAttemptNumbers[docIds[1]] = (docAttemptNumbers[docIds[1]] ?? 0) + 1;
 
         selAttemptNumbers[1]++;
-        selLatestCredits[1] = 0; // don't change selCredit[1], as the credit achieved is remembered
+        selCredits[1] = 0; // don't change selCredit[1], as the credit achieved is remembered
         docStates[1] = null;
-        docLatestCredits[1] = 0;
-        docCredits[1] = 0; // document doesn't retain the credit achieved
+        docCredits[1] = 0;
 
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1568,13 +1475,13 @@ describe("Activity reducer tests", () => {
 
         // get new high score of score of 0.8 in second doc
         docStates[1] = "DoenetML state 2.3";
-        docLatestCredits[1] = docCredits[1] = 0.8;
-        selLatestCredits[1] = selCredits[1] = 0.8;
+        docCredits[1] = 0.8;
+        selCredits[1] = 0.8;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1582,11 +1489,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1596,13 +1501,13 @@ describe("Activity reducer tests", () => {
 
         // decrease score to 0.2 on second doc
         docStates[1] = "DoenetML state 2.4";
-        docLatestCredits[1] = 0.2;
-        selLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
+        selCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1610,11 +1515,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1646,19 +1549,16 @@ describe("Activity reducer tests", () => {
         docAttemptNumbers[docIds[0]] = (docAttemptNumbers[docIds[0]] ?? 0) + 1;
 
         selAttemptNumbers[0]++;
-        selLatestCredits[0] = 0; // don't change selCredit[0], as the credit achieved is remembered
+        selCredits[0] = 0; // don't change selCredit[0], as the credit achieved is remembered
         docStates[0] = null;
-        docLatestCredits[0] = 0;
-        docCredits[0] = 0; // document doesn't retain the credit achieved
+        docCredits[0] = 0;
 
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1670,13 +1570,13 @@ describe("Activity reducer tests", () => {
 
         // get score of 0.3 on first doc
         docStates[0] = "DoenetML state 1.2";
-        docLatestCredits[0] = docCredits[0] = 0.3;
-        selLatestCredits[0] = 0.3;
+        docCredits[0] = 0.3;
+        selCredits[0] = 0.3;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1684,11 +1584,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1741,23 +1639,21 @@ describe("Activity reducer tests", () => {
 
         const selAttemptNumbers = [1, 1];
         const selCredits = [0, 0];
-        const selLatestCredits = [0, 0];
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         const docCredits = [0, 0];
-        const docLatestCredits = [0, 0];
         const docStates: (string | null)[] = [null, null];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
-        docLatestCredits[0] = docCredits[0] = 0.4;
-        selLatestCredits[0] = selCredits[0] = 0.4;
+        docCredits[0] = 0.4;
+        selCredits[0] = 0.4;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1765,11 +1661,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1779,13 +1673,13 @@ describe("Activity reducer tests", () => {
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
-        docLatestCredits[1] = docCredits[1] = 0.6;
-        selLatestCredits[1] = selCredits[1] = 0.6;
+        docCredits[1] = 0.6;
+        selCredits[1] = 0.6;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1793,11 +1687,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1807,13 +1699,13 @@ describe("Activity reducer tests", () => {
 
         // Decrease score to 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
-        docLatestCredits[1] = 0.2;
-        selLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
+        selCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1821,11 +1713,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1857,19 +1747,16 @@ describe("Activity reducer tests", () => {
         docAttemptNumbers[docIds[1]] = (docAttemptNumbers[docIds[1]] ?? 0) + 1;
 
         selAttemptNumbers[1]++;
-        selLatestCredits[1] = 0; // don't change selCredit[1], as the credit achieved is remembered
+        selCredits[1] = 0; // don't change selCredit[1], as the credit achieved is remembered
         docStates[1] = null;
-        docLatestCredits[1] = 0;
-        docCredits[1] = 0; // document doesn't retain the credit achieved
+        docCredits[1] = 0;
 
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1881,13 +1768,13 @@ describe("Activity reducer tests", () => {
 
         // get new high score of score of 0.8 in second doc
         docStates[1] = "DoenetML state 2.3";
-        docLatestCredits[1] = docCredits[1] = 0.8;
-        selLatestCredits[1] = selCredits[1] = 0.8;
+        docCredits[1] = 0.8;
+        selCredits[1] = 0.8;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1895,11 +1782,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1909,13 +1794,13 @@ describe("Activity reducer tests", () => {
 
         // decrease score to 0.2 on second doc
         docStates[1] = "DoenetML state 2.4";
-        docLatestCredits[1] = 0.2;
-        selLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
+        selCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1923,11 +1808,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1959,19 +1842,16 @@ describe("Activity reducer tests", () => {
         docAttemptNumbers[docIds[0]] = (docAttemptNumbers[docIds[0]] ?? 0) + 1;
 
         selAttemptNumbers[0]++;
-        selLatestCredits[0] = 0; // don't change selCredit[0], as the credit achieved is remembered
+        selCredits[0] = 0; // don't change selCredit[0], as the credit achieved is remembered
         docStates[0] = null;
-        docLatestCredits[0] = 0;
-        docCredits[0] = 0; // document doesn't retain the credit achieved
+        docCredits[0] = 0;
 
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -1983,13 +1863,13 @@ describe("Activity reducer tests", () => {
 
         // get score of 0.3 on first doc
         docStates[0] = "DoenetML state 1.2";
-        docLatestCredits[0] = docCredits[0] = 0.3;
-        selLatestCredits[0] = 0.3;
+        docCredits[0] = 0.3;
+        selCredits[0] = 0.3;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -1997,11 +1877,9 @@ describe("Activity reducer tests", () => {
         testStateSeq2Sels({
             state,
             selCredits,
-            selLatestCredits,
             selAttemptNumbers,
             selIds,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -2013,7 +1891,6 @@ describe("Activity reducer tests", () => {
     function testStateSelMult2Docs({
         state,
         docCredits,
-        docLatestCredits,
         docAttemptNumbers,
         docStates,
         docIds,
@@ -2024,7 +1901,6 @@ describe("Activity reducer tests", () => {
     }: {
         state: ActivityState;
         docCredits: number[];
-        docLatestCredits: number[];
         docAttemptNumbers: Record<string, number>;
         docStates: (string | null)[];
         docIds: string[];
@@ -2037,14 +1913,9 @@ describe("Activity reducer tests", () => {
             throw Error("Shouldn't happen");
         }
 
-        const maxCreditAchieved = state.maxCreditAchieved;
-        expect(maxCreditAchieved).closeTo(
-            docCredits.reduce((a, c) => a + c, 0) / 2,
-            1e-12,
-        );
         const creditAchieved = state.creditAchieved;
         expect(creditAchieved).closeTo(
-            docLatestCredits.reduce((a, c) => a + c, 0) / 2,
+            docCredits.reduce((a, c) => a + c, 0) / 2,
             1e-12,
         );
 
@@ -2056,8 +1927,7 @@ describe("Activity reducer tests", () => {
                 throw Error("Shouldn't happen");
             }
             expect(docState.id).eq(docIds[i]);
-            expect(docState.maxCreditAchieved).eq(docCredits[i]);
-            expect(docState.creditAchieved).eq(docLatestCredits[i]);
+            expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[docIds[i]]);
             expect(docState.doenetState).eq(docStates[i]);
         }
@@ -2076,20 +1946,17 @@ describe("Activity reducer tests", () => {
         expect(spy.mock.lastCall).toMatchObject([
             {
                 subject: "SPLICE.reportScoreAndState",
-                maxScore: maxCreditAchieved,
                 score: creditAchieved,
                 itemScores: [
                     {
                         id: docIds[0],
-                        maxScore: docCredits[0],
-                        score: docLatestCredits[0],
+                        score: docCredits[0],
                         docId: docIds[0],
                         shuffledOrder: 1,
                     },
                     {
                         id: docIds[1],
-                        maxScore: docCredits[1],
-                        score: docLatestCredits[1],
+                        score: docCredits[1],
                         docId: docIds[1],
                         shuffledOrder: 2,
                     },
@@ -2147,18 +2014,17 @@ describe("Activity reducer tests", () => {
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         const docCredits = [0, 0];
-        const docLatestCredits = [0, 0];
         const docStates: (string | null)[] = [null, null];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
         docStates[0] = "DoenetML state 1.1";
-        docLatestCredits[0] = docCredits[0] = 0.4;
+        docCredits[0] = 0.4;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -2166,7 +2032,6 @@ describe("Activity reducer tests", () => {
         testStateSelMult2Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -2176,12 +2041,12 @@ describe("Activity reducer tests", () => {
 
         // Get score of 0.6 in second doc
         docStates[1] = "DoenetML state 2.1";
-        docLatestCredits[1] = docCredits[1] = 0.6;
+        docCredits[1] = 0.6;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -2189,7 +2054,6 @@ describe("Activity reducer tests", () => {
         testStateSelMult2Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -2199,12 +2063,12 @@ describe("Activity reducer tests", () => {
 
         // Decrease score to 0.2 in second doc
         docStates[1] = "DoenetML state 2.2";
-        docLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -2212,7 +2076,6 @@ describe("Activity reducer tests", () => {
         testStateSelMult2Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -2240,12 +2103,11 @@ describe("Activity reducer tests", () => {
         docAttemptNumbers[docIds[1]] = (docAttemptNumbers[docIds[1]] ?? 0) + 1;
 
         docStates[1] = null;
-        docLatestCredits[1] = 0; // don't change docCredits[1], as the credit achieved is remembered
+        docCredits[1] = 0;
 
         testStateSelMult2Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -2257,12 +2119,12 @@ describe("Activity reducer tests", () => {
 
         // get new high score of score of 0.8 in second doc
         docStates[1] = "DoenetML state 2.3";
-        docLatestCredits[1] = docCredits[1] = 0.8;
+        docCredits[1] = 0.8;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -2270,7 +2132,6 @@ describe("Activity reducer tests", () => {
         testStateSelMult2Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -2280,12 +2141,12 @@ describe("Activity reducer tests", () => {
 
         // decrease score to 0.2 on second doc
         docStates[1] = "DoenetML state 2.4";
-        docLatestCredits[1] = 0.2;
+        docCredits[1] = 0.2;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[1],
             doenetState: docStates[1],
-            creditAchieved: docLatestCredits[1],
+            creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -2293,7 +2154,6 @@ describe("Activity reducer tests", () => {
         testStateSelMult2Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -2321,12 +2181,11 @@ describe("Activity reducer tests", () => {
         docAttemptNumbers[docIds[0]] = (docAttemptNumbers[docIds[0]] ?? 0) + 1;
 
         docStates[0] = null;
-        docLatestCredits[0] = 0; // don't change docCredits[0], as the credit achieved is remembered
+        docCredits[0] = 0;
 
         testStateSelMult2Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,
@@ -2338,12 +2197,12 @@ describe("Activity reducer tests", () => {
 
         // get score of 0.3 on first doc
         docStates[0] = "DoenetML state 1.2";
-        docLatestCredits[0] = 0.3;
+        docCredits[0] = 0.3;
         state = activityStateReducer(state, {
             type: "updateSingleState",
             id: docIds[0],
             doenetState: docStates[0],
-            creditAchieved: docLatestCredits[0],
+            creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
         });
@@ -2351,7 +2210,6 @@ describe("Activity reducer tests", () => {
         testStateSelMult2Docs({
             state,
             docCredits,
-            docLatestCredits,
             docAttemptNumbers,
             docStates,
             docIds,

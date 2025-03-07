@@ -227,7 +227,6 @@ function App() {
         {
             id: string;
             score: number;
-            maxScore: number;
             docId?: string;
             shuffledOrder: number;
         }[]
@@ -313,7 +312,7 @@ function App() {
 
                 <div>
                     Assignment credit:{" "}
-                    {(activityState?.state.maxCreditAchieved ?? 0) * 100}%
+                    {(activityState?.state.creditAchieved ?? 0) * 100}%
                 </div>
                 <div>
                     Credit by item, latest attempt:
