@@ -15,6 +15,7 @@ export function SelectActivity({
     darkMode = "light",
     showAnswerTitles = false,
     state,
+    doenetStates,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -35,6 +36,7 @@ export function SelectActivity({
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
     state: SelectState;
+    doenetStates: unknown[];
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
@@ -58,6 +60,7 @@ export function SelectActivity({
             <Activity
                 key={activity.id}
                 state={activity}
+                doenetStates={doenetStates}
                 flags={flags}
                 baseId={baseId}
                 forceDisable={forceDisable}

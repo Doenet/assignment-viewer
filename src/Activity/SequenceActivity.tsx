@@ -15,6 +15,7 @@ export function SequenceActivity({
     darkMode = "light",
     showAnswerTitles = false,
     state,
+    doenetStates,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -35,6 +36,7 @@ export function SequenceActivity({
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
     state: SequenceState;
+    doenetStates: unknown[];
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
@@ -57,6 +59,7 @@ export function SequenceActivity({
             <Activity
                 key={activity.id}
                 state={activity}
+                doenetStates={doenetStates}
                 flags={flags}
                 baseId={baseId}
                 forceDisable={forceDisable}

@@ -10,7 +10,7 @@ import { SequenceSource, SequenceState } from "../Activity/sequenceState";
 import {
     gatherDocumentStructure,
     generateNewActivityAttempt,
-    generateNewSubActivityAttempt,
+    generateNewSingleDocSubAttempt,
     initializeActivityState,
 } from "../Activity/activityState";
 import { SingleDocState } from "../Activity/singleDocState";
@@ -62,8 +62,8 @@ describe("Test of generating new item attempts", () => {
 
                     questionVariants[questionIdx].push(doc.currentVariant);
 
-                    state = generateNewSubActivityAttempt({
-                        id: docId,
+                    state = generateNewSingleDocSubAttempt({
+                        singleDocId: docId,
                         state,
                         numActivityVariants,
                         initialQuestionCounter: 1, // not right, but doesn't matter for this test
@@ -150,8 +150,8 @@ describe("Test of generating new item attempts", () => {
                     for (let k = 0; k < 3; k++) {
                         const docIds = state.selectedChildren.map((a) => a.id);
 
-                        state = generateNewSubActivityAttempt({
-                            id: docIds[j],
+                        state = generateNewSingleDocSubAttempt({
+                            singleDocId: docIds[j],
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
@@ -241,8 +241,8 @@ describe("Test of generating new item attempts", () => {
                     for (let k = 0; k < 15; k++) {
                         const docIds = state.selectedChildren.map((a) => a.id);
 
-                        state = generateNewSubActivityAttempt({
-                            id: docIds[j],
+                        state = generateNewSingleDocSubAttempt({
+                            singleDocId: docIds[j],
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
@@ -350,8 +350,8 @@ describe("Test of generating new item attempts", () => {
 
                         questionIds[selIdx].push(docExtendedId);
 
-                        state = generateNewSubActivityAttempt({
-                            id: docState.id,
+                        state = generateNewSingleDocSubAttempt({
+                            singleDocId: docState.id,
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
@@ -440,8 +440,8 @@ describe("Test of generating new item attempts", () => {
                     questionIds[selIdx].push(docExtendedId);
 
                     if (i < 2) {
-                        state = generateNewSubActivityAttempt({
-                            id: docState.id,
+                        state = generateNewSingleDocSubAttempt({
+                            singleDocId: docState.id,
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
@@ -537,8 +537,8 @@ describe("Test of generating new item attempts", () => {
                     for (let k = 0; k < 5; k++) {
                         const docIds = state.selectedChildren.map((a) => a.id);
 
-                        state = generateNewSubActivityAttempt({
-                            id: docIds[j],
+                        state = generateNewSingleDocSubAttempt({
+                            singleDocId: docIds[j],
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test

@@ -74,7 +74,7 @@ export function isSingleDocReportStateMessage(
     );
 }
 
-export type reportStateMessage = {
+export type ReportStateMessage = {
     subject: "SPLICE.reportScoreAndState";
     activityId: string;
     score: number;
@@ -87,10 +87,11 @@ export type reportStateMessage = {
     state: ExportedActivityState;
     newAttempt?: boolean;
     newAttemptForItem?: number;
+    newDoenetStateIdx?: number;
 };
 
-export function isReportStateMessage(obj: unknown): obj is reportStateMessage {
-    const typeObj = obj as reportStateMessage;
+export function isReportStateMessage(obj: unknown): obj is ReportStateMessage {
+    const typeObj = obj as ReportStateMessage;
 
     return (
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -112,11 +113,13 @@ export function isReportStateMessage(obj: unknown): obj is reportStateMessage {
         (typeObj.newAttempt === undefined ||
             typeof typeObj.newAttempt === "boolean") &&
         (typeObj.newAttemptForItem === undefined ||
-            typeof typeObj.newAttemptForItem === "number")
+            typeof typeObj.newAttemptForItem === "number") &&
+        (typeObj.newDoenetStateIdx === undefined ||
+            typeof typeObj.newDoenetStateIdx === "number")
     );
 }
 
-export type reportScoreByItemMessage = {
+export type ReportScoreByItemMessage = {
     subject: "SPLICE.reportScoreByItem";
     activityId: string;
     score: number;
@@ -130,8 +133,8 @@ export type reportScoreByItemMessage = {
 
 export function isReportScoreByItemMessage(
     obj: unknown,
-): obj is reportScoreByItemMessage {
-    const typeObj = obj as reportScoreByItemMessage;
+): obj is ReportScoreByItemMessage {
+    const typeObj = obj as ReportScoreByItemMessage;
 
     return (
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

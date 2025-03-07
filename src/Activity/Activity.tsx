@@ -15,6 +15,7 @@ export function Activity({
     darkMode = "light",
     showAnswerTitles = false,
     state,
+    doenetStates,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -35,6 +36,7 @@ export function Activity({
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
     state: ActivityState;
+    doenetStates: unknown[];
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
@@ -65,6 +67,7 @@ export function Activity({
                     darkMode={darkMode}
                     showAnswerTitles={showAnswerTitles}
                     state={state}
+                    doenetStates={doenetStates}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
@@ -89,6 +92,7 @@ export function Activity({
                     darkMode={darkMode}
                     showAnswerTitles={showAnswerTitles}
                     state={state}
+                    doenetStates={doenetStates}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
@@ -114,6 +118,7 @@ export function Activity({
                     darkMode={darkMode}
                     showAnswerTitles={showAnswerTitles}
                     state={state}
+                    doenetStates={doenetStates}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
