@@ -2,11 +2,12 @@ import { ReactElement } from "react";
 import type { DoenetMLFlags } from "../types";
 import { SelectState } from "./selectState";
 import { Activity } from "./Activity";
-import { ActivityState, getNumItems } from "./activityState";
+import { ActivityState } from "./activityState";
 
 export function SelectActivity({
     flags,
     baseId,
+    maxAttemptsAllowed,
     forceDisable = false,
     forceShowCorrectness = false,
     forceShowSolution = false,
@@ -24,10 +25,12 @@ export function SelectActivity({
     hasRenderedCallback,
     reportVisibility = false,
     reportVisibilityCallback,
-    renderOnlyItem = null,
+    itemAttemptNumbers,
+    itemSequence,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
+    maxAttemptsAllowed: number;
     forceDisable?: boolean;
     forceShowCorrectness?: boolean;
     forceShowSolution?: boolean;
@@ -48,12 +51,11 @@ export function SelectActivity({
     hasRenderedCallback: (id: string) => void;
     reportVisibility?: boolean;
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
-    renderOnlyItem?: number | null;
+    itemAttemptNumbers: number[];
+    itemSequence: string[];
 }) {
     const selectedActivities: ReactElement[] = [];
     const selectedIds: string[] = [];
-
-    let nextRenderOnly = renderOnlyItem;
 
     for (const activity of state.selectedChildren) {
         selectedActivities.push(
@@ -63,6 +65,7 @@ export function SelectActivity({
                 doenetStates={doenetStates}
                 flags={flags}
                 baseId={baseId}
+                maxAttemptsAllowed={maxAttemptsAllowed}
                 forceDisable={forceDisable}
                 forceShowCorrectness={forceShowCorrectness}
                 forceShowSolution={forceShowSolution}
@@ -78,15 +81,11 @@ export function SelectActivity({
                 hasRenderedCallback={hasRenderedCallback}
                 reportVisibility={reportVisibility}
                 reportVisibilityCallback={reportVisibilityCallback}
-                renderOnlyItem={nextRenderOnly}
+                itemAttemptNumbers={itemAttemptNumbers}
+                itemSequence={itemSequence}
             />,
         );
         selectedIds.push(activity.id);
-
-        if (nextRenderOnly !== null) {
-            // if `numToSelect` is larger than one, account for the items of previous selection(s)
-            nextRenderOnly -= getNumItems(activity.source);
-        }
     }
 
     return (

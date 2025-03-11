@@ -11,6 +11,7 @@ import {
     gatherStates,
     generateNewActivityAttempt,
     generateNewSingleDocSubAttempt,
+    getNumItems,
     initializeActivityState,
     propagateStateChangeToRoot,
     pruneActivityStateForSave,
@@ -44,6 +45,7 @@ type GenerateSingleDocSubAttemptAction = {
     type: "generateSingleDocSubActivityAttempt";
     docId: string;
     doenetStateIdx: number;
+    itemSequence: string[];
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     questionCounts: QuestionCountRecord;
@@ -77,6 +79,7 @@ export function activityDoenetStateReducer(
     const activityState = state.activityState;
     switch (action.type) {
         case "initialize": {
+            const numItems = getNumItems(action.source);
             return {
                 activityState: initializeActivityState({
                     source: action.source,
@@ -85,6 +88,7 @@ export function activityDoenetStateReducer(
                     numActivityVariants: action.numActivityVariants,
                 }),
                 doenetStates: [],
+                itemAttemptNumbers: Array<number>(numItems).fill(1),
             };
         }
         case "set": {
@@ -113,6 +117,9 @@ export function activityDoenetStateReducer(
                 parentAttempt: 1,
             });
 
+            // reset all item attempt numbers to 1
+            const newItemAttemptNumbers = state.itemAttemptNumbers.map(() => 1);
+
             if (action.allowSaveState) {
                 const itemScores = extractActivityItemCredit(newActivityState);
                 if (firstAttempt) {
@@ -131,6 +138,7 @@ export function activityDoenetStateReducer(
                             activityState:
                                 pruneActivityStateForSave(newActivityState),
                             doenetStates: [],
+                            itemAttemptNumbers: newItemAttemptNumbers,
                             sourceHash: action.sourceHash,
                         },
                         score: newActivityState.creditAchieved,
@@ -146,6 +154,7 @@ export function activityDoenetStateReducer(
             return {
                 activityState: newActivityState,
                 doenetStates: [],
+                itemAttemptNumbers: newItemAttemptNumbers,
             };
         }
 
@@ -167,6 +176,11 @@ export function activityDoenetStateReducer(
             const newDoenetMLStates = [...state.doenetStates];
             newDoenetMLStates[action.doenetStateIdx] = undefined;
 
+            // increment the item attempt number corresponding to the document
+            const itemIdx = action.itemSequence.indexOf(action.docId);
+            const newItemAttemptNumbers = [...state.itemAttemptNumbers];
+            newItemAttemptNumbers[itemIdx]++;
+
             if (action.allowSaveState) {
                 const itemScores = extractActivityItemCredit(newActivityState);
 
@@ -184,6 +198,7 @@ export function activityDoenetStateReducer(
                         activityState:
                             pruneActivityStateForSave(newActivityState),
                         doenetStates: newDoenetMLStates,
+                        itemAttemptNumbers: newItemAttemptNumbers,
                         sourceHash: action.sourceHash,
                     },
                     score: newActivityState.creditAchieved,
@@ -201,6 +216,7 @@ export function activityDoenetStateReducer(
             return {
                 activityState: newActivityState,
                 doenetStates: newDoenetMLStates,
+                itemAttemptNumbers: newItemAttemptNumbers,
             };
         }
         case "updateSingleState": {
@@ -216,6 +232,7 @@ export function activityDoenetStateReducer(
                             pruneActivityStateForSave(newActivityState),
                         sourceHash: action.sourceHash,
                         doenetStates: newActivityDoenetState.doenetStates,
+                        itemAttemptNumbers: state.itemAttemptNumbers,
                     },
                     score: newActivityState.creditAchieved,
                     itemScores,
@@ -266,5 +283,9 @@ function updateSingleDocState(
         id: newSingleDocState.id,
     });
 
-    return { activityState: rootActivityState, doenetStates };
+    return {
+        activityState: rootActivityState,
+        doenetStates,
+        itemAttemptNumbers: activityDoenetState.itemAttemptNumbers,
+    };
 }

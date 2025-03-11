@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { DoenetMLFlags } from "../types";
 import { DoenetViewer } from "@doenet/doenetml-iframe";
 import { SingleDocState } from "./singleDocState";
@@ -7,6 +7,7 @@ import { ActivityState } from "./activityState";
 export function SingleDocActivity({
     flags,
     baseId,
+    maxAttemptsAllowed,
     forceDisable = false,
     forceShowCorrectness = false,
     forceShowSolution = false,
@@ -24,9 +25,12 @@ export function SingleDocActivity({
     hasRenderedCallback,
     reportVisibility = false,
     reportVisibilityCallback,
+    itemAttemptNumbers,
+    itemSequence,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
+    maxAttemptsAllowed: number;
     forceDisable?: boolean;
     forceShowCorrectness?: boolean;
     forceShowSolution?: boolean;
@@ -47,6 +51,8 @@ export function SingleDocActivity({
     hasRenderedCallback: (id: string) => void;
     reportVisibility?: boolean;
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
+    itemAttemptNumbers: number[];
+    itemSequence: string[];
 }) {
     const [rendered, setRendered] = useState(false);
 
@@ -69,6 +75,13 @@ export function SingleDocActivity({
     );
 
     const ref = useRef<HTMLDivElement>(null);
+
+    const itemIdx = useMemo(
+        () => itemSequence.indexOf(state.id),
+        [itemSequence, state.id],
+    );
+
+    const itemAttemptNumber = itemAttemptNumbers[itemIdx];
 
     useEffect(() => {
         if (reportVisibility && ref.current) {
@@ -117,7 +130,8 @@ export function SingleDocActivity({
     const showAttemptButton =
         allowItemAttemptButtons &&
         generateNewItemAttempt !== undefined &&
-        !source.isDescription;
+        !source.isDescription &&
+        maxAttemptsAllowed !== 1;
 
     const render = checkRender(state);
     const hidden = checkHidden(state);
@@ -160,6 +174,10 @@ export function SingleDocActivity({
                                 state.initialQuestionCounter,
                             );
                         }}
+                        disabled={
+                            maxAttemptsAllowed > 0 &&
+                            itemAttemptNumber >= maxAttemptsAllowed
+                        }
                         style={{
                             marginLeft: "20px",
                             backgroundColor: "lightgray",
@@ -167,7 +185,10 @@ export function SingleDocActivity({
                             padding: "5px 20px",
                         }}
                     >
-                        New item attempt
+                        New item attempt{" "}
+                        {maxAttemptsAllowed > 0
+                            ? `(${(maxAttemptsAllowed - itemAttemptNumber).toString()} left)`
+                            : null}
                     </button>
                 ) : null}
             </div>

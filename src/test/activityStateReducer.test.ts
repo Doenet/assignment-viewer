@@ -33,7 +33,11 @@ describe("Activity reducer tests", () => {
         const { numActivityVariants } = gatherDocumentStructure(source);
 
         const newState = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            {
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers: [1],
+            },
             {
                 type: "initialize",
                 source,
@@ -60,6 +64,7 @@ describe("Activity reducer tests", () => {
         expect(newState).eqls({
             activityState: expectedActivityState,
             doenetStates: [],
+            itemAttemptNumbers: [1],
         });
     });
 
@@ -87,10 +92,18 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
-        const state = { activityState, doenetStates: [] };
+        const state = {
+            activityState,
+            doenetStates: [],
+            itemAttemptNumbers: [1],
+        };
 
         let newState = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            {
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers: [1],
+            },
             {
                 type: "set",
                 state,
@@ -103,7 +116,7 @@ describe("Activity reducer tests", () => {
         expect(spy).toHaveBeenCalledTimes(0);
 
         newState = activityDoenetStateReducer(
-            { activityState, doenetStates: [] },
+            { activityState, doenetStates: [], itemAttemptNumbers: [1] },
             {
                 type: "set",
                 state,
@@ -153,7 +166,11 @@ describe("Activity reducer tests", () => {
         state0.creditAchieved = 0.8;
 
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            {
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers: [1],
+            },
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -171,7 +188,7 @@ describe("Activity reducer tests", () => {
         expect(typeof activityState.currentVariant).eq("number");
         const previousVariants = [activityState.currentVariant];
 
-        let expectState: SingleDocState = {
+        let expectedState: SingleDocState = {
             ...state0,
             initialQuestionCounter: 9,
             creditAchieved: 0,
@@ -180,11 +197,15 @@ describe("Activity reducer tests", () => {
             previousVariants,
         };
 
-        expect(activityState).eqls(expectState);
+        expect(activityState).eqls(expectedState);
 
         // repeat creation of first attempt, this time with `allowSaveState`
         state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            {
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers: [1],
+            },
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -197,7 +218,7 @@ describe("Activity reducer tests", () => {
         );
         activityState = state.activityState as SingleDocState;
 
-        expect(activityState).eqls(expectState);
+        expect(activityState).eqls(expectedState);
 
         expect(spy).toHaveBeenCalledTimes(1);
 
@@ -231,7 +252,7 @@ describe("Activity reducer tests", () => {
         expect(typeof activityState.currentVariant).eq("number");
         previousVariants.push(activityState.currentVariant);
 
-        expectState = {
+        expectedState = {
             ...state0,
             initialQuestionCounter: 6,
             creditAchieved: 0,
@@ -258,6 +279,7 @@ describe("Activity reducer tests", () => {
                     activityState: pruneActivityStateForSave(activityState),
                     sourceHash,
                     doenetStates: [],
+                    itemAttemptNumbers: [1],
                 },
                 activityId: "newId",
                 newAttempt: true,
@@ -286,7 +308,11 @@ describe("Activity reducer tests", () => {
         });
 
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            {
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers: [1],
+            },
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -342,6 +368,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 1"],
+                    itemAttemptNumbers: [1],
                     sourceHash,
                 },
                 newDoenetStateIdx: 0,
@@ -398,6 +425,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 2"],
+                    itemAttemptNumbers: [1],
                     sourceHash,
                 },
                 newDoenetStateIdx: 0,
@@ -454,6 +482,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 3"],
+                    itemAttemptNumbers: [1],
                     sourceHash,
                 },
                 newDoenetStateIdx: 0,
@@ -503,6 +532,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: [],
+                    itemAttemptNumbers: [1],
                     sourceHash,
                 },
                 activityId: "newId",
@@ -542,7 +572,7 @@ describe("Activity reducer tests", () => {
 
         expect(spy).toHaveBeenCalledTimes(5);
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.1,
@@ -557,6 +587,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 4"],
+                    itemAttemptNumbers: [1],
                     sourceHash,
                 },
                 newDoenetStateIdx: 0,
@@ -598,7 +629,7 @@ describe("Activity reducer tests", () => {
 
         expect(spy).toHaveBeenCalledTimes(6);
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.5,
@@ -613,6 +644,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 5"],
+                    itemAttemptNumbers: [1],
                     sourceHash,
                 },
                 newDoenetStateIdx: 0,
@@ -633,6 +665,7 @@ describe("Activity reducer tests", () => {
         docStates,
         docIds,
         attemptNumber,
+        itemAttemptNumbers,
         newAttempt,
         newAttemptForItem,
         newDoenetStateIdx,
@@ -645,6 +678,7 @@ describe("Activity reducer tests", () => {
         docStates: (string | undefined)[];
         docIds: string[];
         attemptNumber: number;
+        itemAttemptNumbers: number[];
         newAttempt?: boolean;
         newAttemptForItem?: number;
         newDoenetStateIdx?: number;
@@ -716,6 +750,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: docStates,
+                    itemAttemptNumbers,
                     sourceHash,
                 },
                 activityId: "newId",
@@ -751,8 +786,14 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
+        const itemAttemptNumbers = [1, 1, 1];
+
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            {
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers,
+            },
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -798,6 +839,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -823,6 +865,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             sourceHash,
             newDoenetStateIdx: 1,
             spy,
@@ -849,6 +892,7 @@ describe("Activity reducer tests", () => {
             docIds,
             newDoenetStateIdx: 1,
             attemptNumber,
+            itemAttemptNumbers,
             sourceHash,
             spy,
         });
@@ -876,6 +920,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newAttempt: true,
             sourceHash,
             spy,
@@ -902,6 +947,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 2,
             sourceHash,
             spy,
@@ -928,8 +974,10 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
+        const itemAttemptNumbers = [1, 1, 1];
+
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            { activityState: state0, doenetStates: [], itemAttemptNumbers },
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -975,6 +1023,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1000,6 +1049,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1025,6 +1075,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1035,6 +1086,7 @@ describe("Activity reducer tests", () => {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
@@ -1044,6 +1096,7 @@ describe("Activity reducer tests", () => {
         });
 
         docAttemptNumbers[0]++;
+        itemAttemptNumbers[0]++;
         docCredits[0] = 0;
         docStates[0] = undefined;
 
@@ -1054,6 +1107,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newAttempt: true,
             newAttemptForItem: childIds.indexOf(docIds[0]) + 1,
             newDoenetStateIdx: 0,
@@ -1082,6 +1136,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1108,6 +1163,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 2,
             sourceHash,
             spy,
@@ -1134,6 +1190,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1144,6 +1201,7 @@ describe("Activity reducer tests", () => {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
@@ -1153,6 +1211,7 @@ describe("Activity reducer tests", () => {
         });
 
         docAttemptNumbers[1]++;
+        itemAttemptNumbers[1]++;
         docCredits[1] = 0;
         docStates[1] = undefined;
 
@@ -1163,6 +1222,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newAttempt: true,
             newAttemptForItem: childIds.indexOf(docIds[1]) + 1,
             newDoenetStateIdx: 1,
@@ -1191,6 +1251,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1207,6 +1268,7 @@ describe("Activity reducer tests", () => {
         docStates,
         docIds,
         attemptNumber,
+        itemAttemptNumbers,
         newAttempt,
         newAttemptForItem,
         newDoenetStateIdx,
@@ -1222,6 +1284,7 @@ describe("Activity reducer tests", () => {
         docStates: (string | undefined)[];
         docIds: string[];
         attemptNumber: number;
+        itemAttemptNumbers: number[];
         newAttempt?: boolean;
         newAttemptForItem?: number;
         newDoenetStateIdx?: number;
@@ -1285,7 +1348,7 @@ describe("Activity reducer tests", () => {
             newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
         }
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: creditAchieved,
@@ -1301,6 +1364,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: docStates,
+                    itemAttemptNumbers,
                     sourceHash,
                 },
                 activityId: "newId",
@@ -1336,8 +1400,9 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
+        const itemAttemptNumbers = [1, 1];
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            { activityState: state0, doenetStates: [], itemAttemptNumbers },
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -1398,6 +1463,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1428,6 +1494,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1458,6 +1525,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1511,6 +1579,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newAttempt: true,
             spy,
             sourceHash,
@@ -1540,6 +1609,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1566,8 +1636,10 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
+        const itemAttemptNumbers = [1, 1];
+
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            { activityState: state0, doenetStates: [], itemAttemptNumbers },
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -1628,6 +1700,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1658,6 +1731,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1688,6 +1762,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1698,6 +1773,7 @@ describe("Activity reducer tests", () => {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
@@ -1724,6 +1800,7 @@ describe("Activity reducer tests", () => {
         selCredits[1] = 0; // don't change selCredit[1], as the credit achieved is remembered
         docStates[1] = undefined;
         docCredits[1] = 0;
+        itemAttemptNumbers[1]++;
 
         testStateSeq2Sels({
             state,
@@ -1735,6 +1812,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newAttempt: true,
             newAttemptForItem: childIds.indexOf(selIds[1]) + 1,
             newDoenetStateIdx: 1,
@@ -1767,6 +1845,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1797,6 +1876,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1807,6 +1887,7 @@ describe("Activity reducer tests", () => {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
@@ -1833,6 +1914,7 @@ describe("Activity reducer tests", () => {
         selCredits[0] = 0; // don't change selCredit[0], as the credit achieved is remembered
         docStates[0] = undefined;
         docCredits[0] = 0;
+        itemAttemptNumbers[0]++;
 
         testStateSeq2Sels({
             state,
@@ -1844,6 +1926,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newAttempt: true,
             newAttemptForItem: childIds.indexOf(selIds[0]) + 1,
             newDoenetStateIdx: 0,
@@ -1876,6 +1959,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1889,6 +1973,7 @@ describe("Activity reducer tests", () => {
         docStates,
         docIds,
         attemptNumber,
+        itemAttemptNumbers,
         newAttempt,
         newAttemptForItem,
         newDoenetStateIdx,
@@ -1901,6 +1986,7 @@ describe("Activity reducer tests", () => {
         docStates: (string | undefined)[];
         docIds: string[];
         attemptNumber: number;
+        itemAttemptNumbers: number[];
         newAttempt?: boolean;
         newAttemptForItem?: number;
         newDoenetStateIdx?: number;
@@ -1956,7 +2042,7 @@ describe("Activity reducer tests", () => {
             newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
         }
 
-        expect(spy.mock.lastCall).toMatchObject([
+        expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: creditAchieved,
@@ -1977,6 +2063,7 @@ describe("Activity reducer tests", () => {
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: docStates,
+                    itemAttemptNumbers,
                     sourceHash,
                 },
                 activityId: "newId",
@@ -2012,8 +2099,10 @@ describe("Activity reducer tests", () => {
             numActivityVariants,
         });
 
+        const itemAttemptNumbers = [1, 1];
+
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [] },
+            { activityState: state0, doenetStates: [], itemAttemptNumbers },
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -2060,6 +2149,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -2086,6 +2176,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -2112,6 +2203,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -2122,6 +2214,7 @@ describe("Activity reducer tests", () => {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
@@ -2143,6 +2236,8 @@ describe("Activity reducer tests", () => {
         docStates[1] = undefined;
         docCredits[1] = 0;
 
+        itemAttemptNumbers[1]++;
+
         testStateSelMult2Docs({
             state,
             docCredits,
@@ -2150,6 +2245,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newAttempt: true,
             newAttemptForItem: 2,
             newDoenetStateIdx: 1,
@@ -2178,6 +2274,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -2204,6 +2301,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -2214,6 +2312,7 @@ describe("Activity reducer tests", () => {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             questionCounts: {},
@@ -2234,6 +2333,7 @@ describe("Activity reducer tests", () => {
 
         docStates[0] = undefined;
         docCredits[0] = 0;
+        itemAttemptNumbers[0]++;
 
         testStateSelMult2Docs({
             state,
@@ -2242,6 +2342,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newAttempt: true,
             newAttemptForItem: 1,
             newDoenetStateIdx: 0,
@@ -2270,6 +2371,7 @@ describe("Activity reducer tests", () => {
             docStates,
             docIds,
             attemptNumber,
+            itemAttemptNumbers,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,

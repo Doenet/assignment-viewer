@@ -33,9 +33,8 @@ export function ActivityViewer({
     flags: specifiedFlags = {},
     activityId = "a",
     userId = null,
-    attemptNumber = 1,
     requestedVariantIndex,
-    maxAttemptsAllowed = Infinity,
+    maxAttemptsAllowed = 1,
     itemLevelAttempts = false,
     activityLevelAttempts = false,
     paginate = true,
@@ -51,13 +50,11 @@ export function ActivityViewer({
     showAnswerTitles = false,
     includeVariantSelector: _includeVariantSelector = false,
     showTitle = true,
-    renderOnlyItem = null,
 }: {
     source: ActivitySource;
     flags?: DoenetMLFlagsSubset;
     activityId?: string;
     userId?: string | null;
-    attemptNumber?: number;
     requestedVariantIndex?: number;
     maxAttemptsAllowed?: number;
     itemLevelAttempts?: boolean;
@@ -75,7 +72,6 @@ export function ActivityViewer({
     showAnswerTitles?: boolean;
     includeVariantSelector?: boolean;
     showTitle?: boolean;
-    renderOnlyItem?: number | null;
 }) {
     // const [variants, setVariants] = useState({
     //     index: 1,
@@ -131,7 +127,6 @@ export function ActivityViewer({
                 flags={flags}
                 activityId={activityId}
                 userId={userId}
-                attemptNumber={attemptNumber}
                 variantIndex={variantIndex}
                 maxAttemptsAllowed={maxAttemptsAllowed}
                 itemLevelAttempts={itemLevelAttempts}
@@ -150,7 +145,6 @@ export function ActivityViewer({
                 darkMode={darkMode}
                 showAnswerTitles={showAnswerTitles}
                 showTitle={showTitle}
-                renderOnlyItem={renderOnlyItem}
             />
         </ErrorBoundary>
     );

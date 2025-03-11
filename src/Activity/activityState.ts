@@ -58,6 +58,7 @@ export type ActivityState = SingleDocState | SelectState | SequenceState;
 export type ActivityAndDoenetState = {
     activityState: ActivityState;
     doenetStates: unknown[];
+    itemAttemptNumbers: number[];
 };
 
 /**
@@ -80,6 +81,7 @@ export type ActivityStateNoSource =
 export type ExportedActivityState = {
     activityState: ActivityStateNoSource;
     doenetStates: unknown[];
+    itemAttemptNumbers: number[];
     sourceHash: string;
 };
 
@@ -104,7 +106,9 @@ export function isActivityAndDoenetState(
         typedObj !== null &&
         typeof typedObj === "object" &&
         isActivityState(typedObj.activityState) &&
-        Array.isArray(typedObj.doenetStates)
+        Array.isArray(typedObj.doenetStates) &&
+        Array.isArray(typedObj.itemAttemptNumbers) &&
+        typedObj.itemAttemptNumbers.every((x) => Number.isInteger(x) && x > 0)
     );
 }
 
@@ -127,6 +131,10 @@ export function isExportedActivityState(
         typeof typedObj === "object" &&
         isActivityStateNoSource(typedObj.activityState) &&
         Array.isArray(typedObj.doenetStates) &&
+        Array.isArray(typedObj.itemAttemptNumbers) &&
+        typedObj.itemAttemptNumbers.every(
+            (x) => Number.isInteger(x) && x > 0,
+        ) &&
         typeof typedObj.sourceHash === "string"
     );
 }
@@ -206,7 +214,9 @@ export function initializeActivityAndDoenetState({
         restrictToVariantSlice,
     });
 
-    return { activityState, doenetStates: [] };
+    const numItems = getNumItems(source);
+    const itemAttemptNumbers = Array<number>(numItems).fill(1);
+    return { activityState, doenetStates: [], itemAttemptNumbers };
 }
 
 /**

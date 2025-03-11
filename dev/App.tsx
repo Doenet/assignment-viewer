@@ -22,6 +22,7 @@ function App() {
         itemLevelAttempts: boolean;
         activityLevelAttempts: boolean;
         paginate: boolean;
+        maxAttempts: number;
     } = {
         requestedVariantIndex: 1,
         showCorrectness: true,
@@ -31,6 +32,7 @@ function App() {
         itemLevelAttempts: true,
         activityLevelAttempts: true,
         paginate: false,
+        maxAttempts: 2,
     };
 
     const [controlsVisible, setControlsVisible] = useState(false);
@@ -46,6 +48,7 @@ function App() {
         itemLevelAttempts,
         activityLevelAttempts,
         paginate,
+        maxAttempts,
     } = testSettings;
 
     let controls = null;
@@ -78,7 +81,6 @@ function App() {
                 <hr />
                 <div>
                     <label>
-                        {" "}
                         <input
                             type="checkbox"
                             checked={showCorrectness}
@@ -97,7 +99,6 @@ function App() {
                 </div>
                 <div>
                     <label>
-                        {" "}
                         <input
                             type="checkbox"
                             checked={readOnly}
@@ -115,7 +116,6 @@ function App() {
                 </div>
                 <div>
                     <label>
-                        {" "}
                         <input
                             type="checkbox"
                             checked={showFeedback}
@@ -133,7 +133,6 @@ function App() {
                 </div>
                 <div>
                     <label>
-                        {" "}
                         <input
                             type="checkbox"
                             checked={showHints}
@@ -151,7 +150,6 @@ function App() {
                 </div>
                 <div>
                     <label>
-                        {" "}
                         <input
                             type="checkbox"
                             checked={itemLevelAttempts}
@@ -170,7 +168,6 @@ function App() {
                 </div>
                 <div>
                     <label>
-                        {" "}
                         <input
                             type="checkbox"
                             checked={activityLevelAttempts}
@@ -189,7 +186,6 @@ function App() {
                 </div>
                 <div>
                     <label>
-                        {" "}
                         <input
                             type="checkbox"
                             checked={paginate}
@@ -203,6 +199,29 @@ function App() {
                             }}
                         />
                         Paginate
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        Max attempts:
+                        <input
+                            type="text"
+                            style={{ marginLeft: "5px" }}
+                            defaultValue={maxAttempts}
+                            onChange={(e) => {
+                                const numValue = parseInt(e.target.value);
+                                if (
+                                    Number.isInteger(numValue) &&
+                                    numValue >= 0
+                                ) {
+                                    setTestSettings((was) => {
+                                        const newObj = { ...was };
+                                        newObj.maxAttempts = numValue;
+                                        return newObj;
+                                    });
+                                }
+                            }}
+                        />
                     </label>
                 </div>
             </div>
@@ -346,6 +365,7 @@ function App() {
                 activityId={activityId}
                 itemLevelAttempts={itemLevelAttempts}
                 activityLevelAttempts={activityLevelAttempts}
+                maxAttemptsAllowed={maxAttempts}
             />
         </div>
     );
