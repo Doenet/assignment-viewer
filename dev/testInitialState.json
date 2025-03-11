@@ -1,29 +1,29 @@
 {
-    "state": {
+    "activityState": {
         "type": "sequence",
         "id": "seq",
         "parentId": null,
-        "initialVariant": 210305,
-        "creditAchieved": 0.25,
+        "initialVariant": 640554,
+        "creditAchieved": 0,
         "allChildren": [
             {
                 "type": "select",
                 "id": "sel",
                 "parentId": "seq",
-                "initialVariant": 674202,
-                "creditAchieved": 0.5,
+                "initialVariant": 120384,
+                "creditAchieved": 0,
                 "allChildren": [
                     {
                         "type": "singleDoc",
                         "id": "qrf|1",
                         "parentId": "sel",
-                        "initialVariant": 220521,
-                        "creditAchieved": 1,
-                        "attemptNumber": 1,
-                        "currentVariant": 1,
-                        "previousVariants": [1],
-                        "initialQuestionCounter": 2,
-                        "doenetState": null,
+                        "initialVariant": 573303,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 1,
                             "numSlices": 10
@@ -33,13 +33,13 @@
                         "type": "singleDoc",
                         "id": "qrf|2",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 2,
                             "numSlices": 10
@@ -49,13 +49,13 @@
                         "type": "singleDoc",
                         "id": "qrf|3",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "attemptNumber": 1,
+                        "currentVariant": 3,
+                        "previousVariants": [3],
+                        "initialQuestionCounter": 3,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 3,
                             "numSlices": 10
@@ -65,13 +65,13 @@
                         "type": "singleDoc",
                         "id": "qrf|4",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "attemptNumber": 1,
+                        "currentVariant": 4,
+                        "previousVariants": [4],
+                        "initialQuestionCounter": 3,
+                        "doenetStateIdx": 1,
                         "restrictToVariantSlice": {
                             "idx": 4,
                             "numSlices": 10
@@ -81,13 +81,13 @@
                         "type": "singleDoc",
                         "id": "qrf|5",
                         "parentId": "sel",
-                        "initialVariant": 220521,
-                        "creditAchieved": 1,
-                        "attemptNumber": 1,
-                        "currentVariant": 5,
-                        "previousVariants": [5],
-                        "initialQuestionCounter": 2,
-                        "doenetState": null,
+                        "initialVariant": 573303,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 5,
                             "numSlices": 10
@@ -97,13 +97,13 @@
                         "type": "singleDoc",
                         "id": "qrf|6",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 6,
                             "numSlices": 10
@@ -113,13 +113,13 @@
                         "type": "singleDoc",
                         "id": "qrf|7",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 7,
-                        "previousVariants": [7],
-                        "initialQuestionCounter": 1,
-                        "doenetState": null,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 7,
                             "numSlices": 10
@@ -129,13 +129,13 @@
                         "type": "singleDoc",
                         "id": "qrf|8",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 8,
                             "numSlices": 10
@@ -145,13 +145,13 @@
                         "type": "singleDoc",
                         "id": "qrf|9",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 9,
                             "numSlices": 10
@@ -161,13 +161,13 @@
                         "type": "singleDoc",
                         "id": "qrf|10",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 10,
                             "numSlices": 10
@@ -177,13 +177,13 @@
                         "type": "singleDoc",
                         "id": "abc|1",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 1,
                             "numSlices": 12
@@ -193,13 +193,13 @@
                         "type": "singleDoc",
                         "id": "abc|2",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 2,
                             "numSlices": 12
@@ -209,13 +209,13 @@
                         "type": "singleDoc",
                         "id": "abc|3",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 3,
                             "numSlices": 12
@@ -225,13 +225,13 @@
                         "type": "singleDoc",
                         "id": "abc|4",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 4,
                             "numSlices": 12
@@ -241,13 +241,13 @@
                         "type": "singleDoc",
                         "id": "abc|5",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 5,
                             "numSlices": 12
@@ -257,13 +257,13 @@
                         "type": "singleDoc",
                         "id": "abc|6",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "attemptNumber": 1,
+                        "currentVariant": 6,
+                        "previousVariants": [6],
+                        "initialQuestionCounter": 1,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 6,
                             "numSlices": 12
@@ -273,13 +273,13 @@
                         "type": "singleDoc",
                         "id": "abc|7",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 7,
                             "numSlices": 12
@@ -289,13 +289,13 @@
                         "type": "singleDoc",
                         "id": "abc|8",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 8,
                             "numSlices": 12
@@ -305,13 +305,13 @@
                         "type": "singleDoc",
                         "id": "abc|9",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 9,
                             "numSlices": 12
@@ -321,13 +321,13 @@
                         "type": "singleDoc",
                         "id": "abc|10",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 10,
                             "numSlices": 12
@@ -337,13 +337,13 @@
                         "type": "singleDoc",
                         "id": "abc|11",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 11,
                             "numSlices": 12
@@ -353,226 +353,152 @@
                         "type": "singleDoc",
                         "id": "abc|12",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 12,
-                        "previousVariants": [12],
-                        "initialQuestionCounter": 3,
-                        "doenetState": null,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 12,
                             "numSlices": 12
                         }
                     }
                 ],
-                "attemptNumber": 2,
+                "attemptNumber": 1,
                 "selectedChildren": [
                     {
                         "type": "singleDoc",
-                        "id": "qrf|5",
+                        "id": "abc|6",
                         "parentId": "sel",
-                        "initialVariant": 220521,
-                        "creditAchieved": 1,
+                        "initialVariant": 396719,
+                        "creditAchieved": 0,
                         "attemptNumber": 1,
-                        "currentVariant": 5,
-                        "previousVariants": [5],
-                        "initialQuestionCounter": 2,
-                        "doenetState": null,
+                        "currentVariant": 6,
+                        "previousVariants": [6],
+                        "initialQuestionCounter": 1,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
-                            "idx": 5,
+                            "idx": 6,
+                            "numSlices": 12
+                        }
+                    },
+                    {
+                        "type": "singleDoc",
+                        "id": "qrf|4",
+                        "parentId": "sel",
+                        "initialVariant": 573303,
+                        "creditAchieved": 0,
+                        "attemptNumber": 1,
+                        "currentVariant": 4,
+                        "previousVariants": [4],
+                        "initialQuestionCounter": 3,
+                        "doenetStateIdx": 1,
+                        "restrictToVariantSlice": {
+                            "idx": 4,
                             "numSlices": 10
                         }
+                    }
+                ],
+                "previousSelections": ["abc|6", "qrf|3", "qrf|4"],
+                "initialQuestionCounter": 3
+            },
+            {
+                "type": "select",
+                "id": "sel2",
+                "parentId": "seq",
+                "initialVariant": 574127,
+                "creditAchieved": 0,
+                "allChildren": [
+                    {
+                        "type": "singleDoc",
+                        "id": "sel2a",
+                        "parentId": "sel2",
+                        "initialVariant": 933832,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null
                     },
                     {
                         "type": "singleDoc",
-                        "id": "abc|12",
-                        "parentId": "sel",
-                        "initialVariant": 666083,
+                        "id": "sel2b",
+                        "parentId": "sel2",
+                        "initialVariant": 154678,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null
+                    },
+                    {
+                        "type": "singleDoc",
+                        "id": "sel2c",
+                        "parentId": "sel2",
+                        "initialVariant": 516352,
                         "creditAchieved": 0,
                         "attemptNumber": 1,
-                        "currentVariant": 12,
-                        "previousVariants": [12],
-                        "initialQuestionCounter": 3,
-                        "doenetState": null,
-                        "restrictToVariantSlice": {
-                            "idx": 12,
-                            "numSlices": 12
-                        }
-                    }
-                ],
-                "previousSelections": ["qrf|7", "qrf|1", "qrf|5", "abc|12"],
-                "initialQuestionCounter": 2
-            },
-            {
-                "type": "select",
-                "id": "sel2",
-                "parentId": "seq",
-                "initialVariant": 269772,
-                "creditAchieved": 0,
-                "allChildren": [
-                    {
-                        "type": "singleDoc",
-                        "id": "sel2a",
-                        "parentId": "sel2",
-                        "initialVariant": 543722,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "sel2b",
-                        "parentId": "sel2",
-                        "initialVariant": 8813,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "sel2c",
-                        "parentId": "sel2",
-                        "initialVariant": 305570,
-                        "creditAchieved": 0,
-                        "attemptNumber": 2,
-                        "currentVariant": 6,
-                        "previousVariants": [3, 6],
-                        "initialQuestionCounter": 1,
-                        "doenetState": null
+                        "currentVariant": 4,
+                        "previousVariants": [4],
+                        "initialQuestionCounter": 4,
+                        "doenetStateIdx": null
                     },
                     {
                         "type": "singleDoc",
                         "id": "sel2d",
                         "parentId": "sel2",
-                        "initialVariant": 468285,
+                        "initialVariant": 546636,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null
+                        "doenetStateIdx": null
                     }
                 ],
-                "attemptNumber": 2,
+                "attemptNumber": 1,
                 "selectedChildren": [
                     {
                         "type": "singleDoc",
                         "id": "sel2c",
                         "parentId": "sel2",
-                        "initialVariant": 305570,
+                        "initialVariant": 516352,
                         "creditAchieved": 0,
-                        "attemptNumber": 2,
-                        "currentVariant": 6,
-                        "previousVariants": [3, 6],
-                        "initialQuestionCounter": 1,
-                        "doenetState": null
+                        "attemptNumber": 1,
+                        "currentVariant": 4,
+                        "previousVariants": [4],
+                        "initialQuestionCounter": 4,
+                        "doenetStateIdx": null
                     }
                 ],
-                "previousSelections": ["sel2c", "sel2c"],
-                "initialQuestionCounter": 1
+                "previousSelections": ["sel2c"],
+                "initialQuestionCounter": 4
             }
         ],
-        "attemptNumber": 2,
+        "attemptNumber": 1,
         "orderedChildren": [
-            {
-                "type": "select",
-                "id": "sel2",
-                "parentId": "seq",
-                "initialVariant": 269772,
-                "creditAchieved": 0,
-                "allChildren": [
-                    {
-                        "type": "singleDoc",
-                        "id": "sel2a",
-                        "parentId": "sel2",
-                        "initialVariant": 543722,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "sel2b",
-                        "parentId": "sel2",
-                        "initialVariant": 8813,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "sel2c",
-                        "parentId": "sel2",
-                        "initialVariant": 305570,
-                        "creditAchieved": 0,
-                        "attemptNumber": 2,
-                        "currentVariant": 6,
-                        "previousVariants": [3, 6],
-                        "initialQuestionCounter": 1,
-                        "doenetState": null
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "sel2d",
-                        "parentId": "sel2",
-                        "initialVariant": 468285,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null
-                    }
-                ],
-                "attemptNumber": 2,
-                "selectedChildren": [
-                    {
-                        "type": "singleDoc",
-                        "id": "sel2c",
-                        "parentId": "sel2",
-                        "initialVariant": 305570,
-                        "creditAchieved": 0,
-                        "attemptNumber": 2,
-                        "currentVariant": 6,
-                        "previousVariants": [3, 6],
-                        "initialQuestionCounter": 1,
-                        "doenetState": null
-                    }
-                ],
-                "previousSelections": ["sel2c", "sel2c"],
-                "initialQuestionCounter": 1
-            },
             {
                 "type": "select",
                 "id": "sel",
                 "parentId": "seq",
-                "initialVariant": 674202,
-                "creditAchieved": 0.5,
+                "initialVariant": 120384,
+                "creditAchieved": 0,
                 "allChildren": [
                     {
                         "type": "singleDoc",
                         "id": "qrf|1",
                         "parentId": "sel",
-                        "initialVariant": 220521,
-                        "creditAchieved": 1,
-                        "attemptNumber": 1,
-                        "currentVariant": 1,
-                        "previousVariants": [1],
-                        "initialQuestionCounter": 2,
-                        "doenetState": null,
+                        "initialVariant": 573303,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 1,
                             "numSlices": 10
@@ -582,13 +508,13 @@
                         "type": "singleDoc",
                         "id": "qrf|2",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 2,
                             "numSlices": 10
@@ -598,13 +524,13 @@
                         "type": "singleDoc",
                         "id": "qrf|3",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "attemptNumber": 1,
+                        "currentVariant": 3,
+                        "previousVariants": [3],
+                        "initialQuestionCounter": 3,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 3,
                             "numSlices": 10
@@ -614,13 +540,13 @@
                         "type": "singleDoc",
                         "id": "qrf|4",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "attemptNumber": 1,
+                        "currentVariant": 4,
+                        "previousVariants": [4],
+                        "initialQuestionCounter": 3,
+                        "doenetStateIdx": 1,
                         "restrictToVariantSlice": {
                             "idx": 4,
                             "numSlices": 10
@@ -630,13 +556,13 @@
                         "type": "singleDoc",
                         "id": "qrf|5",
                         "parentId": "sel",
-                        "initialVariant": 220521,
-                        "creditAchieved": 1,
-                        "attemptNumber": 1,
-                        "currentVariant": 5,
-                        "previousVariants": [5],
-                        "initialQuestionCounter": 2,
-                        "doenetState": null,
+                        "initialVariant": 573303,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 5,
                             "numSlices": 10
@@ -646,13 +572,13 @@
                         "type": "singleDoc",
                         "id": "qrf|6",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 6,
                             "numSlices": 10
@@ -662,13 +588,13 @@
                         "type": "singleDoc",
                         "id": "qrf|7",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 7,
-                        "previousVariants": [7],
-                        "initialQuestionCounter": 1,
-                        "doenetState": null,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 7,
                             "numSlices": 10
@@ -678,13 +604,13 @@
                         "type": "singleDoc",
                         "id": "qrf|8",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 8,
                             "numSlices": 10
@@ -694,13 +620,13 @@
                         "type": "singleDoc",
                         "id": "qrf|9",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 9,
                             "numSlices": 10
@@ -710,13 +636,13 @@
                         "type": "singleDoc",
                         "id": "qrf|10",
                         "parentId": "sel",
-                        "initialVariant": 220521,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 10,
                             "numSlices": 10
@@ -726,13 +652,13 @@
                         "type": "singleDoc",
                         "id": "abc|1",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 1,
                             "numSlices": 12
@@ -742,13 +668,13 @@
                         "type": "singleDoc",
                         "id": "abc|2",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 2,
                             "numSlices": 12
@@ -758,13 +684,13 @@
                         "type": "singleDoc",
                         "id": "abc|3",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 3,
                             "numSlices": 12
@@ -774,13 +700,13 @@
                         "type": "singleDoc",
                         "id": "abc|4",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 4,
                             "numSlices": 12
@@ -790,13 +716,13 @@
                         "type": "singleDoc",
                         "id": "abc|5",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 5,
                             "numSlices": 12
@@ -806,13 +732,13 @@
                         "type": "singleDoc",
                         "id": "abc|6",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "attemptNumber": 1,
+                        "currentVariant": 6,
+                        "previousVariants": [6],
+                        "initialQuestionCounter": 1,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 6,
                             "numSlices": 12
@@ -822,13 +748,13 @@
                         "type": "singleDoc",
                         "id": "abc|7",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 7,
                             "numSlices": 12
@@ -838,13 +764,13 @@
                         "type": "singleDoc",
                         "id": "abc|8",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 8,
                             "numSlices": 12
@@ -854,13 +780,13 @@
                         "type": "singleDoc",
                         "id": "abc|9",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 9,
                             "numSlices": 12
@@ -870,13 +796,13 @@
                         "type": "singleDoc",
                         "id": "abc|10",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 10,
                             "numSlices": 12
@@ -886,13 +812,13 @@
                         "type": "singleDoc",
                         "id": "abc|11",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
                         "previousVariants": [],
                         "initialQuestionCounter": 0,
-                        "doenetState": null,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 11,
                             "numSlices": 12
@@ -902,77 +828,146 @@
                         "type": "singleDoc",
                         "id": "abc|12",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 396719,
                         "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 12,
-                        "previousVariants": [12],
-                        "initialQuestionCounter": 3,
-                        "doenetState": null,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
                             "idx": 12,
                             "numSlices": 12
                         }
                     }
                 ],
-                "attemptNumber": 2,
+                "attemptNumber": 1,
                 "selectedChildren": [
                     {
                         "type": "singleDoc",
-                        "id": "qrf|5",
+                        "id": "abc|6",
                         "parentId": "sel",
-                        "initialVariant": 220521,
-                        "creditAchieved": 1,
+                        "initialVariant": 396719,
+                        "creditAchieved": 0,
                         "attemptNumber": 1,
-                        "currentVariant": 5,
-                        "previousVariants": [5],
-                        "initialQuestionCounter": 2,
-                        "doenetState": {
-                            "cid": "bafkreihsl5tcsjhj6g5ffdibj3ssse7fpnsgib6qqddlb7sw7ljlycpzwq",
-                            "coreInfo": "{\"generatedVariantString\":\"{\\\"index\\\":5,\\\"name\\\":\\\"e\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_document1\\\"},\\\"subvariants\\\":[{\\\"index\\\":5,\\\"name\\\":\\\"e\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_problem1\\\"},\\\"subvariants\\\":[{\\\"indices\\\":[7],\\\"meta\\\":{\\\"createdBy\\\":\\\"/_selectfromsequence1\\\"}}]}]}\",\"allPossibleVariants\":[\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\",\"h\",\"i\",\"j\"],\"rendererTypesInDocument\":[\"section\",\"answer\",\"mathInput\",\"vector\",\"math\",\"number\",\"text\"],\"documentToRender\":{\"componentName\":\"/_document1\",\"effectiveName\":\"/_document1\",\"componentType\":\"document\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_document1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_document1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_document1\"}}}}",
-                            "coreState": "{\"/_selectfromsequence1\":{\"errorMessage\":\"\",\"selectedValues\":[7],\"selectedIndices\":[7]},\"/__mathinput_KXh6glTyP5\":{\"rawRendererValue\":\"4\",\"lastValueForDisplay\":4,\"immediateValue\":4,\"immediateValueChanged\":true,\"dontUpdateRawValueInDefinition\":false,\"valueChanged\":true,\"value\":4},\"/__math_d9bmzOvKly\":{\"expressionWithCodes\":4},\"/_answer1\":{\"justSubmitted\":true,\"creditAchieved\":1,\"responseHasBeenSubmitted\":true,\"numSubmittedResponses\":1,\"submittedResponses\":{\"0\":4,\"mergeObject\":true},\"submittedResponsesComponentType\":[\"math\"],\"creditAchievedDependenciesAtSubmit\":\"DyEEXaBSatsKpauKq05+i9z0vGE=\",\"numSubmissions\":3,\"hasBeenCorrect\":true},\"/_document1\":{\"theme\":\"light\"},\"/__award_XTZPmlFGuS\":{\"awarded\":true,\"creditAchieved\":1,\"fractionSatisfied\":1}}",
-                            "rendererState": "{\"__componentNeedingUpdateValue\":null,\"/__mathinput_KXh6glTyP5\":{\"stateValues\":{\"minWidth\":50,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"includeCheckWork\":true,\"suppressCheckwork\":false,\"creditAchieved\":1,\"valueHasBeenValidated\":true,\"showCorrectness\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"label\":\"\",\"labelHasLatex\":false,\"labelForGraph\":\"\",\"valueForDisplay\":4,\"rawRendererValue\":\"4\"},\"childrenInstructions\":[]},\"/_answer1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"fixed\":false,\"fixLocation\":false,\"disabledOriginal\":false,\"showCorrectness\":true,\"inputChildren\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\"}],\"inputChildrenWithValues\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\",\"stateValues\":{\"value\":4}}],\"suppressCheckwork\":false,\"delegateCheckWork\":true,\"creditAchieved\":1,\"justSubmitted\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"disabled\":false},\"childrenInstructions\":[{\"componentName\":\"/__mathinput_KXh6glTyP5\",\"effectiveName\":\"/__mathinput_KXh6glTyP5\",\"componentType\":\"mathInput\",\"rendererType\":\"mathInput\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateRawValue\":{\"actionName\":\"updateRawValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateValue\":{\"actionName\":\"updateValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}}]},\"/__number_SYcjAbK4Kk\":{\"stateValues\":{\"renderAsMath\":false,\"draggable\":true,\"layer\":0,\"positionFromAnchor\":\"center\",\"hidden\":false,\"disabled\":false,\"fixed\":true,\"fixLocation\":false,\"selectedStyle\":{\"lineColor\":\"#648FFF\",\"lineColorWord\":\"blue\",\"lineColorDarkMode\":\"#648FFF\",\"lineColorWordDarkMode\":\"blue\",\"lineOpacity\":0.7,\"lineWidth\":4,\"lineWidthWord\":\"thick\",\"lineStyle\":\"solid\",\"lineStyleWord\":\"\",\"markerColor\":\"#648FFF\",\"markerColorWord\":\"blue\",\"markerColorDarkMode\":\"#648FFF\",\"markerColorWordDarkMode\":\"blue\",\"markerOpacity\":0.7,\"markerStyle\":\"circle\",\"markerStyleWord\":\"point\",\"markerSize\":5,\"fillColor\":\"#648FFF\",\"fillColorWord\":\"blue\",\"fillColorDarkMode\":\"#648FFF\",\"fillColorWordDarkMode\":\"blue\",\"fillOpacity\":0.3,\"textColor\":\"black\",\"textColorWord\":\"black\",\"textColorDarkMode\":\"white\",\"textColorWordDarkMode\":\"white\"},\"anchor\":[\"vector\",0,0],\"text\":\"7\"},\"childrenInstructions\":[]},\"/_problem1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"boxed\":false,\"asList\":false,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"inAList\":false,\"titleChildName\":null,\"title\":\"Problem 2\",\"titlePrefix\":\"Problem 2\",\"containerTag\":\"article\",\"level\":1,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":1,\"collapsible\":false,\"open\":true,\"rendered\":true,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"_compositeReplacementActiveRange\":[{\"compositeName\":\"/_selectfromsequence1\",\"firstInd\":2,\"lastInd\":2,\"asList\":true,\"potentialListComponents\":[true]}]},\"childrenInstructions\":[\"2+2=\",{\"componentName\":\"/_answer1\",\"effectiveName\":\"/_answer1\",\"componentType\":\"answer\",\"rendererType\":\"answer\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_answer1\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}},{\"componentName\":\"/__number_SYcjAbK4Kk\",\"effectiveName\":\"/__number_SYcjAbK4Kk\",\"componentType\":\"number\",\"rendererType\":\"number\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"moveNumber\":{\"actionName\":\"moveNumber\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"numberClicked\":{\"actionName\":\"numberClicked\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"numberFocused\":{\"actionName\":\"numberFocused\",\"componentName\":\"/__number_SYcjAbK4Kk\"}}}]},\"/_document1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"disabled\":false,\"fixed\":null,\"fixLocation\":false,\"titleChildName\":null,\"title\":\"\",\"level\":0,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":1,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"containerTag\":\"div\"},\"childrenInstructions\":[{\"componentName\":\"/_problem1\",\"effectiveName\":\"/_problem1\",\"componentType\":\"problem\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_problem1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_problem1\"},\"revealSection\":{\"actionName\":\"revealSection\",\"componentName\":\"/_problem1\"},\"closeSection\":{\"actionName\":\"closeSection\",\"componentName\":\"/_problem1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_problem1\"}}}]}}",
-                            "docId": "qrf|5",
-                            "attemptNumber": 1,
-                            "activityId": "apple",
-                            "onSubmission": true
-                        },
+                        "currentVariant": 6,
+                        "previousVariants": [6],
+                        "initialQuestionCounter": 1,
+                        "doenetStateIdx": null,
                         "restrictToVariantSlice": {
-                            "idx": 5,
-                            "numSlices": 10
+                            "idx": 6,
+                            "numSlices": 12
                         }
                     },
                     {
                         "type": "singleDoc",
-                        "id": "abc|12",
+                        "id": "qrf|4",
                         "parentId": "sel",
-                        "initialVariant": 666083,
+                        "initialVariant": 573303,
                         "creditAchieved": 0,
                         "attemptNumber": 1,
-                        "currentVariant": 12,
-                        "previousVariants": [12],
+                        "currentVariant": 4,
+                        "previousVariants": [4],
                         "initialQuestionCounter": 3,
-                        "doenetState": {
-                            "cid": "bafkreidbscui3reafhxqwqq43rxabvqzk4n3ezykklv4u6vrl4svyrkkte",
-                            "coreInfo": "{\"generatedVariantString\":\"{\\\"index\\\":12,\\\"name\\\":\\\"l\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_document1\\\"},\\\"subvariants\\\":[{\\\"index\\\":12,\\\"name\\\":\\\"l\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_problem1\\\"},\\\"subvariants\\\":[{\\\"indices\\\":[3],\\\"meta\\\":{\\\"createdBy\\\":\\\"/_selectfromsequence1\\\"}}]},{\\\"index\\\":12,\\\"name\\\":\\\"l\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_problem2\\\"},\\\"subvariants\\\":[{\\\"indices\\\":[2],\\\"meta\\\":{\\\"createdBy\\\":\\\"/_selectfromsequence2\\\"}}]}]}\",\"allPossibleVariants\":[\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\",\"h\",\"i\",\"j\",\"k\",\"l\"],\"rendererTypesInDocument\":[\"section\",\"answer\",\"mathInput\",\"vector\",\"math\",\"number\",\"text\"],\"documentToRender\":{\"componentName\":\"/_document1\",\"effectiveName\":\"/_document1\",\"componentType\":\"document\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_document1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_document1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_document1\"}}}}",
-                            "coreState": "{\"/_selectfromsequence1\":{\"errorMessage\":\"\",\"selectedValues\":[3],\"selectedIndices\":[3]},\"/_selectfromsequence2\":{\"errorMessage\":\"\",\"selectedValues\":[2],\"selectedIndices\":[2]},\"/__mathinput_KXh6glTyP5\":{\"rawRendererValue\":\"6\",\"lastValueForDisplay\":6,\"immediateValue\":6,\"immediateValueChanged\":true,\"dontUpdateRawValueInDefinition\":false,\"valueChanged\":true,\"value\":6},\"/__math_d9bmzOvKly\":{\"expressionWithCodes\":2},\"/_answer1\":{\"justSubmitted\":true,\"creditAchieved\":0,\"responseHasBeenSubmitted\":true,\"numSubmittedResponses\":1,\"submittedResponses\":{\"0\":6,\"mergeObject\":true},\"submittedResponsesComponentType\":[\"math\"],\"creditAchievedDependenciesAtSubmit\":\"fD5kLv1bViCQ8bBPAokbpf5sBKE=\",\"numSubmissions\":1},\"/__mathinput_h2Krc-ovWn\":{\"rawRendererValue\":\"\",\"lastValueForDisplay\":\"＿\"},\"/__math_aKY8kD0utp\":{\"expressionWithCodes\":8},\"/_answer2\":{\"justSubmitted\":false},\"/_document1\":{\"theme\":\"light\"},\"/__award_XTZPmlFGuS\":{\"awarded\":false,\"creditAchieved\":0,\"fractionSatisfied\":0}}",
-                            "rendererState": "{\"__componentNeedingUpdateValue\":null,\"/__mathinput_KXh6glTyP5\":{\"stateValues\":{\"minWidth\":50,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"includeCheckWork\":true,\"suppressCheckwork\":false,\"creditAchieved\":0,\"valueHasBeenValidated\":true,\"showCorrectness\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"label\":\"\",\"labelHasLatex\":false,\"labelForGraph\":\"\",\"valueForDisplay\":6,\"rawRendererValue\":\"6\"},\"childrenInstructions\":[]},\"/_answer1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"fixed\":false,\"fixLocation\":false,\"disabledOriginal\":false,\"showCorrectness\":true,\"inputChildren\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\"}],\"inputChildrenWithValues\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\",\"stateValues\":{\"value\":6}}],\"suppressCheckwork\":false,\"delegateCheckWork\":true,\"creditAchieved\":0,\"justSubmitted\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"disabled\":false},\"childrenInstructions\":[{\"componentName\":\"/__mathinput_KXh6glTyP5\",\"effectiveName\":\"/__mathinput_KXh6glTyP5\",\"componentType\":\"mathInput\",\"rendererType\":\"mathInput\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateRawValue\":{\"actionName\":\"updateRawValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateValue\":{\"actionName\":\"updateValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}}]},\"/__number_SYcjAbK4Kk\":{\"stateValues\":{\"renderAsMath\":false,\"draggable\":true,\"layer\":0,\"positionFromAnchor\":\"center\",\"hidden\":false,\"disabled\":false,\"fixed\":true,\"fixLocation\":false,\"selectedStyle\":{\"lineColor\":\"#648FFF\",\"lineColorWord\":\"blue\",\"lineColorDarkMode\":\"#648FFF\",\"lineColorWordDarkMode\":\"blue\",\"lineOpacity\":0.7,\"lineWidth\":4,\"lineWidthWord\":\"thick\",\"lineStyle\":\"solid\",\"lineStyleWord\":\"\",\"markerColor\":\"#648FFF\",\"markerColorWord\":\"blue\",\"markerColorDarkMode\":\"#648FFF\",\"markerColorWordDarkMode\":\"blue\",\"markerOpacity\":0.7,\"markerStyle\":\"circle\",\"markerStyleWord\":\"point\",\"markerSize\":5,\"fillColor\":\"#648FFF\",\"fillColorWord\":\"blue\",\"fillColorDarkMode\":\"#648FFF\",\"fillColorWordDarkMode\":\"blue\",\"fillOpacity\":0.3,\"textColor\":\"black\",\"textColorWord\":\"black\",\"textColorDarkMode\":\"white\",\"textColorWordDarkMode\":\"white\"},\"anchor\":[\"vector\",0,0],\"text\":\"3\"},\"childrenInstructions\":[]},\"/_problem1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"boxed\":false,\"asList\":false,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"inAList\":false,\"titleChildName\":null,\"title\":\"Problem 3\",\"titlePrefix\":\"Problem 3\",\"containerTag\":\"article\",\"level\":1,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":0,\"collapsible\":false,\"open\":true,\"rendered\":true,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"_compositeReplacementActiveRange\":[{\"compositeName\":\"/_selectfromsequence1\",\"firstInd\":2,\"lastInd\":2,\"asList\":true,\"potentialListComponents\":[true]}]},\"childrenInstructions\":[\"1+1=\",{\"componentName\":\"/_answer1\",\"effectiveName\":\"/_answer1\",\"componentType\":\"answer\",\"rendererType\":\"answer\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_answer1\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}},{\"componentName\":\"/__number_SYcjAbK4Kk\",\"effectiveName\":\"/__number_SYcjAbK4Kk\",\"componentType\":\"number\",\"rendererType\":\"number\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"moveNumber\":{\"actionName\":\"moveNumber\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"numberClicked\":{\"actionName\":\"numberClicked\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"numberFocused\":{\"actionName\":\"numberFocused\",\"componentName\":\"/__number_SYcjAbK4Kk\"}}}]},\"/__mathinput_h2Krc-ovWn\":{\"stateValues\":{\"minWidth\":50,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"includeCheckWork\":true,\"suppressCheckwork\":false,\"creditAchieved\":0,\"valueHasBeenValidated\":false,\"showCorrectness\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"label\":\"\",\"labelHasLatex\":false,\"labelForGraph\":\"\",\"valueForDisplay\":\"＿\",\"rawRendererValue\":\"\"},\"childrenInstructions\":[]},\"/_answer2\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"fixed\":false,\"fixLocation\":false,\"disabledOriginal\":false,\"showCorrectness\":true,\"inputChildren\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_h2Krc-ovWn\"}],\"inputChildrenWithValues\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_h2Krc-ovWn\",\"stateValues\":{\"value\":\"＿\"}}],\"suppressCheckwork\":false,\"delegateCheckWork\":true,\"creditAchieved\":0,\"justSubmitted\":false,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"disabled\":false},\"childrenInstructions\":[{\"componentName\":\"/__mathinput_h2Krc-ovWn\",\"effectiveName\":\"/__mathinput_h2Krc-ovWn\",\"componentType\":\"mathInput\",\"rendererType\":\"mathInput\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__mathinput_h2Krc-ovWn\"},\"updateRawValue\":{\"actionName\":\"updateRawValue\",\"componentName\":\"/__mathinput_h2Krc-ovWn\"},\"updateValue\":{\"actionName\":\"updateValue\",\"componentName\":\"/__mathinput_h2Krc-ovWn\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer2\"}}}]},\"/__number_3QEzfiwkYT\":{\"stateValues\":{\"renderAsMath\":false,\"draggable\":true,\"layer\":0,\"positionFromAnchor\":\"center\",\"hidden\":false,\"disabled\":false,\"fixed\":true,\"fixLocation\":false,\"selectedStyle\":{\"lineColor\":\"#648FFF\",\"lineColorWord\":\"blue\",\"lineColorDarkMode\":\"#648FFF\",\"lineColorWordDarkMode\":\"blue\",\"lineOpacity\":0.7,\"lineWidth\":4,\"lineWidthWord\":\"thick\",\"lineStyle\":\"solid\",\"lineStyleWord\":\"\",\"markerColor\":\"#648FFF\",\"markerColorWord\":\"blue\",\"markerColorDarkMode\":\"#648FFF\",\"markerColorWordDarkMode\":\"blue\",\"markerOpacity\":0.7,\"markerStyle\":\"circle\",\"markerStyleWord\":\"point\",\"markerSize\":5,\"fillColor\":\"#648FFF\",\"fillColorWord\":\"blue\",\"fillColorDarkMode\":\"#648FFF\",\"fillColorWordDarkMode\":\"blue\",\"fillOpacity\":0.3,\"textColor\":\"black\",\"textColorWord\":\"black\",\"textColorDarkMode\":\"white\",\"textColorWordDarkMode\":\"white\"},\"anchor\":[\"vector\",0,0],\"text\":\"2\"},\"childrenInstructions\":[]},\"/_problem2\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"boxed\":false,\"asList\":false,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"inAList\":false,\"titleChildName\":null,\"title\":\"Problem 4\",\"titlePrefix\":\"Problem 4\",\"containerTag\":\"article\",\"level\":1,\"justSubmitted\":false,\"showCorrectness\":true,\"creditAchieved\":0,\"collapsible\":false,\"open\":true,\"rendered\":true,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"_compositeReplacementActiveRange\":[{\"compositeName\":\"/_selectfromsequence2\",\"firstInd\":2,\"lastInd\":2,\"asList\":true,\"potentialListComponents\":[true]}]},\"childrenInstructions\":[\"4+4=\",{\"componentName\":\"/_answer2\",\"effectiveName\":\"/_answer2\",\"componentType\":\"answer\",\"rendererType\":\"answer\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_answer2\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer2\"}}},{\"componentName\":\"/__number_3QEzfiwkYT\",\"effectiveName\":\"/__number_3QEzfiwkYT\",\"componentType\":\"number\",\"rendererType\":\"number\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__number_3QEzfiwkYT\"},\"moveNumber\":{\"actionName\":\"moveNumber\",\"componentName\":\"/__number_3QEzfiwkYT\"},\"numberClicked\":{\"actionName\":\"numberClicked\",\"componentName\":\"/__number_3QEzfiwkYT\"},\"numberFocused\":{\"actionName\":\"numberFocused\",\"componentName\":\"/__number_3QEzfiwkYT\"}}}]},\"/_document1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"disabled\":false,\"fixed\":null,\"fixLocation\":false,\"titleChildName\":null,\"title\":\"\",\"level\":0,\"justSubmitted\":false,\"showCorrectness\":true,\"creditAchieved\":0,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"containerTag\":\"div\"},\"childrenInstructions\":[{\"componentName\":\"/_problem1\",\"effectiveName\":\"/_problem1\",\"componentType\":\"problem\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_problem1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_problem1\"},\"revealSection\":{\"actionName\":\"revealSection\",\"componentName\":\"/_problem1\"},\"closeSection\":{\"actionName\":\"closeSection\",\"componentName\":\"/_problem1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_problem1\"}}},{\"componentName\":\"/_problem2\",\"effectiveName\":\"/_problem2\",\"componentType\":\"problem\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_problem2\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_problem2\"},\"revealSection\":{\"actionName\":\"revealSection\",\"componentName\":\"/_problem2\"},\"closeSection\":{\"actionName\":\"closeSection\",\"componentName\":\"/_problem2\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_problem2\"}}}]}}",
-                            "docId": "abc|12",
-                            "attemptNumber": 1,
-                            "activityId": "apple",
-                            "onSubmission": true
-                        },
+                        "doenetStateIdx": 1,
                         "restrictToVariantSlice": {
-                            "idx": 12,
-                            "numSlices": 12
+                            "idx": 4,
+                            "numSlices": 10
                         }
                     }
                 ],
-                "previousSelections": ["qrf|7", "qrf|1", "qrf|5", "abc|12"],
-                "initialQuestionCounter": 2
+                "previousSelections": ["abc|6", "qrf|3", "qrf|4"],
+                "initialQuestionCounter": 3
+            },
+            {
+                "type": "select",
+                "id": "sel2",
+                "parentId": "seq",
+                "initialVariant": 574127,
+                "creditAchieved": 0,
+                "allChildren": [
+                    {
+                        "type": "singleDoc",
+                        "id": "sel2a",
+                        "parentId": "sel2",
+                        "initialVariant": 933832,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null
+                    },
+                    {
+                        "type": "singleDoc",
+                        "id": "sel2b",
+                        "parentId": "sel2",
+                        "initialVariant": 154678,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null
+                    },
+                    {
+                        "type": "singleDoc",
+                        "id": "sel2c",
+                        "parentId": "sel2",
+                        "initialVariant": 516352,
+                        "creditAchieved": 0,
+                        "attemptNumber": 1,
+                        "currentVariant": 4,
+                        "previousVariants": [4],
+                        "initialQuestionCounter": 4,
+                        "doenetStateIdx": null
+                    },
+                    {
+                        "type": "singleDoc",
+                        "id": "sel2d",
+                        "parentId": "sel2",
+                        "initialVariant": 546636,
+                        "creditAchieved": 0,
+                        "attemptNumber": 0,
+                        "currentVariant": 0,
+                        "previousVariants": [],
+                        "initialQuestionCounter": 0,
+                        "doenetStateIdx": null
+                    }
+                ],
+                "attemptNumber": 1,
+                "selectedChildren": [
+                    {
+                        "type": "singleDoc",
+                        "id": "sel2c",
+                        "parentId": "sel2",
+                        "initialVariant": 516352,
+                        "creditAchieved": 0,
+                        "attemptNumber": 1,
+                        "currentVariant": 4,
+                        "previousVariants": [4],
+                        "initialQuestionCounter": 4,
+                        "doenetStateIdx": null
+                    }
+                ],
+                "previousSelections": ["sel2c"],
+                "initialQuestionCounter": 4
             }
         ]
     },
     "sourceHash": "372925bb55564f82bcf24f0534e6f0f416924bac",
-    "onSubmission": true
+    "doenetStates": [
+        null,
+        {
+            "cid": "bafkreihsl5tcsjhj6g5ffdibj3ssse7fpnsgib6qqddlb7sw7ljlycpzwq",
+            "coreInfo": "{\"generatedVariantString\":\"{\\\"index\\\":4,\\\"name\\\":\\\"d\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_document1\\\"},\\\"subvariants\\\":[{\\\"index\\\":4,\\\"name\\\":\\\"d\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_problem1\\\"},\\\"subvariants\\\":[{\\\"indices\\\":[8],\\\"meta\\\":{\\\"createdBy\\\":\\\"/_selectfromsequence1\\\"}}]}]}\",\"allPossibleVariants\":[\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\",\"h\",\"i\",\"j\"],\"rendererTypesInDocument\":[\"section\",\"answer\",\"mathInput\",\"vector\",\"math\",\"number\",\"text\"],\"documentToRender\":{\"componentName\":\"/_document1\",\"effectiveName\":\"/_document1\",\"componentType\":\"document\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_document1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_document1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_document1\"}}}}",
+            "coreState": "{\"/_selectfromsequence1\":{\"errorMessage\":\"\",\"selectedValues\":[8],\"selectedIndices\":[8]},\"/__mathinput_KXh6glTyP5\":{\"rawRendererValue\":\"\",\"lastValueForDisplay\":\"＿\"},\"/__math_d9bmzOvKly\":{\"expressionWithCodes\":4},\"/_answer1\":{\"justSubmitted\":true,\"creditAchieved\":0,\"responseHasBeenSubmitted\":true,\"numSubmittedResponses\":1,\"submittedResponses\":{\"0\":\"＿\",\"mergeObject\":true},\"submittedResponsesComponentType\":[\"math\"],\"creditAchievedDependenciesAtSubmit\":\"XrOtMqA/+Szv0itkDLp7Y9CdvuU=\",\"numSubmissions\":1},\"/_document1\":{\"theme\":\"light\"},\"/__award_XTZPmlFGuS\":{\"awarded\":false,\"creditAchieved\":0,\"fractionSatisfied\":0}}",
+            "rendererState": "{\"__componentNeedingUpdateValue\":null,\"/__mathinput_KXh6glTyP5\":{\"stateValues\":{\"minWidth\":50,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"includeCheckWork\":true,\"suppressCheckwork\":false,\"creditAchieved\":0,\"valueHasBeenValidated\":true,\"showCorrectness\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"label\":\"\",\"labelHasLatex\":false,\"labelForGraph\":\"\",\"valueForDisplay\":\"＿\",\"rawRendererValue\":\"\"},\"childrenInstructions\":[]},\"/_answer1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"fixed\":false,\"fixLocation\":false,\"disabledOriginal\":false,\"showCorrectness\":true,\"inputChildren\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\"}],\"inputChildrenWithValues\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\",\"stateValues\":{\"value\":\"＿\"}}],\"suppressCheckwork\":false,\"delegateCheckWork\":true,\"creditAchieved\":0,\"justSubmitted\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"disabled\":false},\"childrenInstructions\":[{\"componentName\":\"/__mathinput_KXh6glTyP5\",\"effectiveName\":\"/__mathinput_KXh6glTyP5\",\"componentType\":\"mathInput\",\"rendererType\":\"mathInput\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateRawValue\":{\"actionName\":\"updateRawValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateValue\":{\"actionName\":\"updateValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}}]},\"/__number_SYcjAbK4Kk\":{\"stateValues\":{\"renderAsMath\":false,\"draggable\":true,\"layer\":0,\"positionFromAnchor\":\"center\",\"hidden\":false,\"disabled\":false,\"fixed\":true,\"fixLocation\":false,\"selectedStyle\":{\"lineColor\":\"#648FFF\",\"lineColorWord\":\"blue\",\"lineColorDarkMode\":\"#648FFF\",\"lineColorWordDarkMode\":\"blue\",\"lineOpacity\":0.7,\"lineWidth\":4,\"lineWidthWord\":\"thick\",\"lineStyle\":\"solid\",\"lineStyleWord\":\"\",\"markerColor\":\"#648FFF\",\"markerColorWord\":\"blue\",\"markerColorDarkMode\":\"#648FFF\",\"markerColorWordDarkMode\":\"blue\",\"markerOpacity\":0.7,\"markerStyle\":\"circle\",\"markerStyleWord\":\"point\",\"markerSize\":5,\"fillColor\":\"#648FFF\",\"fillColorWord\":\"blue\",\"fillColorDarkMode\":\"#648FFF\",\"fillColorWordDarkMode\":\"blue\",\"fillOpacity\":0.3,\"textColor\":\"black\",\"textColorWord\":\"black\",\"textColorDarkMode\":\"white\",\"textColorWordDarkMode\":\"white\"},\"anchor\":[\"vector\",0,0],\"text\":\"8\"},\"childrenInstructions\":[]},\"/_problem1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"boxed\":false,\"asList\":false,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"inAList\":false,\"titleChildName\":null,\"title\":\"Problem 3\",\"titlePrefix\":\"Problem 3\",\"containerTag\":\"article\",\"level\":1,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":0,\"collapsible\":false,\"open\":true,\"rendered\":true,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"_compositeReplacementActiveRange\":[{\"compositeName\":\"/_selectfromsequence1\",\"firstInd\":2,\"lastInd\":2,\"asList\":true,\"potentialListComponents\":[true]}]},\"childrenInstructions\":[\"2+2=\",{\"componentName\":\"/_answer1\",\"effectiveName\":\"/_answer1\",\"componentType\":\"answer\",\"rendererType\":\"answer\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_answer1\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}},{\"componentName\":\"/__number_SYcjAbK4Kk\",\"effectiveName\":\"/__number_SYcjAbK4Kk\",\"componentType\":\"number\",\"rendererType\":\"number\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"moveNumber\":{\"actionName\":\"moveNumber\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"numberClicked\":{\"actionName\":\"numberClicked\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"numberFocused\":{\"actionName\":\"numberFocused\",\"componentName\":\"/__number_SYcjAbK4Kk\"}}}]},\"/_document1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"disabled\":false,\"fixed\":null,\"fixLocation\":false,\"titleChildName\":null,\"title\":\"\",\"level\":0,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":0,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"containerTag\":\"div\"},\"childrenInstructions\":[{\"componentName\":\"/_problem1\",\"effectiveName\":\"/_problem1\",\"componentType\":\"problem\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_problem1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_problem1\"},\"revealSection\":{\"actionName\":\"revealSection\",\"componentName\":\"/_problem1\"},\"closeSection\":{\"actionName\":\"closeSection\",\"componentName\":\"/_problem1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_problem1\"}}}]}}",
+            "docId": "qrf|4",
+            "attemptNumber": 1,
+            "activityId": "apple",
+            "onSubmission": true
+        }
+    ],
+    "itemAttemptNumbers": [1, 2, 1]
 }

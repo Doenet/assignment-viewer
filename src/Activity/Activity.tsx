@@ -7,6 +7,7 @@ import { SingleDocActivity } from "./SingleDocActivity";
 export function Activity({
     flags,
     baseId,
+    maxAttemptsAllowed,
     forceDisable = false,
     forceShowCorrectness = false,
     forceShowSolution = false,
@@ -24,10 +25,12 @@ export function Activity({
     hasRenderedCallback,
     reportVisibility = false,
     reportVisibilityCallback,
-    renderOnlyItem = null,
+    itemAttemptNumbers,
+    itemSequence,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
+    maxAttemptsAllowed: number;
     forceDisable?: boolean;
     forceShowCorrectness?: boolean;
     forceShowSolution?: boolean;
@@ -48,17 +51,16 @@ export function Activity({
     hasRenderedCallback: (id: string) => void;
     reportVisibility?: boolean;
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
-    renderOnlyItem?: number | null;
+    itemAttemptNumbers: number[];
+    itemSequence: string[];
 }) {
     switch (state.type) {
         case "singleDoc": {
-            if (renderOnlyItem !== null && renderOnlyItem !== 1) {
-                return null;
-            }
             return (
                 <SingleDocActivity
                     flags={flags}
                     baseId={baseId}
+                    maxAttemptsAllowed={maxAttemptsAllowed}
                     forceDisable={forceDisable}
                     forceShowCorrectness={forceShowCorrectness}
                     forceShowSolution={forceShowSolution}
@@ -76,6 +78,8 @@ export function Activity({
                     hasRenderedCallback={hasRenderedCallback}
                     reportVisibility={reportVisibility}
                     reportVisibilityCallback={reportVisibilityCallback}
+                    itemAttemptNumbers={itemAttemptNumbers}
+                    itemSequence={itemSequence}
                 />
             );
         }
@@ -84,6 +88,7 @@ export function Activity({
                 <SelectActivity
                     flags={flags}
                     baseId={baseId}
+                    maxAttemptsAllowed={maxAttemptsAllowed}
                     forceDisable={forceDisable}
                     forceShowCorrectness={forceShowCorrectness}
                     forceShowSolution={forceShowSolution}
@@ -101,7 +106,8 @@ export function Activity({
                     hasRenderedCallback={hasRenderedCallback}
                     reportVisibility={reportVisibility}
                     reportVisibilityCallback={reportVisibilityCallback}
-                    renderOnlyItem={renderOnlyItem}
+                    itemAttemptNumbers={itemAttemptNumbers}
+                    itemSequence={itemSequence}
                 />
             );
         }
@@ -110,6 +116,7 @@ export function Activity({
                 <SequenceActivity
                     flags={flags}
                     baseId={baseId}
+                    maxAttemptsAllowed={maxAttemptsAllowed}
                     forceDisable={forceDisable}
                     forceShowCorrectness={forceShowCorrectness}
                     forceShowSolution={forceShowSolution}
@@ -127,7 +134,8 @@ export function Activity({
                     hasRenderedCallback={hasRenderedCallback}
                     reportVisibility={reportVisibility}
                     reportVisibilityCallback={reportVisibilityCallback}
-                    renderOnlyItem={renderOnlyItem}
+                    itemAttemptNumbers={itemAttemptNumbers}
+                    itemSequence={itemSequence}
                 />
             );
         }

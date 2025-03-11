@@ -34,9 +34,8 @@ export function Viewer({
     flags,
     activityId,
     userId = null,
-    attemptNumber: _attemptNumber = 1,
     variantIndex: initialVariantIndex,
-    maxAttemptsAllowed: _maxAttemptsAllowed = Infinity,
+    maxAttemptsAllowed = 1,
     itemLevelAttempts = false,
     activityLevelAttempts = false,
     paginate = true,
@@ -51,13 +50,11 @@ export function Viewer({
     darkMode = "light",
     showAnswerTitles = false,
     showTitle = true,
-    renderOnlyItem = null,
 }: {
     source: ActivitySource;
     flags: DoenetMLFlags;
     activityId: string;
     userId?: string | null;
-    attemptNumber?: number;
     variantIndex: number;
     maxAttemptsAllowed?: number;
     itemLevelAttempts?: boolean;
@@ -74,7 +71,6 @@ export function Viewer({
     darkMode?: "dark" | "light";
     showAnswerTitles?: boolean;
     showTitle?: boolean;
-    renderOnlyItem?: number | null;
 }) {
     const [errMsg, setErrMsg] = useState<string | null>(null);
 
@@ -121,6 +117,8 @@ export function Viewer({
     const [itemsRendered, setItemsRendered] = useState<string[]>([]);
     const [itemsToRender, setItemsToRender] = useState<string[]>([]);
     const [itemsVisible, setItemsVisible] = useState<string[]>([]);
+
+    const attemptNumber = activityState.attemptNumber;
 
     function addItemToRender(id: string) {
         if (!itemsToRender.includes(id)) {
@@ -220,6 +218,8 @@ export function Viewer({
                                                 activityState: state,
                                                 doenetStates:
                                                     exportedState.doenetStates,
+                                                itemAttemptNumbers:
+                                                    exportedState.itemAttemptNumbers,
                                             });
                                         } else {
                                             reject(
@@ -355,6 +355,7 @@ export function Viewer({
             type: "generateSingleDocSubActivityAttempt",
             docId: id,
             doenetStateIdx: itemSequence.indexOf(id),
+            itemSequence,
             numActivityVariants,
             initialQuestionCounter,
             questionCounts,
@@ -516,10 +517,14 @@ export function Viewer({
                             Next
                         </button>
                     </span>
-                    {activityLevelAttempts ? (
+                    {activityLevelAttempts && maxAttemptsAllowed !== 1 ? (
                         <button
                             onClick={generateActivityAttempt}
-                            disabled={numItems === 0}
+                            disabled={
+                                numItems === 0 ||
+                                (maxAttemptsAllowed > 0 &&
+                                    attemptNumber >= maxAttemptsAllowed)
+                            }
                             style={{
                                 marginLeft: "30px",
                                 backgroundColor: "lightgray",
@@ -527,7 +532,10 @@ export function Viewer({
                                 padding: "5px 20px",
                             }}
                         >
-                            New attempt
+                            New attempt{" "}
+                            {maxAttemptsAllowed > 0
+                                ? `(${(maxAttemptsAllowed - attemptNumber).toString()} left)`
+                                : null}
                         </button>
                     ) : null}
                 </div>
@@ -542,6 +550,7 @@ export function Viewer({
             <Activity
                 flags={flags}
                 baseId={activityId}
+                maxAttemptsAllowed={maxAttemptsAllowed}
                 forceDisable={forceDisable}
                 forceShowCorrectness={forceShowCorrectness}
                 forceShowSolution={forceShowSolution}
@@ -559,7 +568,8 @@ export function Viewer({
                 hasRenderedCallback={hasRenderedCallback}
                 reportVisibility={!paginate}
                 reportVisibilityCallback={reportVisibilityCallback}
-                renderOnlyItem={renderOnlyItem}
+                itemAttemptNumbers={activityDoenetState.itemAttemptNumbers}
+                itemSequence={itemSequence}
             />
         </div>
     );
