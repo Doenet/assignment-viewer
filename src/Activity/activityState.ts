@@ -121,6 +121,7 @@ export function isActivityStateNoSource(
         isSequenceStateNoSource(obj)
     );
 }
+
 export function isExportedActivityState(
     obj: unknown,
 ): obj is ExportedActivityState {
@@ -406,7 +407,7 @@ export function extractActivityItemCredit(
     nPrevInShuffleOrder = 0,
 ): {
     id: string;
-    docId?: string;
+    docId: string;
     score: number;
     shuffledOrder: number;
 }[] {

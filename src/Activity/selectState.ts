@@ -622,17 +622,30 @@ export function extractSelectItemCredit(
 ): {
     id: string;
     score: number;
-    docId?: string;
+    docId: string;
     shuffledOrder: number;
 }[] {
     if (activityState.attemptNumber === 0) {
-        return [
-            {
-                id: activityState.id,
-                score: 0,
-                shuffledOrder: nPrevInShuffleOrder + 1,
-            },
-        ];
+        const nChildren = activityState.allChildren.length;
+        if (nChildren === 0) {
+            return [];
+        }
+        // just select the items in order to give results that are at least in the right form
+        const results: {
+            id: string;
+            score: number;
+            docId: string;
+            shuffledOrder: number;
+        }[] = [];
+        let nPrev = nPrevInShuffleOrder;
+
+        for (let i = 0; i < activityState.source.numToSelect; i++) {
+            const childState = activityState.allChildren[i % nChildren];
+            const next = extractActivityItemCredit(childState, nPrev);
+            nPrev += next.length;
+            results.push(...next);
+        }
+        return results;
     }
     if (
         activityState.source.numToSelect === 1 &&
