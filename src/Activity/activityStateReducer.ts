@@ -174,7 +174,7 @@ export function activityDoenetStateReducer(
             });
 
             const newDoenetMLStates = [...state.doenetStates];
-            newDoenetMLStates[action.doenetStateIdx] = undefined;
+            newDoenetMLStates[action.doenetStateIdx] = null;
 
             // increment the item attempt number corresponding to the document
             const itemIdx = action.itemSequence.indexOf(action.docId);
@@ -226,6 +226,9 @@ export function activityDoenetStateReducer(
                 const newActivityState = newActivityDoenetState.activityState;
                 const itemScores = extractActivityItemCredit(newActivityState);
 
+                const itemUpdated =
+                    action.itemSequence.indexOf(action.docId) + 1;
+
                 const message: ReportStateMessage = {
                     state: {
                         activityState:
@@ -236,6 +239,7 @@ export function activityDoenetStateReducer(
                     },
                     score: newActivityState.creditAchieved,
                     itemScores,
+                    itemUpdated,
                     newDoenetStateIdx: action.doenetStateIdx,
                     subject: "SPLICE.reportScoreAndState",
                     activityId: action.baseId,
