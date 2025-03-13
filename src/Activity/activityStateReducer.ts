@@ -56,9 +56,10 @@ type GenerateSingleDocSubAttemptAction = {
 
 type UpdateSingleDocStateAction = {
     type: "updateSingleState";
-    id: string;
+    docId: string;
     doenetState: unknown;
     doenetStateIdx: number;
+    itemSequence: string[];
     creditAchieved: number;
     allowSaveState: boolean;
     baseId: string;
@@ -266,8 +267,8 @@ function updateSingleDocState(
 ): ActivityAndDoenetState {
     const allStates = gatherStates(activityDoenetState.activityState);
 
-    const newSingleDocState = (allStates[action.id] = {
-        ...allStates[action.id],
+    const newSingleDocState = (allStates[action.docId] = {
+        ...allStates[action.docId],
     });
 
     if (newSingleDocState.type !== "singleDoc") {

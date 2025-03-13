@@ -327,9 +327,10 @@ describe("Activity reducer tests", () => {
         // Get score of 0.2
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: "doc5",
+            docId: "doc5",
             doenetStateIdx: 0,
             doenetState: "DoenetML state 1",
+            itemSequence: ["doc5"],
             creditAchieved: 0.2,
             allowSaveState: true,
             baseId: "newId",
@@ -365,6 +366,7 @@ describe("Activity reducer tests", () => {
                         shuffledOrder: 1,
                     },
                 ],
+                itemUpdated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 1"],
@@ -384,9 +386,10 @@ describe("Activity reducer tests", () => {
         // decrease score
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: "doc5",
+            docId: "doc5",
             doenetState: "DoenetML state 2",
             doenetStateIdx: 0,
+            itemSequence: ["doc5"],
             creditAchieved: 0.1,
             allowSaveState: true,
             baseId: "newId",
@@ -422,6 +425,7 @@ describe("Activity reducer tests", () => {
                         shuffledOrder: 1,
                     },
                 ],
+                itemUpdated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 2"],
@@ -441,9 +445,10 @@ describe("Activity reducer tests", () => {
         // increase score
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: "doc5",
+            docId: "doc5",
             doenetState: "DoenetML state 3",
             doenetStateIdx: 0,
+            itemSequence: ["doc5"],
             creditAchieved: 0.3,
             allowSaveState: true,
             baseId: "newId",
@@ -479,6 +484,7 @@ describe("Activity reducer tests", () => {
                         shuffledOrder: 1,
                     },
                 ],
+                itemUpdated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 3"],
@@ -546,9 +552,10 @@ describe("Activity reducer tests", () => {
         // start attempt with low score
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: "doc5",
+            docId: "doc5",
             doenetState: "DoenetML state 4",
             doenetStateIdx: 0,
+            itemSequence: ["doc5"],
             creditAchieved: 0.1,
             allowSaveState: true,
             baseId: "newId",
@@ -584,6 +591,7 @@ describe("Activity reducer tests", () => {
                         shuffledOrder: 1,
                     },
                 ],
+                itemUpdated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 4"],
@@ -603,9 +611,10 @@ describe("Activity reducer tests", () => {
         // increase score
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: "doc5",
+            docId: "doc5",
             doenetState: "DoenetML state 5",
             doenetStateIdx: 0,
+            itemSequence: ["doc5"],
             creditAchieved: 0.5,
             allowSaveState: true,
             baseId: "newId",
@@ -641,6 +650,7 @@ describe("Activity reducer tests", () => {
                         shuffledOrder: 1,
                     },
                 ],
+                itemUpdated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 5"],
@@ -666,6 +676,7 @@ describe("Activity reducer tests", () => {
         docIds,
         attemptNumber,
         itemAttemptNumbers,
+        itemUpdated,
         newAttempt,
         newAttemptForItem,
         newDoenetStateIdx,
@@ -675,10 +686,11 @@ describe("Activity reducer tests", () => {
         state: ActivityAndDoenetState;
         docCredits: number[];
         docAttemptNumbers: number[];
-        docStates: (string | undefined)[];
+        docStates: (string | undefined | null)[];
         docIds: string[];
         attemptNumber: number;
         itemAttemptNumbers: number[];
+        itemUpdated?: number;
         newAttempt?: boolean;
         newAttemptForItem?: number;
         newDoenetStateIdx?: number;
@@ -707,7 +719,7 @@ describe("Activity reducer tests", () => {
             expect(docState.id).eq(docIds[i]);
             expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[i]);
-            if (docStates[i] === undefined) {
+            if (docStates[i] === undefined || docStates[i] === null) {
                 expect(docState.doenetStateIdx === null);
             } else {
                 if (docState.doenetStateIdx === null) {
@@ -723,6 +735,7 @@ describe("Activity reducer tests", () => {
             newAttempt?: boolean;
             newAttemptForItem?: number;
             newDoenetStateIdx?: number;
+            itemUpdated?: number;
         } = {};
         if (newAttempt) {
             newInfoObj.newAttempt = true;
@@ -732,6 +745,9 @@ describe("Activity reducer tests", () => {
         }
         if (newDoenetStateIdx !== undefined) {
             newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
+        }
+        if (itemUpdated !== undefined) {
+            newInfoObj.itemUpdated = itemUpdated;
         }
 
         expect(spy.mock.lastCall).eqls([
@@ -815,7 +831,7 @@ describe("Activity reducer tests", () => {
         const docIds = activityState.orderedChildren.map((c) => c.id);
         let docCredits = [0, 0, 0];
         let docAttemptNumbers = [1, 1, 1];
-        let docStates: (string | undefined)[] = [];
+        let docStates: (string | undefined | null)[] = [];
         let attemptNumber = 1;
 
         // Get score of 0.4 in first doc
@@ -823,9 +839,10 @@ describe("Activity reducer tests", () => {
         docCredits[0] = 0.4;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[0],
+            docId: docIds[0],
             doenetState: docStates[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -840,6 +857,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 1,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -850,9 +868,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.6;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -866,6 +885,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             sourceHash,
             newDoenetStateIdx: 1,
             spy,
@@ -876,9 +896,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.2;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -893,6 +914,7 @@ describe("Activity reducer tests", () => {
             newDoenetStateIdx: 1,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             sourceHash,
             spy,
         });
@@ -931,9 +953,10 @@ describe("Activity reducer tests", () => {
         docCredits[2] = 0.8;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[2],
+            docId: docIds[2],
             doenetState: docStates[2],
             doenetStateIdx: 2,
+            itemSequence: docIds,
             creditAchieved: docCredits[2],
             allowSaveState: true,
             baseId: "newId",
@@ -948,6 +971,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 3,
             newDoenetStateIdx: 2,
             sourceHash,
             spy,
@@ -999,7 +1023,7 @@ describe("Activity reducer tests", () => {
         const docIds = activityState.orderedChildren.map((c) => c.id);
         const docCredits = [0, 0, 0];
         const docAttemptNumbers = [1, 1, 1];
-        const docStates: (string | undefined)[] = [];
+        const docStates: (string | undefined | null)[] = [];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
@@ -1007,9 +1031,10 @@ describe("Activity reducer tests", () => {
         docCredits[0] = 0.4;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[0],
+            docId: docIds[0],
             doenetState: docStates[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1024,6 +1049,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 1,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1034,9 +1060,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.6;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1050,6 +1077,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1060,9 +1088,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.2;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1076,6 +1105,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1098,7 +1128,7 @@ describe("Activity reducer tests", () => {
         docAttemptNumbers[0]++;
         itemAttemptNumbers[0]++;
         docCredits[0] = 0;
-        docStates[0] = undefined;
+        docStates[0] = null;
 
         testStateSeq3Docs({
             state,
@@ -1120,9 +1150,10 @@ describe("Activity reducer tests", () => {
         docCredits[0] = 0.5;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[0],
+            docId: docIds[0],
             doenetState: docStates[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1137,6 +1168,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 1,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1147,9 +1179,10 @@ describe("Activity reducer tests", () => {
         docCredits[2] = 0.8;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[2],
+            docId: docIds[2],
             doenetState: docStates[2],
             doenetStateIdx: 2,
+            itemSequence: docIds,
             creditAchieved: docCredits[2],
             allowSaveState: true,
             baseId: "newId",
@@ -1164,6 +1197,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 3,
             newDoenetStateIdx: 2,
             sourceHash,
             spy,
@@ -1174,9 +1208,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1191,6 +1226,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1213,7 +1249,7 @@ describe("Activity reducer tests", () => {
         docAttemptNumbers[1]++;
         itemAttemptNumbers[1]++;
         docCredits[1] = 0;
-        docStates[1] = undefined;
+        docStates[1] = null;
 
         testStateSeq3Docs({
             state,
@@ -1235,9 +1271,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.9;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1252,6 +1289,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1269,6 +1307,7 @@ describe("Activity reducer tests", () => {
         docIds,
         attemptNumber,
         itemAttemptNumbers,
+        itemUpdated,
         newAttempt,
         newAttemptForItem,
         newDoenetStateIdx,
@@ -1281,10 +1320,11 @@ describe("Activity reducer tests", () => {
         selIds: string[];
         docCredits: number[];
         docAttemptNumbers: Record<string, number>;
-        docStates: (string | undefined)[];
+        docStates: (string | undefined | null)[];
         docIds: string[];
         attemptNumber: number;
         itemAttemptNumbers: number[];
+        itemUpdated?: number;
         newAttempt?: boolean;
         newAttemptForItem?: number;
         newDoenetStateIdx?: number;
@@ -1321,7 +1361,7 @@ describe("Activity reducer tests", () => {
             expect(docState.id).eq(docIds[i]);
             expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[docIds[i]]);
-            if (docStates[i] === undefined) {
+            if (docStates[i] === undefined || docStates[i] === null) {
                 expect(docState.doenetStateIdx === null);
             } else {
                 if (docState.doenetStateIdx === null) {
@@ -1337,6 +1377,7 @@ describe("Activity reducer tests", () => {
             newAttempt?: boolean;
             newAttemptForItem?: number;
             newDoenetStateIdx?: number;
+            itemUpdated?: number;
         } = {};
         if (newAttempt) {
             newInfoObj.newAttempt = true;
@@ -1346,6 +1387,9 @@ describe("Activity reducer tests", () => {
         }
         if (newDoenetStateIdx !== undefined) {
             newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
+        }
+        if (itemUpdated !== undefined) {
+            newInfoObj.itemUpdated = itemUpdated;
         }
 
         expect(spy.mock.lastCall).eqls([
@@ -1435,7 +1479,7 @@ describe("Activity reducer tests", () => {
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         let docCredits = [0, 0];
-        let docStates: (string | undefined)[] = [];
+        let docStates: (string | undefined | null)[] = [];
         let attemptNumber = 1;
 
         // Get score of 0.4 in first doc
@@ -1444,9 +1488,10 @@ describe("Activity reducer tests", () => {
         selCredits[0] = 0.4;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[0],
+            docId: docIds[0],
             doenetState: docStates[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1464,6 +1509,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 1,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1475,9 +1521,10 @@ describe("Activity reducer tests", () => {
         selCredits[1] = 0.6;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1495,6 +1542,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1506,9 +1554,10 @@ describe("Activity reducer tests", () => {
         selCredits[1] = 0.2;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1526,6 +1575,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1591,9 +1641,10 @@ describe("Activity reducer tests", () => {
         selCredits[1] = 0.8;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1610,6 +1661,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1672,7 +1724,7 @@ describe("Activity reducer tests", () => {
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         const docCredits = [0, 0];
-        const docStates: (string | undefined)[] = [];
+        const docStates: (string | undefined | null)[] = [];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
@@ -1681,9 +1733,10 @@ describe("Activity reducer tests", () => {
         selCredits[0] = 0.4;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[0],
+            docId: docIds[0],
             doenetState: docStates[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1701,6 +1754,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 1,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1712,9 +1766,10 @@ describe("Activity reducer tests", () => {
         selCredits[1] = 0.6;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1732,6 +1787,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1743,9 +1799,10 @@ describe("Activity reducer tests", () => {
         selCredits[1] = 0.2;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1763,6 +1820,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1798,7 +1856,7 @@ describe("Activity reducer tests", () => {
 
         selAttemptNumbers[1]++;
         selCredits[1] = 0; // don't change selCredit[1], as the credit achieved is remembered
-        docStates[1] = undefined;
+        docStates[1] = null;
         docCredits[1] = 0;
         itemAttemptNumbers[1]++;
 
@@ -1826,9 +1884,10 @@ describe("Activity reducer tests", () => {
         selCredits[1] = 0.8;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1846,6 +1905,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1857,9 +1917,10 @@ describe("Activity reducer tests", () => {
         selCredits[1] = 0.2;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1877,6 +1938,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -1912,7 +1974,7 @@ describe("Activity reducer tests", () => {
 
         selAttemptNumbers[0]++;
         selCredits[0] = 0; // don't change selCredit[0], as the credit achieved is remembered
-        docStates[0] = undefined;
+        docStates[0] = null;
         docCredits[0] = 0;
         itemAttemptNumbers[0]++;
 
@@ -1940,9 +2002,10 @@ describe("Activity reducer tests", () => {
         selCredits[0] = 0.3;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[0],
+            docId: docIds[0],
             doenetState: docStates[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1960,6 +2023,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 1,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -1974,6 +2038,7 @@ describe("Activity reducer tests", () => {
         docIds,
         attemptNumber,
         itemAttemptNumbers,
+        itemUpdated,
         newAttempt,
         newAttemptForItem,
         newDoenetStateIdx,
@@ -1983,10 +2048,11 @@ describe("Activity reducer tests", () => {
         state: ActivityAndDoenetState;
         docCredits: number[];
         docAttemptNumbers: Record<string, number>;
-        docStates: (string | undefined)[];
+        docStates: (string | undefined | null)[];
         docIds: string[];
         attemptNumber: number;
         itemAttemptNumbers: number[];
+        itemUpdated?: number;
         newAttempt?: boolean;
         newAttemptForItem?: number;
         newDoenetStateIdx?: number;
@@ -2015,7 +2081,7 @@ describe("Activity reducer tests", () => {
             expect(docState.id).eq(docIds[i]);
             expect(docState.creditAchieved).eq(docCredits[i]);
             expect(docState.attemptNumber).eq(docAttemptNumbers[docIds[i]]);
-            if (docStates[i] === undefined) {
+            if (docStates[i] === undefined || docStates[i] === null) {
                 expect(docState.doenetStateIdx === null);
             } else {
                 if (docState.doenetStateIdx === null) {
@@ -2031,6 +2097,7 @@ describe("Activity reducer tests", () => {
             newAttempt?: boolean;
             newAttemptForItem?: number;
             newDoenetStateIdx?: number;
+            itemUpdated?: number;
         } = {};
         if (newAttempt) {
             newInfoObj.newAttempt = true;
@@ -2040,6 +2107,9 @@ describe("Activity reducer tests", () => {
         }
         if (newDoenetStateIdx !== undefined) {
             newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
+        }
+        if (itemUpdated !== undefined) {
+            newInfoObj.itemUpdated = itemUpdated;
         }
 
         expect(spy.mock.lastCall).eqls([
@@ -2125,7 +2195,7 @@ describe("Activity reducer tests", () => {
 
         const docAttemptNumbers = { [docIds[0]]: 1, [docIds[1]]: 1 };
         const docCredits = [0, 0];
-        const docStates: (string | undefined)[] = [];
+        const docStates: (string | undefined | null)[] = [];
         const attemptNumber = 1;
 
         // Get score of 0.4 in first doc
@@ -2133,9 +2203,10 @@ describe("Activity reducer tests", () => {
         docCredits[0] = 0.4;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[0],
+            docId: docIds[0],
             doenetState: docStates[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -2150,6 +2221,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 1,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
@@ -2160,9 +2232,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.6;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -2177,6 +2250,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -2187,9 +2261,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.2;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -2204,6 +2279,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -2233,7 +2309,7 @@ describe("Activity reducer tests", () => {
         docIds[1] = activityState.selectedChildren[1].id;
         docAttemptNumbers[docIds[1]] = (docAttemptNumbers[docIds[1]] ?? 0) + 1;
 
-        docStates[1] = undefined;
+        docStates[1] = null;
         docCredits[1] = 0;
 
         itemAttemptNumbers[1]++;
@@ -2258,9 +2334,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.8;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -2275,6 +2352,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -2285,9 +2363,10 @@ describe("Activity reducer tests", () => {
         docCredits[1] = 0.2;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[1],
+            docId: docIds[1],
             doenetState: docStates[1],
             doenetStateIdx: 1,
+            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -2302,6 +2381,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 2,
             newDoenetStateIdx: 1,
             sourceHash,
             spy,
@@ -2331,7 +2411,7 @@ describe("Activity reducer tests", () => {
         docIds[0] = activityState.selectedChildren[0].id;
         docAttemptNumbers[docIds[0]] = (docAttemptNumbers[docIds[0]] ?? 0) + 1;
 
-        docStates[0] = undefined;
+        docStates[0] = null;
         docCredits[0] = 0;
         itemAttemptNumbers[0]++;
 
@@ -2355,9 +2435,10 @@ describe("Activity reducer tests", () => {
         docCredits[0] = 0.3;
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
-            id: docIds[0],
+            docId: docIds[0],
             doenetState: docStates[0],
             doenetStateIdx: 0,
+            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -2372,6 +2453,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
+            itemUpdated: 1,
             newDoenetStateIdx: 0,
             sourceHash,
             spy,
