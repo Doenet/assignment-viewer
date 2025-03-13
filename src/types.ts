@@ -84,6 +84,7 @@ export type ReportStateMessage = {
         docId?: string;
         shuffledOrder: number;
     }[];
+    itemUpdated?: number;
     state: ExportedActivityState;
     newAttempt?: boolean;
     newAttemptForItem?: number;
@@ -91,31 +92,33 @@ export type ReportStateMessage = {
 };
 
 export function isReportStateMessage(obj: unknown): obj is ReportStateMessage {
-    const typeObj = obj as ReportStateMessage;
+    const typedObj = obj as ReportStateMessage;
 
     return (
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        typeObj !== null &&
-        typeof typeObj === "object" &&
+        typedObj !== null &&
+        typeof typedObj === "object" &&
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        typeObj.subject === "SPLICE.reportScoreAndState" &&
-        typeof typeObj.activityId === "string" &&
-        typeof typeObj.score === "number" &&
-        Array.isArray(typeObj.itemScores) &&
-        typeObj.itemScores.every(
+        typedObj.subject === "SPLICE.reportScoreAndState" &&
+        typeof typedObj.activityId === "string" &&
+        typeof typedObj.score === "number" &&
+        Array.isArray(typedObj.itemScores) &&
+        typedObj.itemScores.every(
             (item) =>
                 typeof item.id === "string" &&
                 typeof item.score === "number" &&
                 (item.docId === undefined || typeof item.docId === "string") &&
                 typeof item.shuffledOrder === "number",
         ) &&
-        isExportedActivityState(typeObj.state) &&
-        (typeObj.newAttempt === undefined ||
-            typeof typeObj.newAttempt === "boolean") &&
-        (typeObj.newAttemptForItem === undefined ||
-            typeof typeObj.newAttemptForItem === "number") &&
-        (typeObj.newDoenetStateIdx === undefined ||
-            typeof typeObj.newDoenetStateIdx === "number")
+        (typedObj.itemUpdated === undefined ||
+            typeof typedObj.itemUpdated === "number") &&
+        isExportedActivityState(typedObj.state) &&
+        (typedObj.newAttempt === undefined ||
+            typeof typedObj.newAttempt === "boolean") &&
+        (typedObj.newAttemptForItem === undefined ||
+            typeof typedObj.newAttemptForItem === "number") &&
+        (typedObj.newDoenetStateIdx === undefined ||
+            typeof typedObj.newDoenetStateIdx === "number")
     );
 }
 

@@ -336,9 +336,10 @@ export function Viewer({
         if (isSingleDocReportStateMessage(msg)) {
             activityDoenetStateDispatch({
                 type: "updateSingleState",
-                id: msg.docId,
+                docId: msg.docId,
                 doenetState: msg.state,
                 doenetStateIdx: itemSequence.indexOf(msg.docId),
+                itemSequence,
                 creditAchieved: msg.score,
                 allowSaveState: flags.allowSaveState,
                 baseId: activityId,

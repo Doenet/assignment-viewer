@@ -341,17 +341,17 @@ export function extractSequenceItemCredit(
 ): {
     id: string;
     score: number;
-    docId?: string;
+    docId: string;
     shuffledOrder: number;
 }[] {
     if (activityState.attemptNumber === 0) {
-        return [
-            {
-                id: activityState.id,
-                score: 0,
-                shuffledOrder: nPrevInShuffleOrder + 1,
-            },
-        ];
+        // just select the items in original order to give results that are at least in the right form
+        let nPrev = nPrevInShuffleOrder;
+        return activityState.allChildren.flatMap((state) => {
+            const next = extractActivityItemCredit(state, nPrev);
+            nPrev += next.length;
+            return next;
+        });
     } else {
         let nPrev = nPrevInShuffleOrder;
         const inShuffledOrder = activityState.orderedChildren.map((state) => {
