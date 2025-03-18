@@ -47,7 +47,8 @@ export function ActivityViewer({
     externalVirtualKeyboardProvided = false,
     linkSettings,
     darkMode = "light",
-    showAnswerTitles = false,
+    showAnswerResponseMenu = false,
+    answerResponseCountsByItem = [],
     includeVariantSelector: _includeVariantSelector = false,
     showTitle = true,
 }: {
@@ -69,7 +70,8 @@ export function ActivityViewer({
     externalVirtualKeyboardProvided?: boolean;
     linkSettings?: { viewURL: string; editURL: string };
     darkMode?: "dark" | "light";
-    showAnswerTitles?: boolean;
+    showAnswerResponseMenu?: boolean;
+    answerResponseCountsByItem?: Record<string, number>[];
     includeVariantSelector?: boolean;
     showTitle?: boolean;
 }) {
@@ -79,7 +81,9 @@ export function ActivityViewer({
     //     allPossibleVariants: ["a"],
     // });
 
-    const [variantIndex, setVariantIndex] = useState<number | null>(null);
+    const [initialVariantIndex, setInitialVariantIndex] = useState<
+        number | null
+    >(null);
 
     const thisPropSet: PropSet = {
         source: JSON.stringify(source),
@@ -106,9 +110,9 @@ export function ActivityViewer({
     if (foundPropChange) {
         if (requestedVariantIndex === undefined) {
             const rng = rngClass(new Date().toString());
-            setVariantIndex(Math.floor(rng() * 1000000) + 1);
+            setInitialVariantIndex(Math.floor(rng() * 1000000) + 1);
         } else {
-            setVariantIndex(
+            setInitialVariantIndex(
                 Number.isInteger(requestedVariantIndex)
                     ? requestedVariantIndex
                     : 1,
@@ -116,7 +120,7 @@ export function ActivityViewer({
         }
     }
 
-    if (variantIndex === null) {
+    if (initialVariantIndex === null) {
         return null;
     }
 
@@ -127,7 +131,7 @@ export function ActivityViewer({
                 flags={flags}
                 activityId={activityId}
                 userId={userId}
-                variantIndex={variantIndex}
+                initialVariantIndex={initialVariantIndex}
                 maxAttemptsAllowed={maxAttemptsAllowed}
                 itemLevelAttempts={itemLevelAttempts}
                 activityLevelAttempts={activityLevelAttempts}
@@ -143,7 +147,8 @@ export function ActivityViewer({
                 }
                 linkSettings={linkSettings}
                 darkMode={darkMode}
-                showAnswerTitles={showAnswerTitles}
+                showAnswerResponseMenu={showAnswerResponseMenu}
+                answerResponseCountsByItem={answerResponseCountsByItem}
                 showTitle={showTitle}
             />
         </ErrorBoundary>

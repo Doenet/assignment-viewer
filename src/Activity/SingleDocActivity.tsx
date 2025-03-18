@@ -14,7 +14,8 @@ export function SingleDocActivity({
     forceUnsuppressCheckwork = false,
     linkSettings,
     darkMode = "light",
-    showAnswerTitles = false,
+    showAnswerResponseMenu = false,
+    answerResponseCountsByItem = [],
     state,
     doenetStates,
     reportScoreAndStateCallback,
@@ -37,7 +38,8 @@ export function SingleDocActivity({
     forceUnsuppressCheckwork?: boolean;
     linkSettings?: { viewURL: string; editURL: string };
     darkMode?: "dark" | "light";
-    showAnswerTitles?: boolean;
+    showAnswerResponseMenu?: boolean;
+    answerResponseCountsByItem?: Record<string, number>[];
     state: SingleDocState;
     doenetStates: unknown[];
     reportScoreAndStateCallback: (args: unknown) => void;
@@ -155,7 +157,8 @@ export function SingleDocActivity({
                     forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                     linkSettings={linkSettings}
                     darkMode={darkMode}
-                    showAnswerTitles={showAnswerTitles}
+                    showAnswerResponseMenu={showAnswerResponseMenu}
+                    answerResponseCounts={answerResponseCountsByItem[itemIdx]}
                     addVirtualKeyboard={false}
                     initialState={initialDoenetState}
                     initializeCounters={initialCounters}

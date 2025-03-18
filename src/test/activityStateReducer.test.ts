@@ -138,6 +138,7 @@ describe("Activity reducer tests", () => {
                         score: 0,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: 0,
                     },
                 ],
                 activityId: "newId",
@@ -224,7 +225,7 @@ describe("Activity reducer tests", () => {
 
         expect(spy.mock.lastCall).eqls([
             {
-                subject: "SPLICE.reportScoreByItem",
+                subject: "SPLICE.reportScoreAndState",
                 score: 0,
                 itemScores: [
                     {
@@ -232,9 +233,17 @@ describe("Activity reducer tests", () => {
                         score: 0,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: activityState.currentVariant,
                     },
                 ],
+                state: {
+                    activityState: pruneActivityStateForSave(activityState),
+                    sourceHash,
+                    doenetStates: [],
+                    itemAttemptNumbers: [1],
+                },
                 activityId: "newId",
+                newAttempt: true,
             },
         ]);
 
@@ -273,6 +282,7 @@ describe("Activity reducer tests", () => {
                         score: 0,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: activityState.currentVariant,
                     },
                 ],
                 state: {
@@ -364,6 +374,7 @@ describe("Activity reducer tests", () => {
                         score: 0.2,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: activityState.currentVariant,
                     },
                 ],
                 itemUpdated: 1,
@@ -423,6 +434,7 @@ describe("Activity reducer tests", () => {
                         score: 0.1,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: activityState.currentVariant,
                     },
                 ],
                 itemUpdated: 1,
@@ -482,6 +494,7 @@ describe("Activity reducer tests", () => {
                         score: 0.3,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: activityState.currentVariant,
                     },
                 ],
                 itemUpdated: 1,
@@ -533,6 +546,7 @@ describe("Activity reducer tests", () => {
                         score: 0,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: activityState.currentVariant,
                     },
                 ],
                 state: {
@@ -589,6 +603,7 @@ describe("Activity reducer tests", () => {
                         score: 0.1,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: activityState.currentVariant,
                     },
                 ],
                 itemUpdated: 1,
@@ -648,6 +663,7 @@ describe("Activity reducer tests", () => {
                         score: 0.5,
                         docId: "doc5",
                         shuffledOrder: 1,
+                        variant: activityState.currentVariant,
                     },
                 ],
                 itemUpdated: 1,
@@ -711,6 +727,8 @@ describe("Activity reducer tests", () => {
 
         expect(activityState.attemptNumber).eq(attemptNumber);
 
+        const docVariants: number[] = [];
+
         for (let i = 0; i < 3; i++) {
             const docState = activityState.orderedChildren[i];
             if (docState.type !== "singleDoc") {
@@ -729,6 +747,8 @@ describe("Activity reducer tests", () => {
                     docStates[i],
                 );
             }
+
+            docVariants.push(docState.currentVariant);
         }
 
         const newInfoObj: {
@@ -761,6 +781,7 @@ describe("Activity reducer tests", () => {
                         score: docCredits[idx],
                         docId: docIds[idx],
                         shuffledOrder: idx + 1,
+                        variant: docVariants[idx],
                     };
                 }),
                 state: {
@@ -1345,6 +1366,8 @@ describe("Activity reducer tests", () => {
 
         expect(activityState.attemptNumber).eq(attemptNumber);
 
+        const docVariants: number[] = [];
+
         for (let i = 0; i < 2; i++) {
             const selectState = activityState.orderedChildren[i];
             if (selectState.type !== "select") {
@@ -1371,6 +1394,8 @@ describe("Activity reducer tests", () => {
                     docStates[i],
                 );
             }
+
+            docVariants.push(docState.currentVariant);
         }
 
         const newInfoObj: {
@@ -1403,6 +1428,7 @@ describe("Activity reducer tests", () => {
                         score: selCredits[idx],
                         docId: docIds[idx],
                         shuffledOrder: idx + 1,
+                        variant: docVariants[idx],
                     };
                 }),
                 state: {
@@ -2122,12 +2148,14 @@ describe("Activity reducer tests", () => {
                         score: docCredits[0],
                         docId: docIds[0],
                         shuffledOrder: 1,
+                        variant: Number(docIds[0].split("|")[1]),
                     },
                     {
                         id: docIds[1],
                         score: docCredits[1],
                         docId: docIds[1],
                         shuffledOrder: 2,
+                        variant: Number(docIds[1].split("|")[1]),
                     },
                 ],
                 state: {

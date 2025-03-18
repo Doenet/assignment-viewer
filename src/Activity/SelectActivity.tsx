@@ -14,7 +14,8 @@ export function SelectActivity({
     forceUnsuppressCheckwork = false,
     linkSettings,
     darkMode = "light",
-    showAnswerTitles = false,
+    showAnswerResponseMenu = false,
+    answerResponseCountsByItem = [],
     state,
     doenetStates,
     reportScoreAndStateCallback,
@@ -37,7 +38,8 @@ export function SelectActivity({
     forceUnsuppressCheckwork?: boolean;
     linkSettings?: { viewURL: string; editURL: string };
     darkMode?: "dark" | "light";
-    showAnswerTitles?: boolean;
+    showAnswerResponseMenu?: boolean;
+    answerResponseCountsByItem?: Record<string, number>[];
     state: SelectState;
     doenetStates: unknown[];
     reportScoreAndStateCallback: (args: unknown) => void;
@@ -72,7 +74,8 @@ export function SelectActivity({
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                 linkSettings={linkSettings}
                 darkMode={darkMode}
-                showAnswerTitles={showAnswerTitles}
+                showAnswerResponseMenu={showAnswerResponseMenu}
+                answerResponseCountsByItem={answerResponseCountsByItem}
                 reportScoreAndStateCallback={reportScoreAndStateCallback}
                 checkRender={checkRender}
                 checkHidden={checkHidden}

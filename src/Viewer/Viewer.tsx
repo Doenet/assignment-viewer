@@ -34,7 +34,7 @@ export function Viewer({
     flags,
     activityId,
     userId = null,
-    variantIndex: initialVariantIndex,
+    initialVariantIndex,
     maxAttemptsAllowed = 1,
     itemLevelAttempts = false,
     activityLevelAttempts = false,
@@ -48,14 +48,15 @@ export function Viewer({
     externalVirtualKeyboardProvided: _externalVirtualKeyboardProvided = false,
     linkSettings,
     darkMode = "light",
-    showAnswerTitles = false,
+    showAnswerResponseMenu = false,
+    answerResponseCountsByItem = [],
     showTitle = true,
 }: {
     source: ActivitySource;
     flags: DoenetMLFlags;
     activityId: string;
     userId?: string | null;
-    variantIndex: number;
+    initialVariantIndex: number;
     maxAttemptsAllowed?: number;
     itemLevelAttempts?: boolean;
     activityLevelAttempts?: boolean;
@@ -69,7 +70,8 @@ export function Viewer({
     externalVirtualKeyboardProvided?: boolean;
     linkSettings?: { viewURL: string; editURL: string };
     darkMode?: "dark" | "light";
-    showAnswerTitles?: boolean;
+    showAnswerResponseMenu?: boolean;
+    answerResponseCountsByItem?: Record<string, number>[];
     showTitle?: boolean;
 }) {
     const [errMsg, setErrMsg] = useState<string | null>(null);
@@ -558,7 +560,8 @@ export function Viewer({
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                 linkSettings={linkSettings}
                 darkMode={darkMode}
-                showAnswerTitles={showAnswerTitles}
+                showAnswerResponseMenu={showAnswerResponseMenu}
+                answerResponseCountsByItem={answerResponseCountsByItem}
                 state={activityState}
                 doenetStates={activityDoenetState.doenetStates}
                 reportScoreAndStateCallback={reportScoreAndStateCallback}

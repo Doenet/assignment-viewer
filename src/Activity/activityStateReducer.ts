@@ -108,8 +108,6 @@ export function activityDoenetStateReducer(
             return action.state;
         }
         case "generateNewActivityAttempt": {
-            const firstAttempt = activityState.attemptNumber === 0;
-
             const { state: newActivityState } = generateNewActivityAttempt({
                 state: activityState,
                 numActivityVariants: action.numActivityVariants,
@@ -123,33 +121,22 @@ export function activityDoenetStateReducer(
 
             if (action.allowSaveState) {
                 const itemScores = extractActivityItemCredit(newActivityState);
-                if (firstAttempt) {
-                    // If first attempt, no need to save state.
-                    // Just send score by item to indicate how many items are in the activity
-                    const message: ReportScoreByItemMessage = {
-                        score: newActivityState.creditAchieved,
-                        itemScores,
-                        subject: "SPLICE.reportScoreByItem",
-                        activityId: action.baseId,
-                    };
-                    window.postMessage(message);
-                } else {
-                    const message: ReportStateMessage = {
-                        state: {
-                            activityState:
-                                pruneActivityStateForSave(newActivityState),
-                            doenetStates: [],
-                            itemAttemptNumbers: newItemAttemptNumbers,
-                            sourceHash: action.sourceHash,
-                        },
-                        score: newActivityState.creditAchieved,
-                        itemScores,
-                        subject: "SPLICE.reportScoreAndState",
-                        activityId: action.baseId,
-                        newAttempt: true,
-                    };
-                    window.postMessage(message);
-                }
+
+                const message: ReportStateMessage = {
+                    state: {
+                        activityState:
+                            pruneActivityStateForSave(newActivityState),
+                        doenetStates: [],
+                        itemAttemptNumbers: newItemAttemptNumbers,
+                        sourceHash: action.sourceHash,
+                    },
+                    score: newActivityState.creditAchieved,
+                    itemScores,
+                    subject: "SPLICE.reportScoreAndState",
+                    activityId: action.baseId,
+                    newAttempt: true,
+                };
+                window.postMessage(message);
             }
 
             return {

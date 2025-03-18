@@ -343,6 +343,7 @@ export function extractSequenceItemCredit(
     score: number;
     docId: string;
     shuffledOrder: number;
+    variant: number;
 }[] {
     if (activityState.attemptNumber === 0) {
         // just select the items in original order to give results that are at least in the right form

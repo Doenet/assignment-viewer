@@ -16,7 +16,7 @@
                     "type": "singleDoc",
                     "isDescription": false,
                     "doenetML": "<problem>2+2=<answer>4</answer><selectFromSequence /></problem>",
-                    "version": "0.7.0-alpha30",
+                    "version": "0.7.0-alpha32",
                     "numVariants": 10,
                     "baseComponentCounts": { "question": 1 }
                 },
@@ -26,7 +26,7 @@
                     "type": "singleDoc",
                     "isDescription": false,
                     "doenetML": "<problem>1+1=<answer>2</answer><selectFromSequence length='3' /></problem><problem>4+4=<answer>8</answer><selectFromSequence length='4' /></problem>",
-                    "version": "0.7.0-alpha30",
+                    "version": "0.7.0-alpha32",
                     "numVariants": 12,
                     "baseComponentCounts": { "problem": 2 }
                 }
@@ -43,7 +43,7 @@
                     "type": "singleDoc",
                     "isDescription": false,
                     "doenetML": "<question>Question 1A <graph><point name='P'/></graph><answer><award><when>$P.x > 0</when></award></answer></question>",
-                    "version": "0.7.0-alpha30",
+                    "version": "0.7.0-alpha32",
                     "numVariants": 1,
                     "baseComponentCounts": { "question": 1 }
                 },
@@ -52,7 +52,7 @@
                     "type": "singleDoc",
                     "isDescription": false,
                     "doenetML": "<question>Question 1B <p>Enter: <select assignNames='a'>a b c</select>. <answer>$a</answer></p></question>",
-                    "version": "0.7.0-alpha30",
+                    "version": "0.7.0-alpha32",
                     "numVariants": 3,
                     "baseComponentCounts": { "question": 1 }
                 },
@@ -61,7 +61,7 @@
                     "type": "singleDoc",
                     "isDescription": false,
                     "doenetML": "<question>Question 1C <p>Enter: <selectFromSequence assignNames='a' />. <answer>$a</answer></p></question>",
-                    "version": "0.7.0-alpha30",
+                    "version": "0.7.0-alpha32",
                     "numVariants": 10,
                     "baseComponentCounts": { "question": 1 }
                 },
@@ -70,7 +70,7 @@
                     "type": "singleDoc",
                     "isDescription": false,
                     "doenetML": "<question>Question 1D <p>Enter: <selectFromSequence assignNames='a' length=\"5\" />.  <answer>$a</answer></p></question>",
-                    "version": "0.7.0-alpha30",
+                    "version": "0.7.0-alpha32",
                     "numVariants": 5,
                     "baseComponentCounts": { "question": 1 }
                 }

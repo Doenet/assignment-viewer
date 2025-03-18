@@ -14,7 +14,8 @@ export function Activity({
     forceUnsuppressCheckwork = false,
     linkSettings,
     darkMode = "light",
-    showAnswerTitles = false,
+    showAnswerResponseMenu = false,
+    answerResponseCountsByItem = [],
     state,
     doenetStates,
     reportScoreAndStateCallback,
@@ -37,7 +38,8 @@ export function Activity({
     forceUnsuppressCheckwork?: boolean;
     linkSettings?: { viewURL: string; editURL: string };
     darkMode?: "dark" | "light";
-    showAnswerTitles?: boolean;
+    showAnswerResponseMenu?: boolean;
+    answerResponseCountsByItem?: Record<string, number>[];
     state: ActivityState;
     doenetStates: unknown[];
     reportScoreAndStateCallback: (args: unknown) => void;
@@ -67,7 +69,8 @@ export function Activity({
                     forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                     linkSettings={linkSettings}
                     darkMode={darkMode}
-                    showAnswerTitles={showAnswerTitles}
+                    showAnswerResponseMenu={showAnswerResponseMenu}
+                    answerResponseCountsByItem={answerResponseCountsByItem}
                     state={state}
                     doenetStates={doenetStates}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
@@ -95,7 +98,8 @@ export function Activity({
                     forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                     linkSettings={linkSettings}
                     darkMode={darkMode}
-                    showAnswerTitles={showAnswerTitles}
+                    showAnswerResponseMenu={showAnswerResponseMenu}
+                    answerResponseCountsByItem={answerResponseCountsByItem}
                     state={state}
                     doenetStates={doenetStates}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
@@ -123,7 +127,8 @@ export function Activity({
                     forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                     linkSettings={linkSettings}
                     darkMode={darkMode}
-                    showAnswerTitles={showAnswerTitles}
+                    showAnswerResponseMenu={showAnswerResponseMenu}
+                    answerResponseCountsByItem={answerResponseCountsByItem}
                     state={state}
                     doenetStates={doenetStates}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
