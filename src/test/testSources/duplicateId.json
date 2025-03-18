@@ -9,14 +9,14 @@
             "type": "singleDoc",
             "isDescription": false,
             "doenetML": "<problem>Enter <selectFromSequence name='n' from='1' to='4' />: <answer name='ans'>$n</answer></problem>",
-            "version": "0.7.0-alpha30"
+            "version": "0.7.0-alpha32"
         },
         {
             "id": "seq",
             "type": "singleDoc",
             "isDescription": false,
             "doenetML": "<problem>Enter <selectFromSequence name='n' from='11' to='15' />: <answer name='ans'>$n</answer></problem>",
-            "version": "0.7.0-alpha30"
+            "version": "0.7.0-alpha32"
         }
     ]
 }

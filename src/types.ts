@@ -81,8 +81,9 @@ export type ReportStateMessage = {
     itemScores: {
         id: string;
         score: number;
-        docId?: string;
+        docId: string;
         shuffledOrder: number;
+        variant: number;
     }[];
     itemUpdated?: number;
     state: ExportedActivityState;
@@ -107,8 +108,9 @@ export function isReportStateMessage(obj: unknown): obj is ReportStateMessage {
             (item) =>
                 typeof item.id === "string" &&
                 typeof item.score === "number" &&
-                (item.docId === undefined || typeof item.docId === "string") &&
-                typeof item.shuffledOrder === "number",
+                typeof item.docId === "string" &&
+                typeof item.shuffledOrder === "number" &&
+                typeof item.variant === "number",
         ) &&
         (typedObj.itemUpdated === undefined ||
             typeof typedObj.itemUpdated === "number") &&
@@ -129,8 +131,9 @@ export type ReportScoreByItemMessage = {
     itemScores: {
         id: string;
         score: number;
-        docId?: string;
+        docId: string;
         shuffledOrder: number;
+        variant: number;
     }[];
 };
 
@@ -152,8 +155,9 @@ export function isReportScoreByItemMessage(
             (item) =>
                 typeof item.id === "string" &&
                 typeof item.score === "number" &&
-                (item.docId === undefined || typeof item.docId === "string") &&
-                typeof item.shuffledOrder === "number",
+                typeof item.docId === "string" &&
+                typeof item.shuffledOrder === "number" &&
+                typeof item.variant === "number",
         )
     );
 }

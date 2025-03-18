@@ -14,7 +14,8 @@ export function SequenceActivity({
     forceUnsuppressCheckwork = false,
     linkSettings,
     darkMode = "light",
-    showAnswerTitles = false,
+    showAnswerResponseMenu = false,
+    answerResponseCountsByItem = [],
     state,
     doenetStates,
     reportScoreAndStateCallback,
@@ -37,8 +38,9 @@ export function SequenceActivity({
     forceUnsuppressCheckwork?: boolean;
     linkSettings?: { viewURL: string; editURL: string };
     darkMode?: "dark" | "light";
-    showAnswerTitles?: boolean;
+    showAnswerResponseMenu?: boolean;
     state: SequenceState;
+    answerResponseCountsByItem?: Record<string, number>[];
     doenetStates: unknown[];
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
@@ -71,7 +73,8 @@ export function SequenceActivity({
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                 linkSettings={linkSettings}
                 darkMode={darkMode}
-                showAnswerTitles={showAnswerTitles}
+                showAnswerResponseMenu={showAnswerResponseMenu}
+                answerResponseCountsByItem={answerResponseCountsByItem}
                 reportScoreAndStateCallback={reportScoreAndStateCallback}
                 checkRender={checkRender}
                 checkHidden={checkHidden}

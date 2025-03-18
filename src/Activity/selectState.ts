@@ -23,6 +23,7 @@ import {
 } from "./activityState";
 
 import seedrandom from "seedrandom";
+import { SingleDocState } from "./singleDocState";
 
 const rngClass = seedrandom.alea;
 
@@ -624,6 +625,7 @@ export function extractSelectItemCredit(
     score: number;
     docId: string;
     shuffledOrder: number;
+    variant: number;
 }[] {
     if (activityState.attemptNumber === 0) {
         const nChildren = activityState.allChildren.length;
@@ -636,6 +638,7 @@ export function extractSelectItemCredit(
             score: number;
             docId: string;
             shuffledOrder: number;
+            variant: number;
         }[] = [];
         let nPrev = nPrevInShuffleOrder;
 
@@ -658,6 +661,8 @@ export function extractSelectItemCredit(
                 score: activityState.creditAchieved,
                 docId: activityState.selectedChildren[0].id,
                 shuffledOrder: nPrevInShuffleOrder + 1,
+                variant: (activityState.selectedChildren[0] as SingleDocState)
+                    .currentVariant,
             },
         ];
     } else {

@@ -261,6 +261,7 @@ export function extractSingleDocItemCredit(
     score: number;
     docId: string;
     shuffledOrder: number;
+    variant: number;
 }[] {
     if (activityState.source.isDescription) {
         return [];
@@ -271,6 +272,7 @@ export function extractSingleDocItemCredit(
                 score: activityState.creditAchieved,
                 docId: activityState.id,
                 shuffledOrder: nPrevInShuffleOrder + 1,
+                variant: activityState.currentVariant,
             },
         ];
     }

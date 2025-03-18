@@ -410,6 +410,7 @@ export function extractActivityItemCredit(
     docId: string;
     score: number;
     shuffledOrder: number;
+    variant: number;
 }[] {
     switch (activityState.type) {
         case "singleDoc": {
