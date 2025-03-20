@@ -24,10 +24,10 @@ import {
     getNumItems,
     ActivityAndDoenetState,
     isActivityAndDoenetState,
+    createSourceHash,
 } from "../Activity/activityState";
 import { Activity } from "../Activity/Activity";
 import { activityDoenetStateReducer } from "../Activity/activityStateReducer";
-import hash from "object-hash";
 
 export function Viewer({
     source,
@@ -83,7 +83,7 @@ export function Viewer({
             try {
                 validateIds(source);
                 const docStructure = gatherDocumentStructure(source);
-                const sourceHash = hash(source);
+                const sourceHash = createSourceHash(source);
                 const numItems = getNumItems(source);
                 return { ...docStructure, sourceHash, numItems };
             } catch (e) {

@@ -657,7 +657,7 @@ export function validateStateAndSource(state: unknown, source: unknown) {
         return false;
     }
 
-    const sourceHash = hash(source);
+    const sourceHash = createSourceHash(source);
 
     return state.sourceHash === sourceHash;
 }
@@ -782,4 +782,24 @@ export function propagateStateChangeToRoot({
         allStates,
         id: newParentState.id,
     });
+}
+
+/** Return source with the version field set to an empty string in all documents */
+function removeVersionFromSource(source: ActivitySource): ActivitySource {
+    if (source.type === "singleDoc") {
+        return {
+            ...source,
+            version: "",
+        };
+    } else {
+        return {
+            ...source,
+            items: source.items.map(removeVersionFromSource),
+        };
+    }
+}
+
+/** Create a hash of the source after setting the version field to an empty string in all documents */
+export function createSourceHash(source: ActivitySource) {
+    return hash(removeVersionFromSource(source));
 }

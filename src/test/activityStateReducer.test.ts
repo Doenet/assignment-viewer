@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { SequenceSource } from "../Activity/sequenceState";
 import {
     ActivityAndDoenetState,
+    createSourceHash,
     gatherDocumentStructure,
     initializeActivityState,
     pruneActivityStateForSave,
@@ -13,7 +14,6 @@ import seqShuf from "./testSources/seqShuf.json";
 import selMult2docs from "./testSources/selMult2docs.json";
 import { SingleDocSource, SingleDocState } from "../Activity/singleDocState";
 import { SelectSource, SelectState } from "../Activity/selectState";
-import hash from "object-hash";
 
 describe("Activity reducer tests", () => {
     afterEach(() => {
@@ -154,7 +154,7 @@ describe("Activity reducer tests", () => {
 
         const source = doc as SingleDocSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
-        const sourceHash = hash(source);
+        const sourceHash = createSourceHash(source);
 
         const state0 = initializeActivityState({
             source: source,
@@ -308,7 +308,7 @@ describe("Activity reducer tests", () => {
 
         const source = doc as SingleDocSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
-        const sourceHash = hash(source);
+        const sourceHash = createSourceHash(source);
 
         const state0 = initializeActivityState({
             source: source,
@@ -812,7 +812,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = seqShuf as SequenceSource;
-        const sourceHash = hash(source);
+        const sourceHash = createSourceHash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -1006,7 +1006,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = seqShuf as SequenceSource;
-        const sourceHash = hash(source);
+        const sourceHash = createSourceHash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -1459,7 +1459,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = seq2sel as SequenceSource;
-        const sourceHash = hash(source);
+        const sourceHash = createSourceHash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -1701,7 +1701,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = seq2sel as SequenceSource;
-        const sourceHash = hash(source);
+        const sourceHash = createSourceHash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -2186,7 +2186,7 @@ describe("Activity reducer tests", () => {
         const spy = vi.spyOn(window, "postMessage");
 
         const source = selMult2docs as SelectSource;
-        const sourceHash = hash(source);
+        const sourceHash = createSourceHash(source);
 
         const { numActivityVariants } = gatherDocumentStructure(source);
 
