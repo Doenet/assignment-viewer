@@ -19,7 +19,6 @@ import { SingleDocSource } from "./singleDocState";
 import {
     ActivityVariantRecord,
     isRestrictToVariantSlice,
-    QuestionCountRecord,
     RestrictToVariantSlice,
 } from "../types";
 
@@ -218,13 +217,11 @@ export function generateNewSequenceAttempt({
     state,
     numActivityVariants,
     initialQuestionCounter,
-    questionCounts,
     parentAttempt,
 }: {
     state: SequenceState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
     parentAttempt: number;
 }): { finalQuestionCounter: number; state: SequenceState } {
     const source = state.source;
@@ -310,7 +307,6 @@ export function generateNewSequenceAttempt({
                 state: originalState,
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
-                questionCounts,
                 parentAttempt: state.attemptNumber + 1,
             });
 

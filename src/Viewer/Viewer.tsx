@@ -78,25 +78,23 @@ export function Viewer({
 
     const initialPass = useRef(true);
 
-    const { numActivityVariants, questionCounts, sourceHash, numItems } =
-        useMemo(() => {
-            try {
-                validateIds(source);
-                const docStructure = gatherDocumentStructure(source);
-                const sourceHash = createSourceHash(source);
-                const numItems = getNumItems(source);
-                return { ...docStructure, sourceHash, numItems };
-            } catch (e) {
-                const message = e instanceof Error ? e.message : "";
-                setErrMsg(`Error in activity source: ${message}`);
-                return {
-                    numActivityVariants: {},
-                    questionCounts: {},
-                    sourceHash: "",
-                    numItems: 0,
-                };
-            }
-        }, [source]);
+    const { numActivityVariants, sourceHash, numItems } = useMemo(() => {
+        try {
+            validateIds(source);
+            const docStructure = gatherDocumentStructure(source);
+            const sourceHash = createSourceHash(source);
+            const numItems = getNumItems(source);
+            return { ...docStructure, sourceHash, numItems };
+        } catch (e) {
+            const message = e instanceof Error ? e.message : "";
+            setErrMsg(`Error in activity source: ${message}`);
+            return {
+                numActivityVariants: {},
+                sourceHash: "",
+                numItems: 0,
+            };
+        }
+    }, [source]);
 
     const [activityDoenetState, activityDoenetStateDispatch] = useReducer(
         activityDoenetStateReducer,
@@ -271,7 +269,6 @@ export function Viewer({
                     type: "generateNewActivityAttempt",
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     allowSaveState: flags.allowSaveState,
                     baseId: activityId,
                     sourceHash,
@@ -323,7 +320,6 @@ export function Viewer({
         userId,
         source,
         numActivityVariants,
-        questionCounts,
         sourceHash,
     ]);
 
@@ -361,7 +357,6 @@ export function Viewer({
             itemSequence,
             numActivityVariants,
             initialQuestionCounter,
-            questionCounts,
             allowSaveState: flags.allowSaveState,
             baseId: activityId,
             sourceHash,
@@ -427,7 +422,6 @@ export function Viewer({
             type: "generateNewActivityAttempt",
             numActivityVariants,
             initialQuestionCounter: 1,
-            questionCounts,
             allowSaveState: flags.allowSaveState,
             baseId: activityId,
             sourceHash,

@@ -16,8 +16,7 @@
                     "isDescription": false,
                     "doenetML": "<problem>Enter <selectFromSequence name='n' from='1' to='4' />: <answer name='ans'>$n</answer></problem>",
                     "version": "0.7.0-alpha32",
-                    "numVariants": 4,
-                    "baseComponentCounts": { "problem": 1 }
+                    "numVariants": 4
                 },
                 {
                     "id": "doc5",
@@ -25,8 +24,7 @@
                     "isDescription": false,
                     "doenetML": "<problem>Enter <selectFromSequence name='n' from='11' to='15' />: <answer name='ans'>$n</answer></problem>",
                     "version": "0.7.0-alpha32",
-                    "numVariants": 5,
-                    "baseComponentCounts": { "problem": 1 }
+                    "numVariants": 5
                 }
             ]
         },
@@ -41,8 +39,7 @@
                     "isDescription": false,
                     "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='a' to='c' />: <answer name='ans'>$a</answer></question>",
                     "version": "0.7.0-alpha32",
-                    "numVariants": 3,
-                    "baseComponentCounts": { "question": 1 }
+                    "numVariants": 3
                 },
                 {
                     "id": "doc2",
@@ -50,8 +47,7 @@
                     "isDescription": false,
                     "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='h' to='i' />: <answer name='ans'>$a</answer></question>",
                     "version": "0.7.0-alpha32",
-                    "numVariants": 2,
-                    "baseComponentCounts": { "question": 1 }
+                    "numVariants": 2
                 }
             ]
         }

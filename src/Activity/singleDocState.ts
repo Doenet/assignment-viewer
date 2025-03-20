@@ -3,7 +3,6 @@ import { calcNumVariantsFromState } from "./activityState";
 import {
     ActivityVariantRecord,
     isRestrictToVariantSlice,
-    QuestionCountRecord,
     RestrictToVariantSlice,
 } from "../types";
 
@@ -24,8 +23,6 @@ export type SingleDocSource = {
     version: string;
     /** The number of variants present in `doenetML` */
     numVariants?: number;
-    /** The number each component type among the base level children (direct children of document) in `doenetML` */
-    baseComponentCounts?: Record<string, number | undefined>;
 };
 
 /** The current state of a single doc activity */
@@ -179,7 +176,7 @@ export function initializeSingleDocState({
  * `<question>`, `<problem>`, or `<exercise>`.
  *
  * Calculates a value for the next question counter (`finalQuestionCounter`) based on
- * the numbers of questions in the new attempt, as specified by `questionCounts`.
+ * counting each non-description single document as a question.
  *
  * The `parentAttempt` counter should be the current attempt number of the parent activity.
  * It is used to ensure that selected variants change with the parent's attempt number.
@@ -192,13 +189,11 @@ export function generateNewSingleDocAttempt({
     state,
     numActivityVariants,
     initialQuestionCounter,
-    questionCounts,
     parentAttempt,
 }: {
     state: SingleDocState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
     parentAttempt: number;
 }): { finalQuestionCounter: number; state: SingleDocState } {
     const previousVariants = state.previousVariants;
@@ -235,7 +230,7 @@ export function generateNewSingleDocAttempt({
     }
 
     const finalQuestionCounter =
-        initialQuestionCounter + questionCounts[state.source.id];
+        initialQuestionCounter + (state.source.isDescription ? 0 : 1);
 
     const newState: SingleDocState = {
         ...state,
