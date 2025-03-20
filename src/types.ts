@@ -28,7 +28,6 @@ export type DocumentStructureData = {
     docId: string;
     args: {
         allPossibleVariants: string[];
-        baseComponentCounts: QuestionCountRecord;
         success: boolean;
     };
 };
@@ -47,7 +46,6 @@ export function isDocumentStructureData(
         typeof typeObj.args === "object" &&
         Array.isArray(typeObj.args.allPossibleVariants) &&
         typeObj.args.allPossibleVariants.every((v) => typeof v === "string") &&
-        typeof typeObj.args.baseComponentCounts === "object" &&
         typeof typeObj.args.success === "boolean"
     );
 }
@@ -174,13 +172,6 @@ export function isReportScoreByItemMessage(
  *
  */
 export type ActivityVariantRecord = Record<string, number>;
-
-/**
- * A record of the number of question type (`<question>`, `<problem>`, `<exercise>`) components
- * that are document children in each single document activity,
- * keyed by activity id.
- */
-export type QuestionCountRecord = Record<string, number>;
 
 /**
  * A description of how to restrict the variant of a given activity.

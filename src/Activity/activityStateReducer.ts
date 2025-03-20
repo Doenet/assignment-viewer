@@ -1,6 +1,5 @@
 import {
     ActivityVariantRecord,
-    QuestionCountRecord,
     ReportScoreByItemMessage,
     ReportStateMessage,
 } from "../types";
@@ -35,7 +34,6 @@ type GenerateActivityAttemptAction = {
     type: "generateNewActivityAttempt";
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
     allowSaveState: boolean;
     baseId: string;
     sourceHash: string;
@@ -48,7 +46,6 @@ type GenerateSingleDocSubAttemptAction = {
     itemSequence: string[];
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
     allowSaveState: boolean;
     baseId: string;
     sourceHash: string;
@@ -112,7 +109,6 @@ export function activityDoenetStateReducer(
                 state: activityState,
                 numActivityVariants: action.numActivityVariants,
                 initialQuestionCounter: action.initialQuestionCounter,
-                questionCounts: action.questionCounts,
                 parentAttempt: 1,
             });
 
@@ -158,7 +154,6 @@ export function activityDoenetStateReducer(
                 state: activityState,
                 numActivityVariants: action.numActivityVariants,
                 initialQuestionCounter: action.initialQuestionCounter,
-                questionCounts: action.questionCounts,
             });
 
             const newDoenetMLStates = [...state.doenetStates];

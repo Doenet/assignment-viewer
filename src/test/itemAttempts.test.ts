@@ -19,8 +19,7 @@ import { SelectSource, SelectState } from "../Activity/selectState";
 describe("Test of generating new item attempts", () => {
     it("sequence", () => {
         const source = seqShuf as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][][] = [];
 
@@ -38,7 +37,6 @@ describe("Test of generating new item attempts", () => {
                 state: initialState0,
                 numActivityVariants,
                 initialQuestionCounter: 1,
-                questionCounts,
                 parentAttempt: 1,
             });
             const initialState = res.state as SequenceState;
@@ -67,7 +65,6 @@ describe("Test of generating new item attempts", () => {
                         state,
                         numActivityVariants,
                         initialQuestionCounter: 1, // not right, but doesn't matter for this test
-                        questionCounts,
                     }) as SequenceState;
                 }
             }
@@ -100,8 +97,7 @@ describe("Test of generating new item attempts", () => {
 
     it("select multiple from a single doc", () => {
         const source = selMult1doc as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][] = [];
 
@@ -119,7 +115,6 @@ describe("Test of generating new item attempts", () => {
                 state: initialState0,
                 numActivityVariants,
                 initialQuestionCounter: 1,
-                questionCounts,
                 parentAttempt: 1,
             });
             const initialState = res.state as SelectState;
@@ -155,7 +150,6 @@ describe("Test of generating new item attempts", () => {
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
-                            questionCounts,
                         }) as SelectState;
 
                         const doc = state.selectedChildren[j] as SingleDocState;
@@ -190,8 +184,7 @@ describe("Test of generating new item attempts", () => {
 
     it("select multiple from two docs", () => {
         const source = selMult2docs as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionIds: string[][] = [];
 
@@ -213,7 +206,6 @@ describe("Test of generating new item attempts", () => {
                 state: initialState0,
                 numActivityVariants,
                 initialQuestionCounter: 1,
-                questionCounts,
                 parentAttempt: 1,
             });
             const initialState = res.state as SelectState;
@@ -246,7 +238,6 @@ describe("Test of generating new item attempts", () => {
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
-                            questionCounts,
                         }) as SelectState;
 
                         const newDocId = state.selectedChildren[j].id;
@@ -290,8 +281,7 @@ describe("Test of generating new item attempts", () => {
 
     it("sequence with selects", () => {
         const source = seq2sel as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionIds: string[][][] = [];
 
@@ -318,7 +308,6 @@ describe("Test of generating new item attempts", () => {
                 state: initialState0,
                 numActivityVariants,
                 initialQuestionCounter: 1,
-                questionCounts,
                 parentAttempt: 1,
             });
             const initialState = res.state as SequenceState;
@@ -355,7 +344,6 @@ describe("Test of generating new item attempts", () => {
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
-                            questionCounts,
                         }) as SequenceState;
                     }
                 }
@@ -380,8 +368,7 @@ describe("Test of generating new item attempts", () => {
 
     it("sequence with selects, combine item and activity attempts", () => {
         const source = seq2sel as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionIds: string[][][] = [];
 
@@ -408,7 +395,6 @@ describe("Test of generating new item attempts", () => {
                 state: initialState0,
                 numActivityVariants,
                 initialQuestionCounter: 1,
-                questionCounts,
                 parentAttempt: 1,
             });
             const initialState = res.state as SequenceState;
@@ -445,14 +431,12 @@ describe("Test of generating new item attempts", () => {
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
-                            questionCounts,
                         }) as SequenceState;
                     } else if (i === 3) {
                         const res = generateNewActivityAttempt({
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
-                            questionCounts,
                             parentAttempt: 1,
                         });
                         state = res.state as SequenceState;
@@ -481,8 +465,7 @@ describe("Test of generating new item attempts", () => {
 
     it("select multiple from four docs, selectByVariant=false", () => {
         const source = selMult4docsNoVariant as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionIds: string[][] = [];
         const allQuestionVariants: number[][][] = [];
@@ -502,7 +485,6 @@ describe("Test of generating new item attempts", () => {
                 state: initialState0,
                 numActivityVariants,
                 initialQuestionCounter: 1,
-                questionCounts,
                 parentAttempt: 1,
             });
             const initialState = res.state as SelectState;
@@ -542,7 +524,6 @@ describe("Test of generating new item attempts", () => {
                             state,
                             numActivityVariants,
                             initialQuestionCounter: 1, // not right, but doesn't matter for this test
-                            questionCounts,
                         }) as SelectState;
 
                         const doc = state.selectedChildren[j] as SingleDocState;

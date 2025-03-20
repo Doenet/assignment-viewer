@@ -1,7 +1,6 @@
 import {
     ActivityVariantRecord,
     isRestrictToVariantSlice,
-    QuestionCountRecord,
     RestrictToVariantSlice,
 } from "../types";
 import {
@@ -280,13 +279,11 @@ export function generateNewSelectAttempt({
     state,
     numActivityVariants,
     initialQuestionCounter,
-    questionCounts,
     parentAttempt,
 }: {
     state: SelectState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
     parentAttempt: number;
 }): { finalQuestionCounter: number; state: SelectState } {
     const source = state.source;
@@ -449,7 +446,6 @@ export function generateNewSelectAttempt({
                 state: newActivityOptionStates[childIdx],
                 numActivityVariants,
                 initialQuestionCounter: questionCounter,
-                questionCounts,
                 parentAttempt: state.attemptNumber + 1,
             });
         questionCounter = endCounter;
@@ -483,14 +479,12 @@ export function generateNewSingleDocAttemptForMultiSelect({
     state,
     numActivityVariants,
     initialQuestionCounter,
-    questionCounts,
     parentAttempt,
     childId,
 }: {
     state: SelectState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
     parentAttempt: number;
     childId: string;
 }): { finalQuestionCounter: number; state: SelectState } {
@@ -585,7 +579,6 @@ export function generateNewSingleDocAttemptForMultiSelect({
             state: newActivityOptionStates[selectedIdx],
             numActivityVariants,
             initialQuestionCounter,
-            questionCounts,
             parentAttempt: state.attemptNumber + 1,
         });
 

@@ -43,11 +43,7 @@ import {
     SequenceStateNoSource,
 } from "./sequenceState";
 import hash from "object-hash";
-import {
-    ActivityVariantRecord,
-    QuestionCountRecord,
-    RestrictToVariantSlice,
-} from "../types";
+import { ActivityVariantRecord, RestrictToVariantSlice } from "../types";
 
 /** The source for creating an activity */
 export type ActivitySource = SingleDocSource | SelectSource | SequenceSource;
@@ -227,7 +223,7 @@ export function initializeActivityAndDoenetState({
  * `<question>`, `<problem>`, or `<exercise>`.
  *
  * Calculates a value for the next question counter (`finalQuestionCounter`) based on
- * the numbers of questions in the single documents of the new attempt, as specified by `questionCounts`.
+ * counting each non-description single document as a question
  *
  * The `parentAttempt` counter should be the current attempt number of the parent activity.
  * It is used to ensure that selected variants change with the parent's attempt number.
@@ -240,13 +236,11 @@ export function generateNewActivityAttempt({
     state,
     numActivityVariants,
     initialQuestionCounter,
-    questionCounts,
     parentAttempt,
 }: {
     state: ActivityState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
     parentAttempt: number;
 }): { finalQuestionCounter: number; state: ActivityState } {
     switch (state.type) {
@@ -255,7 +249,6 @@ export function generateNewActivityAttempt({
                 state,
                 numActivityVariants,
                 initialQuestionCounter,
-                questionCounts,
                 parentAttempt,
             });
         }
@@ -264,7 +257,6 @@ export function generateNewActivityAttempt({
                 state,
                 numActivityVariants,
                 initialQuestionCounter,
-                questionCounts,
                 parentAttempt,
             });
         }
@@ -273,7 +265,6 @@ export function generateNewActivityAttempt({
                 state,
                 numActivityVariants,
                 initialQuestionCounter,
-                questionCounts,
                 parentAttempt,
             });
         }
@@ -292,13 +283,11 @@ export function generateNewSingleDocSubAttempt({
     state,
     numActivityVariants,
     initialQuestionCounter,
-    questionCounts,
 }: {
     singleDocId: string;
     state: ActivityState;
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
-    questionCounts: QuestionCountRecord;
 }): ActivityState {
     if (singleDocId === state.id) {
         throw Error(
@@ -342,7 +331,6 @@ export function generateNewSingleDocSubAttempt({
                     state: parentState,
                     numActivityVariants,
                     initialQuestionCounter,
-                    questionCounts,
                     parentAttempt: grandParentAttempt,
                     childId: singleDocId,
                 }));
@@ -355,7 +343,6 @@ export function generateNewSingleDocSubAttempt({
                 state: parentState,
                 numActivityVariants,
                 initialQuestionCounter,
-                questionCounts,
                 parentAttempt: grandParentAttempt,
             }));
         }
@@ -371,7 +358,6 @@ export function generateNewSingleDocSubAttempt({
             state: allStates[singleDocId],
             numActivityVariants,
             initialQuestionCounter,
-            questionCounts,
             parentAttempt: parentState.attemptNumber,
         });
 
@@ -615,34 +601,22 @@ export function validateIds(source: ActivitySource): string[] {
  * recurse though all activities to to form:
  * - `numActivityVariants`: the number of variants of each single doc activity,
  *    keyed by id
- * - `questionCounts`: the total number of base question/problem/exercise tags
- *    of each single doc activity, keyed by id
  */
 export function gatherDocumentStructure(source: ActivitySource): {
     numActivityVariants: ActivityVariantRecord;
-    questionCounts: QuestionCountRecord;
 } {
     if (source.type === "singleDoc") {
         return {
             numActivityVariants: { [source.id]: source.numVariants ?? 1 },
-            questionCounts: {
-                [source.id]: source.baseComponentCounts
-                    ? (source.baseComponentCounts.question ?? 0) +
-                      (source.baseComponentCounts.problem ?? 0) +
-                      (source.baseComponentCounts.exercise ?? 0)
-                    : 1,
-            },
         };
     } else {
         const numActivityVariants: ActivityVariantRecord = {};
-        const questionCounts: QuestionCountRecord = {};
         for (const item of source.items) {
             const res = gatherDocumentStructure(item);
             Object.assign(numActivityVariants, res.numActivityVariants);
-            Object.assign(questionCounts, res.questionCounts);
         }
 
-        return { numActivityVariants, questionCounts };
+        return { numActivityVariants };
     }
 }
 

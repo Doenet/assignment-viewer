@@ -22,6 +22,7 @@ import sel0 from "./testSources/sel0.json";
 import seq0 from "./testSources/seq0.json";
 import seq2Sel0 from "./testSources/seq2Sel0.json";
 import seqSel0Sel from "./testSources/seqSel0Sel.json";
+import seqWithDes from "./testSources/seqWithDes.json";
 
 import {
     SelectSource,
@@ -538,8 +539,7 @@ describe("Activity state tests", () => {
 
     it("get item sequence", () => {
         const source = seq2sel as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const initialState = initializeActivityState({
             source,
@@ -552,7 +552,6 @@ describe("Activity state tests", () => {
             state: initialState,
             numActivityVariants,
             initialQuestionCounter: 1,
-            questionCounts,
             parentAttempt: 1,
         });
 
@@ -581,8 +580,7 @@ describe("Activity state tests", () => {
 
     it("get item sequence, select from 0", () => {
         const source = sel0 as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const initialState = initializeActivityState({
             source,
@@ -595,7 +593,6 @@ describe("Activity state tests", () => {
             state: initialState,
             numActivityVariants,
             initialQuestionCounter: 1,
-            questionCounts,
             parentAttempt: 1,
         });
 
@@ -604,8 +601,7 @@ describe("Activity state tests", () => {
 
     it("get item sequence, sequence of 0", () => {
         const source = seq0 as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const initialState = initializeActivityState({
             source,
@@ -618,7 +614,6 @@ describe("Activity state tests", () => {
             state: initialState,
             numActivityVariants,
             initialQuestionCounter: 1,
-            questionCounts,
             parentAttempt: 1,
         });
 
@@ -627,8 +622,7 @@ describe("Activity state tests", () => {
 
     it("get item sequence, sequence of two selects from 0", () => {
         const source = seq2Sel0 as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const initialState = initializeActivityState({
             source,
@@ -641,7 +635,6 @@ describe("Activity state tests", () => {
             state: initialState,
             numActivityVariants,
             initialQuestionCounter: 1,
-            questionCounts,
             parentAttempt: 1,
         });
 
@@ -650,8 +643,7 @@ describe("Activity state tests", () => {
 
     it("get item sequence, sequence of select from 0 and select", () => {
         const source = seqSel0Sel as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const initialState = initializeActivityState({
             source,
@@ -664,7 +656,6 @@ describe("Activity state tests", () => {
             state: initialState,
             numActivityVariants,
             initialQuestionCounter: 1,
-            questionCounts,
             parentAttempt: 1,
         });
 
@@ -680,8 +671,7 @@ describe("Activity state tests", () => {
 
     it("error when select multiple from a single doc with selectByVariant=false", () => {
         const source = selMult1docNoVariant as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const initialState = initializeActivityState({
             source,
@@ -695,7 +685,6 @@ describe("Activity state tests", () => {
                 state: initialState,
                 numActivityVariants,
                 initialQuestionCounter: 1,
-                questionCounts,
                 parentAttempt: 1,
             }),
         ).toThrowError("larger than the number of available activities");
@@ -710,5 +699,83 @@ describe("Activity state tests", () => {
         // handle cases with no items
         expect(getNumItems(sel0 as SelectSource)).eq(0);
         expect(getNumItems(seq0 as SequenceSource)).eq(0);
+    });
+
+    it("count each document as a question for initialQuestionCounter", () => {
+        const source = seq2sel as SequenceSource;
+
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
+        const initialState = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        }) as SequenceState;
+
+        const { state } = generateNewActivityAttempt({
+            state: initialState,
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            parentAttempt: 1,
+        });
+
+        if (state.type !== "sequence") {
+            throw Error("shouldn't happen");
+        }
+
+        let initialQuestionCounter = 1;
+
+        for (const child of state.orderedChildren) {
+            if (child.type !== "select") {
+                throw Error("Shouldn't happen");
+            }
+            for (const grandChild of child.selectedChildren) {
+                if (grandChild.type !== "singleDoc") {
+                    throw Error("Shouldn't happen");
+                }
+
+                expect(child.initialQuestionCounter).eq(initialQuestionCounter);
+                if (!grandChild.source.isDescription) {
+                    initialQuestionCounter++;
+                }
+            }
+        }
+    });
+
+    it("non-description do not count as a question", () => {
+        const source = seqWithDes as SequenceSource;
+
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
+        const initialState = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        }) as SequenceState;
+
+        const { state } = generateNewActivityAttempt({
+            state: initialState,
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            parentAttempt: 1,
+        });
+
+        if (state.type !== "sequence") {
+            throw Error("shouldn't happen");
+        }
+
+        let initialQuestionCounter = 1;
+
+        for (const child of state.orderedChildren) {
+            if (child.type !== "singleDoc") {
+                throw Error("Shouldn't happen");
+            }
+            expect(child.initialQuestionCounter).eq(initialQuestionCounter);
+            if (!child.source.isDescription) {
+                initialQuestionCounter++;
+            }
+        }
     });
 });

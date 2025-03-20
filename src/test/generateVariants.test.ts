@@ -24,8 +24,7 @@ import { SelectSource, SelectState } from "../Activity/selectState";
 describe("Test of generating activity variants", () => {
     it("single doc", () => {
         const source = doc as SingleDocSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][] = [];
 
@@ -48,7 +47,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -82,8 +80,7 @@ describe("Test of generating activity variants", () => {
 
     it("sequence with no shuffle", () => {
         const source = seq as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][][] = [];
 
@@ -108,7 +105,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -156,8 +152,7 @@ describe("Test of generating activity variants", () => {
 
     it("sequence with shuffle", () => {
         const source = seqShuf as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][][] = [];
 
@@ -184,7 +179,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -240,8 +234,7 @@ describe("Test of generating activity variants", () => {
 
     it("select single doc", () => {
         const source = sel as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][] = [];
 
@@ -266,7 +259,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -307,8 +299,7 @@ describe("Test of generating activity variants", () => {
 
     it("select multiple from a single doc", () => {
         const source = selMult1doc as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][] = [];
 
@@ -331,7 +322,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -380,8 +370,7 @@ describe("Test of generating activity variants", () => {
 
     it("select multiple from two docs", () => {
         const source = selMult2docs as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][] = [];
 
@@ -405,7 +394,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -462,8 +450,7 @@ describe("Test of generating activity variants", () => {
 
     it("descriptions not shuffled", () => {
         const source = seqWithDes as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][][] = [];
 
@@ -500,7 +487,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -602,8 +588,7 @@ describe("Test of generating activity variants", () => {
 
     it("sequence with selects", () => {
         const source = seq2sel as SequenceSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][][] = [];
 
@@ -632,7 +617,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -702,8 +686,7 @@ describe("Test of generating activity variants", () => {
 
     it("select from two sequences", () => {
         const source = sel2seq as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants1: number[][][] = [];
         const allQuestionVariants2: number[][][] = [];
@@ -736,7 +719,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -836,8 +818,7 @@ describe("Test of generating activity variants", () => {
 
     it("select multiple from two sequences", () => {
         const source = selMult2seq as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants1: number[][][] = [];
         const allQuestionVariants2: number[][][] = [];
@@ -870,7 +851,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -1012,8 +992,7 @@ describe("Test of generating activity variants", () => {
 
     it("select single doc, selectByVariant=false", () => {
         const source = selNoVariant as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestionVariants: number[][][] = [];
         const allQuestions: number[][] = [];
@@ -1041,7 +1020,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 
@@ -1097,8 +1075,7 @@ describe("Test of generating activity variants", () => {
 
     it("select multiple from four docs, selectByVariant=false", () => {
         const source = selMult4docsNoVariant as SelectSource;
-        const { numActivityVariants, questionCounts } =
-            gatherDocumentStructure(source);
+        const { numActivityVariants } = gatherDocumentStructure(source);
 
         const allQuestions: number[][] = [];
         const allQuestionVariants: number[][][] = [];
@@ -1125,7 +1102,6 @@ describe("Test of generating activity variants", () => {
                     state,
                     numActivityVariants,
                     initialQuestionCounter: 1,
-                    questionCounts,
                     parentAttempt: 1,
                 });
 

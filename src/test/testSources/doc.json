@@ -4,6 +4,5 @@
     "isDescription": false,
     "doenetML": "<problem>Enter <selectFromSequence name='n' from='11' to='15' />: <answer name='ans'>$n</answer></problem>",
     "version": "0.7.0-alpha32",
-    "numVariants": 5,
-    "baseComponentCounts": { "problem": 1 }
+    "numVariants": 5
 }
