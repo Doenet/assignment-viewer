@@ -492,12 +492,18 @@ export function Viewer({
         }
     }
 
-    const activityAttemptsLeft = maxAttemptsAllowed - attemptNumber;
+    const activityAttemptsLeft = Math.max(
+        maxAttemptsAllowed - attemptNumber,
+        0,
+    );
     const newAttemptsLeft =
         newAttemptNum === 0
             ? activityAttemptsLeft
-            : maxAttemptsAllowed -
-              activityDoenetState.itemAttemptNumbers[newAttemptNum - 1];
+            : Math.max(
+                  maxAttemptsAllowed -
+                      activityDoenetState.itemAttemptNumbers[newAttemptNum - 1],
+                  0,
+              );
 
     const newAttemptDisabled =
         numItems === 0 || (maxAttemptsAllowed > 0 && activityAttemptsLeft <= 0);

@@ -140,8 +140,9 @@ export function SingleDocActivity({
     const render = checkRender(state);
     const hidden = checkHidden(state);
 
+    const newAttemptsLeft = Math.max(maxAttemptsAllowed - itemAttemptNumber, 0);
     const attemptButtonDisabled =
-        maxAttemptsAllowed > 0 && itemAttemptNumber >= maxAttemptsAllowed;
+        maxAttemptsAllowed > 0 && newAttemptsLeft <= 0;
 
     return (
         <div ref={ref}>
@@ -198,7 +199,7 @@ export function SingleDocActivity({
                     >
                         New {itemWord} attempt{" "}
                         {maxAttemptsAllowed > 0
-                            ? `(${(maxAttemptsAllowed - itemAttemptNumber).toString()} left)`
+                            ? `(${newAttemptsLeft.toString()} left)`
                             : null}
                     </button>
                 ) : null}
