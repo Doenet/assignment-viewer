@@ -28,6 +28,7 @@ export function SequenceActivity({
     reportVisibilityCallback,
     itemAttemptNumbers,
     itemSequence,
+    itemWord,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -55,6 +56,7 @@ export function SequenceActivity({
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
     itemAttemptNumbers: number[];
     itemSequence: string[];
+    itemWord: string;
 }) {
     const activityList: ReactElement[] = [];
 
@@ -85,6 +87,7 @@ export function SequenceActivity({
                 reportVisibilityCallback={reportVisibilityCallback}
                 itemAttemptNumbers={itemAttemptNumbers}
                 itemSequence={itemSequence}
+                itemWord={itemWord}
             />,
         );
     }

@@ -51,6 +51,7 @@ export function ActivityViewer({
     answerResponseCountsByItem = [],
     includeVariantSelector: _includeVariantSelector = false,
     showTitle = true,
+    itemWord = "item",
 }: {
     source: ActivitySource;
     flags?: DoenetMLFlagsSubset;
@@ -74,6 +75,7 @@ export function ActivityViewer({
     answerResponseCountsByItem?: Record<string, number>[];
     includeVariantSelector?: boolean;
     showTitle?: boolean;
+    itemWord?: string;
 }) {
     // const [variants, setVariants] = useState({
     //     index: 1,
@@ -150,6 +152,7 @@ export function ActivityViewer({
                 showAnswerResponseMenu={showAnswerResponseMenu}
                 answerResponseCountsByItem={answerResponseCountsByItem}
                 showTitle={showTitle}
+                itemWord={itemWord}
             />
         </ErrorBoundary>
     );
