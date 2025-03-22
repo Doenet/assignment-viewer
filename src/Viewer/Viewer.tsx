@@ -51,6 +51,7 @@ export function Viewer({
     showAnswerResponseMenu = false,
     answerResponseCountsByItem = [],
     showTitle = true,
+    itemWord = "item",
 }: {
     source: ActivitySource;
     flags: DoenetMLFlags;
@@ -73,6 +74,7 @@ export function Viewer({
     showAnswerResponseMenu?: boolean;
     answerResponseCountsByItem?: Record<string, number>[];
     showTitle?: boolean;
+    itemWord?: string;
 }) {
     const [errMsg, setErrMsg] = useState<string | null>(null);
 
@@ -117,6 +119,10 @@ export function Viewer({
     const [itemsRendered, setItemsRendered] = useState<string[]>([]);
     const [itemsToRender, setItemsToRender] = useState<string[]>([]);
     const [itemsVisible, setItemsVisible] = useState<string[]>([]);
+
+    const [newAttemptNum, setNewAttemptNum] = useState(0);
+    const dialogRef = useRef<HTMLDialogElement>(null);
+    const newItemAttemptInfo = useRef({ id: "", initialQuestionCounter: 0 });
 
     const attemptNumber = activityState.attemptNumber;
 
@@ -346,10 +352,17 @@ export function Viewer({
         }
     }
 
-    function generateNewItemAttempt(
+    function generateNewItemAttemptPrompt(
         id: string,
         initialQuestionCounter: number,
     ) {
+        newItemAttemptInfo.current = { id, initialQuestionCounter };
+        setNewAttemptNum((itemSequence.indexOf(id) ?? 0) + 1);
+        dialogRef.current?.showModal();
+    }
+
+    function generateNewItemAttempt() {
+        const { id, initialQuestionCounter } = newItemAttemptInfo.current;
         activityDoenetStateDispatch({
             type: "generateSingleDocSubActivityAttempt",
             docId: id,
@@ -418,6 +431,9 @@ export function Viewer({
     }
 
     function generateActivityAttempt() {
+        setItemsRendered([]);
+        setItemsToRender([]);
+        setCurrentItemIdx(0);
         activityDoenetStateDispatch({
             type: "generateNewActivityAttempt",
             numActivityVariants,
@@ -426,9 +442,6 @@ export function Viewer({
             baseId: activityId,
             sourceHash,
         });
-        setItemsRendered([]);
-        setItemsToRender([]);
-        setCurrentItemIdx(0);
     }
 
     if (errMsg !== null) {
@@ -479,8 +492,77 @@ export function Viewer({
         }
     }
 
+    const activityAttemptsLeft = maxAttemptsAllowed - attemptNumber;
+    const newAttemptsLeft =
+        newAttemptNum === 0
+            ? activityAttemptsLeft
+            : maxAttemptsAllowed -
+              activityDoenetState.itemAttemptNumbers[newAttemptNum - 1];
+
+    const newAttemptDisabled =
+        numItems === 0 || (maxAttemptsAllowed > 0 && activityAttemptsLeft <= 0);
+
     return (
         <div>
+            <dialog ref={dialogRef}>
+                <h3>
+                    Create new attempt of{" "}
+                    {newAttemptNum === 0
+                        ? "the entire activity"
+                        : `${itemWord} ${newAttemptNum.toString()}`}
+                    ?
+                </h3>
+
+                <p>
+                    Creating a new attempt will generate{" "}
+                    {newAttemptNum === 0
+                        ? `new versions of all ${itemWord}s so that you can start again at the beginning.`
+                        : `a new version of ${itemWord} ${newAttemptNum.toString()} so that you can start that ${itemWord} again.`}
+                </p>
+
+                {maxAttemptsAllowed > 0 ? (
+                    <p>
+                        You can create a new attempt{" "}
+                        {newAttemptsLeft.toString()} more time
+                        {newAttemptsLeft > 1 ? "s" : ""}.
+                    </p>
+                ) : null}
+
+                <p style={{ marginTop: "30px" }}>
+                    <button
+                        autoFocus
+                        onClick={() => {
+                            dialogRef.current?.close();
+                        }}
+                        style={{
+                            marginLeft: "30px",
+                            backgroundColor: "lightgray",
+                            borderRadius: "10px",
+                            padding: "5px 20px",
+                        }}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            if (newAttemptNum === 0) {
+                                generateActivityAttempt();
+                            } else {
+                                generateNewItemAttempt();
+                            }
+                            dialogRef.current?.close();
+                        }}
+                        style={{
+                            marginLeft: "30px",
+                            backgroundColor: "lightgray",
+                            borderRadius: "10px",
+                            padding: "5px 20px",
+                        }}
+                    >
+                        Create new attempt
+                    </button>
+                </p>
+            </dialog>
             {showTitle ? (
                 <h2 style={{ marginLeft: "20px" }}>{source.title}</h2>
             ) : null}
@@ -517,22 +599,24 @@ export function Viewer({
                     </span>
                     {activityLevelAttempts && maxAttemptsAllowed !== 1 ? (
                         <button
-                            onClick={generateActivityAttempt}
-                            disabled={
-                                numItems === 0 ||
-                                (maxAttemptsAllowed > 0 &&
-                                    attemptNumber >= maxAttemptsAllowed)
-                            }
+                            onClick={() => {
+                                setNewAttemptNum(0);
+                                dialogRef.current?.showModal();
+                            }}
+                            disabled={newAttemptDisabled}
                             style={{
                                 marginLeft: "30px",
                                 backgroundColor: "lightgray",
                                 borderRadius: "10px",
                                 padding: "5px 20px",
+                                cursor: newAttemptDisabled
+                                    ? "not-allowed"
+                                    : "pointer",
                             }}
                         >
                             New attempt{" "}
                             {maxAttemptsAllowed > 0
-                                ? `(${(maxAttemptsAllowed - attemptNumber).toString()} left)`
+                                ? `(${activityAttemptsLeft.toString()} left)`
                                 : null}
                         </button>
                     ) : null}
@@ -563,12 +647,13 @@ export function Viewer({
                 checkRender={checkRender}
                 checkHidden={checkHidden}
                 allowItemAttemptButtons={itemLevelAttempts}
-                generateNewItemAttempt={generateNewItemAttempt}
+                generateNewItemAttempt={generateNewItemAttemptPrompt}
                 hasRenderedCallback={hasRenderedCallback}
                 reportVisibility={!paginate}
                 reportVisibilityCallback={reportVisibilityCallback}
                 itemAttemptNumbers={activityDoenetState.itemAttemptNumbers}
                 itemSequence={itemSequence}
+                itemWord={itemWord}
             />
         </div>
     );
