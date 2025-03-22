@@ -612,6 +612,9 @@ export function Viewer({
                                 cursor: newAttemptDisabled
                                     ? "not-allowed"
                                     : "pointer",
+                                color: newAttemptDisabled
+                                    ? "darkgray"
+                                    : "inherit",
                             }}
                         >
                             New attempt{" "}

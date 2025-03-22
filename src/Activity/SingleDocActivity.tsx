@@ -191,6 +191,9 @@ export function SingleDocActivity({
                             cursor: attemptButtonDisabled
                                 ? "not-allowed"
                                 : "pointer",
+                            color: attemptButtonDisabled
+                                ? "darkgray"
+                                : "inherit",
                         }}
                     >
                         New {itemWord} attempt{" "}
