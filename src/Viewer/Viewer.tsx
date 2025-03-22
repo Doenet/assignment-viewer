@@ -612,15 +612,13 @@ export function Viewer({
                             disabled={newAttemptDisabled}
                             style={{
                                 marginLeft: "30px",
-                                backgroundColor: "lightgray",
+                                backgroundColor: "rgb(237, 242, 247)",
+                                opacity: newAttemptDisabled ? 0.4 : "inherit",
                                 borderRadius: "10px",
                                 padding: "5px 20px",
                                 cursor: newAttemptDisabled
                                     ? "not-allowed"
                                     : "pointer",
-                                color: newAttemptDisabled
-                                    ? "darkgray"
-                                    : "inherit",
                             }}
                         >
                             New attempt{" "}
