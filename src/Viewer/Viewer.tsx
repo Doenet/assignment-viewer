@@ -427,6 +427,7 @@ export function Viewer({
             sourceHash,
         });
         setItemsRendered([]);
+        setItemsToRender([]);
         setCurrentItemIdx(0);
     }
 
