@@ -28,6 +28,7 @@ export function Activity({
     reportVisibilityCallback,
     itemAttemptNumbers,
     itemSequence,
+    itemWord,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -55,6 +56,7 @@ export function Activity({
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
     itemAttemptNumbers: number[];
     itemSequence: string[];
+    itemWord: string;
 }) {
     switch (state.type) {
         case "singleDoc": {
@@ -83,6 +85,7 @@ export function Activity({
                     reportVisibilityCallback={reportVisibilityCallback}
                     itemAttemptNumbers={itemAttemptNumbers}
                     itemSequence={itemSequence}
+                    itemWord={itemWord}
                 />
             );
         }
@@ -112,6 +115,7 @@ export function Activity({
                     reportVisibilityCallback={reportVisibilityCallback}
                     itemAttemptNumbers={itemAttemptNumbers}
                     itemSequence={itemSequence}
+                    itemWord={itemWord}
                 />
             );
         }
@@ -141,6 +145,7 @@ export function Activity({
                     reportVisibilityCallback={reportVisibilityCallback}
                     itemAttemptNumbers={itemAttemptNumbers}
                     itemSequence={itemSequence}
+                    itemWord={itemWord}
                 />
             );
         }

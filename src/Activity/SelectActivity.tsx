@@ -28,6 +28,7 @@ export function SelectActivity({
     reportVisibilityCallback,
     itemAttemptNumbers,
     itemSequence,
+    itemWord,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -55,6 +56,7 @@ export function SelectActivity({
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
     itemAttemptNumbers: number[];
     itemSequence: string[];
+    itemWord: string;
 }) {
     const selectedActivities: ReactElement[] = [];
     const selectedIds: string[] = [];
@@ -86,6 +88,7 @@ export function SelectActivity({
                 reportVisibilityCallback={reportVisibilityCallback}
                 itemAttemptNumbers={itemAttemptNumbers}
                 itemSequence={itemSequence}
+                itemWord={itemWord}
             />,
         );
         selectedIds.push(activity.id);

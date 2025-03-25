@@ -32,7 +32,7 @@ function App() {
         itemLevelAttempts: true,
         activityLevelAttempts: true,
         paginate: false,
-        maxAttempts: 2,
+        maxAttempts: 4,
     };
 
     const [controlsVisible, setControlsVisible] = useState(false);
@@ -366,6 +366,7 @@ function App() {
                 itemLevelAttempts={itemLevelAttempts}
                 activityLevelAttempts={activityLevelAttempts}
                 maxAttemptsAllowed={maxAttempts}
+                itemWord="question"
             />
         </div>
     );

@@ -28,6 +28,7 @@ export function SingleDocActivity({
     reportVisibilityCallback,
     itemAttemptNumbers,
     itemSequence,
+    itemWord,
 }: {
     flags: DoenetMLFlags;
     baseId: string;
@@ -55,6 +56,7 @@ export function SingleDocActivity({
     reportVisibilityCallback: (id: string, isVisible: boolean) => void;
     itemAttemptNumbers: number[];
     itemSequence: string[];
+    itemWord: string;
 }) {
     const [rendered, setRendered] = useState(false);
 
@@ -138,6 +140,10 @@ export function SingleDocActivity({
     const render = checkRender(state);
     const hidden = checkHidden(state);
 
+    const newAttemptsLeft = Math.max(maxAttemptsAllowed - itemAttemptNumber, 0);
+    const attemptButtonDisabled =
+        maxAttemptsAllowed > 0 && newAttemptsLeft <= 0;
+
     return (
         <div ref={ref}>
             <div hidden={!render || hidden} style={{ minHeight: "100px" }}>
@@ -177,20 +183,21 @@ export function SingleDocActivity({
                                 state.initialQuestionCounter,
                             );
                         }}
-                        disabled={
-                            maxAttemptsAllowed > 0 &&
-                            itemAttemptNumber >= maxAttemptsAllowed
-                        }
+                        disabled={attemptButtonDisabled}
                         style={{
                             marginLeft: "20px",
-                            backgroundColor: "lightgray",
+                            backgroundColor: "rgb(237, 242, 247)",
+                            opacity: attemptButtonDisabled ? 0.4 : "inherit",
                             borderRadius: "10px",
                             padding: "5px 20px",
+                            cursor: attemptButtonDisabled
+                                ? "not-allowed"
+                                : "pointer",
                         }}
                     >
-                        New item attempt{" "}
+                        New {itemWord} attempt{" "}
                         {maxAttemptsAllowed > 0
-                            ? `(${(maxAttemptsAllowed - itemAttemptNumber).toString()} left)`
+                            ? `(${newAttemptsLeft.toString()} left)`
                             : null}
                     </button>
                 ) : null}
