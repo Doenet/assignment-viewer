@@ -341,10 +341,10 @@ export function Viewer({
             activityDoenetStateDispatch({
                 type: "updateSingleState",
                 docId: msg.docId,
-                doenetState: msg.state,
+                doenetState: msg.data.state,
                 doenetStateIdx: itemSequence.indexOf(msg.docId),
                 itemSequence,
-                creditAchieved: msg.score,
+                creditAchieved: msg.data.score,
                 allowSaveState: flags.allowSaveState,
                 baseId: activityId,
                 sourceHash,

@@ -11,7 +11,7 @@ const fullReloadAlways: Plugin = {
 };
 
 // These are the dependencies that will not be bundled into the library.
-const EXTERNAL_DEPS = ["react", "react-dom"];
+const EXTERNAL_DEPS = ["react", "react-dom", "@doenet/doenetml-iframe"];
 
 export default defineConfig({
     plugins: [react(), dts(), fullReloadAlways],

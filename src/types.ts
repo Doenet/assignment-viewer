@@ -53,22 +53,27 @@ export function isDocumentStructureData(
 export type singleDocReportStateMessage = {
     activityId: string;
     docId: string;
-    score: number;
-    state: unknown;
+    data: {
+        score: number;
+        state: unknown;
+    };
 };
 
 export function isSingleDocReportStateMessage(
     obj: unknown,
 ): obj is singleDocReportStateMessage {
-    const typeObj = obj as singleDocReportStateMessage;
+    const typedObj = obj as singleDocReportStateMessage;
 
     return (
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        typeObj !== null &&
-        typeof typeObj === "object" &&
-        typeof typeObj.activityId === "string" &&
-        typeof typeObj.docId === "string" &&
-        typeof typeObj.score === "number"
+        typedObj !== null &&
+        typeof typedObj === "object" &&
+        typeof typedObj.activityId === "string" &&
+        typeof typedObj.docId === "string" &&
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        typedObj.data !== null &&
+        typeof typedObj.data === "object" &&
+        typeof typedObj.data.score === "number"
     );
 }
 
