@@ -46,7 +46,8 @@ export function Viewer({
     forceUnsuppressCheckwork = false,
     addVirtualKeyboard: _addVirtualKeyboard = true,
     externalVirtualKeyboardProvided: _externalVirtualKeyboardProvided = false,
-    linkSettings,
+    doenetViewerUrl,
+    fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
     answerResponseCountsByItem = [],
@@ -69,7 +70,8 @@ export function Viewer({
     forceUnsuppressCheckwork?: boolean;
     addVirtualKeyboard?: boolean;
     externalVirtualKeyboardProvided?: boolean;
-    linkSettings?: { viewURL: string; editURL: string };
+    doenetViewerUrl?: string;
+    fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
     showAnswerResponseMenu?: boolean;
     answerResponseCountsByItem?: Record<string, number>[];
@@ -644,7 +646,8 @@ export function Viewer({
                 forceShowCorrectness={forceShowCorrectness}
                 forceShowSolution={forceShowSolution}
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                linkSettings={linkSettings}
+                doenetViewerUrl={doenetViewerUrl}
+                fetchExternalDoenetML={fetchExternalDoenetML}
                 darkMode={darkMode}
                 showAnswerResponseMenu={showAnswerResponseMenu}
                 answerResponseCountsByItem={answerResponseCountsByItem}

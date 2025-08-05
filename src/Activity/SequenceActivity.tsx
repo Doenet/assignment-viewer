@@ -12,7 +12,8 @@ export function SequenceActivity({
     forceShowCorrectness = false,
     forceShowSolution = false,
     forceUnsuppressCheckwork = false,
-    linkSettings,
+    doenetViewerUrl,
+    fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
     answerResponseCountsByItem = [],
@@ -37,7 +38,8 @@ export function SequenceActivity({
     forceShowCorrectness?: boolean;
     forceShowSolution?: boolean;
     forceUnsuppressCheckwork?: boolean;
-    linkSettings?: { viewURL: string; editURL: string };
+    doenetViewerUrl?: string;
+    fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
     showAnswerResponseMenu?: boolean;
     state: SequenceState;
@@ -73,7 +75,8 @@ export function SequenceActivity({
                 forceShowCorrectness={forceShowCorrectness}
                 forceShowSolution={forceShowSolution}
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                linkSettings={linkSettings}
+                doenetViewerUrl={doenetViewerUrl}
+                fetchExternalDoenetML={fetchExternalDoenetML}
                 darkMode={darkMode}
                 showAnswerResponseMenu={showAnswerResponseMenu}
                 answerResponseCountsByItem={answerResponseCountsByItem}

@@ -45,7 +45,8 @@ export function ActivityViewer({
     forceUnsuppressCheckwork = false,
     addVirtualKeyboard = true,
     externalVirtualKeyboardProvided = false,
-    linkSettings,
+    doenetViewerUrl,
+    fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
     answerResponseCountsByItem = [],
@@ -69,7 +70,8 @@ export function ActivityViewer({
     forceUnsuppressCheckwork?: boolean;
     addVirtualKeyboard?: boolean;
     externalVirtualKeyboardProvided?: boolean;
-    linkSettings?: { viewURL: string; editURL: string };
+    doenetViewerUrl?: string;
+    fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
     showAnswerResponseMenu?: boolean;
     answerResponseCountsByItem?: Record<string, number>[];
@@ -147,7 +149,8 @@ export function ActivityViewer({
                 externalVirtualKeyboardProvided={
                     externalVirtualKeyboardProvided
                 }
-                linkSettings={linkSettings}
+                doenetViewerUrl={doenetViewerUrl}
+                fetchExternalDoenetML={fetchExternalDoenetML}
                 darkMode={darkMode}
                 showAnswerResponseMenu={showAnswerResponseMenu}
                 answerResponseCountsByItem={answerResponseCountsByItem}
