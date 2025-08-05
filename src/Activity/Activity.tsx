@@ -12,7 +12,8 @@ export function Activity({
     forceShowCorrectness = false,
     forceShowSolution = false,
     forceUnsuppressCheckwork = false,
-    linkSettings,
+    doenetViewerUrl,
+    fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
     answerResponseCountsByItem = [],
@@ -37,7 +38,8 @@ export function Activity({
     forceShowCorrectness?: boolean;
     forceShowSolution?: boolean;
     forceUnsuppressCheckwork?: boolean;
-    linkSettings?: { viewURL: string; editURL: string };
+    doenetViewerUrl?: string;
+    fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
     showAnswerResponseMenu?: boolean;
     answerResponseCountsByItem?: Record<string, number>[];
@@ -69,7 +71,8 @@ export function Activity({
                     forceShowCorrectness={forceShowCorrectness}
                     forceShowSolution={forceShowSolution}
                     forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                    linkSettings={linkSettings}
+                    doenetViewerUrl={doenetViewerUrl}
+                    fetchExternalDoenetML={fetchExternalDoenetML}
                     darkMode={darkMode}
                     showAnswerResponseMenu={showAnswerResponseMenu}
                     answerResponseCountsByItem={answerResponseCountsByItem}
@@ -99,7 +102,8 @@ export function Activity({
                     forceShowCorrectness={forceShowCorrectness}
                     forceShowSolution={forceShowSolution}
                     forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                    linkSettings={linkSettings}
+                    doenetViewerUrl={doenetViewerUrl}
+                    fetchExternalDoenetML={fetchExternalDoenetML}
                     darkMode={darkMode}
                     showAnswerResponseMenu={showAnswerResponseMenu}
                     answerResponseCountsByItem={answerResponseCountsByItem}
@@ -129,7 +133,8 @@ export function Activity({
                     forceShowCorrectness={forceShowCorrectness}
                     forceShowSolution={forceShowSolution}
                     forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                    linkSettings={linkSettings}
+                    doenetViewerUrl={doenetViewerUrl}
+                    fetchExternalDoenetML={fetchExternalDoenetML}
                     darkMode={darkMode}
                     showAnswerResponseMenu={showAnswerResponseMenu}
                     answerResponseCountsByItem={answerResponseCountsByItem}
