@@ -19,6 +19,7 @@ export function SelectActivity({
     answerResponseCountsByItem = [],
     state,
     doenetStates,
+    loadedStateNum,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -45,6 +46,7 @@ export function SelectActivity({
     answerResponseCountsByItem?: Record<string, number>[];
     state: SelectState;
     doenetStates: unknown[];
+    loadedStateNum: number;
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
@@ -69,6 +71,7 @@ export function SelectActivity({
                 key={activity.id}
                 state={activity}
                 doenetStates={doenetStates}
+                loadedStateNum={loadedStateNum}
                 flags={flags}
                 baseId={baseId}
                 maxAttemptsAllowed={maxAttemptsAllowed}

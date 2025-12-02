@@ -38,6 +38,7 @@ type GenerateActivityAttemptAction = {
     allowSaveState: boolean;
     baseId: string;
     sourceHash: string;
+    initialAttempt?: boolean;
 };
 
 type GenerateSingleDocSubAttemptAction = {
@@ -117,7 +118,7 @@ export function activityDoenetStateReducer(
             // reset all item attempt numbers to 1
             const newItemAttemptNumbers = state.itemAttemptNumbers.map(() => 1);
 
-            if (action.allowSaveState) {
+            if (action.allowSaveState && !action.initialAttempt) {
                 const itemScores = extractActivityItemCredit(newActivityState);
 
                 const message: ReportStateMessage = {

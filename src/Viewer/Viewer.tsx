@@ -110,6 +110,10 @@ export function Viewer({
         },
         initializeActivityAndDoenetState,
     );
+
+    // Used to make sure reload activity when load in new state
+    const [loadedStateNum, setLoadedStateNum] = useState(0);
+
     const activityState = activityDoenetState.activityState;
 
     const itemSequence = getItemSequence(activityState);
@@ -217,6 +221,8 @@ export function Viewer({
                                 allowSaveState: flags.allowSaveState,
                                 baseId: activityId,
                             });
+
+                            setLoadedStateNum((was) => was + 1);
                         }
                     }
 
@@ -236,7 +242,9 @@ export function Viewer({
                 allowSaveState: flags.allowSaveState,
                 baseId: activityId,
                 sourceHash,
+                initialAttempt: true,
             });
+            setLoadedStateNum((was) => was + 1);
         } catch (e) {
             const message = e instanceof Error ? e.message : "";
             setErrMsg(`Error in activity: ${message}`);
@@ -584,6 +592,7 @@ export function Viewer({
                 answerResponseCountsByItem={answerResponseCountsByItem}
                 state={activityState}
                 doenetStates={activityDoenetState.doenetStates}
+                loadedStateNum={loadedStateNum}
                 reportScoreAndStateCallback={reportScoreAndStateCallback}
                 checkRender={checkRender}
                 checkHidden={checkHidden}
