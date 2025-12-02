@@ -79,16 +79,6 @@ export function SingleDocActivity({
         > | null,
     );
 
-    console.log({
-        doenetStateIdx: state.doenetStateIdx,
-        resultingState:
-            state.doenetStateIdx !== null && doenetStates[state.doenetStateIdx],
-        attemptNumber,
-        attemptNumberInState: state.attemptNumber,
-        loadedStateNum,
-        usedLoadedStateNum: loadedStateNumUsed,
-    });
-
     const [requestedVariantIndex, setRequestedVariantIndex] = useState(
         state.currentVariant,
     );
