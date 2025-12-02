@@ -2,7 +2,7 @@
     "name": "@doenet/assignment-viewer",
     "private": false,
     "description": "View assignments from questions written in DoenetML",
-    "version": "0.1.0-alpha9",
+    "version": "0.1.0-alpha-10",
     "license": "AGPL-3.0-or-later",
     "homepage": "https://github.com/Doenet/assignment-viewer#readme",
     "type": "module",
