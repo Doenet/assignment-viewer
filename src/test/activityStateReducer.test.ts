@@ -132,7 +132,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreByItem",
                 score: 0,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0,
@@ -141,7 +141,8 @@ describe("Activity reducer tests", () => {
                         variant: 0,
                     },
                 ],
-                activityId: "newId",
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
             },
         ]);
     });
@@ -225,7 +226,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0,
@@ -240,8 +241,9 @@ describe("Activity reducer tests", () => {
                     doenetStates: [],
                     itemAttemptNumbers: [1],
                 },
-                activityId: "newId",
-                newAttempt: true,
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
+                new_attempt: true,
             },
         ]);
 
@@ -273,7 +275,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0,
@@ -288,13 +290,14 @@ describe("Activity reducer tests", () => {
                     doenetStates: [],
                     itemAttemptNumbers: [1],
                 },
-                activityId: "newId",
-                newAttempt: true,
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
+                new_attempt: true,
             },
         ]);
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
     });
 
     it("update single state, single document", () => {
@@ -364,7 +367,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.2,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0.2,
@@ -373,22 +376,23 @@ describe("Activity reducer tests", () => {
                         variant: activityState.currentVariant,
                     },
                 ],
-                itemUpdated: 1,
+                item_updated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 1"],
                     itemAttemptNumbers: [1],
                     sourceHash,
                 },
-                newDoenetStateIdx: 0,
-                activityId: "newId",
+                new_doenet_state_idx: 0,
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
             },
         ]);
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttempt" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // decrease score
         state = activityDoenetStateReducer(state, {
@@ -424,7 +428,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.1,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0.1,
@@ -433,22 +437,23 @@ describe("Activity reducer tests", () => {
                         variant: activityState.currentVariant,
                     },
                 ],
-                itemUpdated: 1,
+                item_updated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 2"],
                     itemAttemptNumbers: [1],
                     sourceHash,
                 },
-                newDoenetStateIdx: 0,
-                activityId: "newId",
+                new_doenet_state_idx: 0,
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
             },
         ]);
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttempt" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // increase score
         state = activityDoenetStateReducer(state, {
@@ -484,7 +489,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.3,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0.3,
@@ -493,22 +498,23 @@ describe("Activity reducer tests", () => {
                         variant: activityState.currentVariant,
                     },
                 ],
-                itemUpdated: 1,
+                item_updated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 3"],
                     itemAttemptNumbers: [1],
                     sourceHash,
                 },
-                newDoenetStateIdx: 0,
-                activityId: "newId",
+                new_doenet_state_idx: 0,
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
             },
         ]);
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttempt" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // generate new attempt
         state = activityDoenetStateReducer(state, {
@@ -535,7 +541,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0,
@@ -550,13 +556,14 @@ describe("Activity reducer tests", () => {
                     itemAttemptNumbers: [1],
                     sourceHash,
                 },
-                activityId: "newId",
-                newAttempt: true,
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
+                new_attempt: true,
             },
         ]);
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // start attempt with low score
         state = activityDoenetStateReducer(state, {
@@ -592,7 +599,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.1,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0.1,
@@ -601,22 +608,23 @@ describe("Activity reducer tests", () => {
                         variant: activityState.currentVariant,
                     },
                 ],
-                itemUpdated: 1,
+                item_updated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 4"],
                     itemAttemptNumbers: [1],
                     sourceHash,
                 },
-                newDoenetStateIdx: 0,
-                activityId: "newId",
+                new_doenet_state_idx: 0,
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
             },
         ]);
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttempt" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // increase score
         state = activityDoenetStateReducer(state, {
@@ -652,7 +660,7 @@ describe("Activity reducer tests", () => {
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: 0.5,
-                itemScores: [
+                item_scores: [
                     {
                         id: "doc5",
                         score: 0.5,
@@ -661,22 +669,23 @@ describe("Activity reducer tests", () => {
                         variant: activityState.currentVariant,
                     },
                 ],
-                itemUpdated: 1,
+                item_updated: 1,
                 state: {
                     activityState: pruneActivityStateForSave(activityState),
                     doenetStates: ["DoenetML state 5"],
                     itemAttemptNumbers: [1],
                     sourceHash,
                 },
-                newDoenetStateIdx: 0,
-                activityId: "newId",
+                new_doenet_state_idx: 0,
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
             },
         ]);
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttempt" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+        expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
     });
 
     function testStateSeq3Docs({
@@ -687,10 +696,10 @@ describe("Activity reducer tests", () => {
         docIds,
         attemptNumber,
         itemAttemptNumbers,
-        itemUpdated,
-        newAttempt,
-        newAttemptForItem,
-        newDoenetStateIdx,
+        item_updated,
+        new_attempt,
+        new_attempt_for_item,
+        new_doenet_state_idx,
         sourceHash,
         spy,
     }: {
@@ -701,10 +710,10 @@ describe("Activity reducer tests", () => {
         docIds: string[];
         attemptNumber: number;
         itemAttemptNumbers: number[];
-        itemUpdated?: number;
-        newAttempt?: boolean;
-        newAttemptForItem?: number;
-        newDoenetStateIdx?: number;
+        item_updated?: number;
+        new_attempt?: boolean;
+        new_attempt_for_item?: number;
+        new_doenet_state_idx?: number;
         sourceHash: string;
         spy: MockInstance;
     }) {
@@ -747,29 +756,29 @@ describe("Activity reducer tests", () => {
         }
 
         const newInfoObj: {
-            newAttempt?: boolean;
-            newAttemptForItem?: number;
-            newDoenetStateIdx?: number;
-            itemUpdated?: number;
+            new_attempt?: boolean;
+            new_attempt_for_item?: number;
+            new_doenet_state_idx?: number;
+            item_updated?: number;
         } = {};
-        if (newAttempt) {
-            newInfoObj.newAttempt = true;
+        if (new_attempt) {
+            newInfoObj.new_attempt = true;
         }
-        if (newAttemptForItem) {
-            newInfoObj.newAttemptForItem = newAttemptForItem;
+        if (new_attempt_for_item) {
+            newInfoObj.new_attempt_for_item = new_attempt_for_item;
         }
-        if (newDoenetStateIdx !== undefined) {
-            newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
+        if (new_doenet_state_idx !== undefined) {
+            newInfoObj.new_doenet_state_idx = new_doenet_state_idx;
         }
-        if (itemUpdated !== undefined) {
-            newInfoObj.itemUpdated = itemUpdated;
+        if (item_updated !== undefined) {
+            newInfoObj.item_updated = item_updated;
         }
 
         expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: creditAchieved,
-                itemScores: activityState.allChildren.map((child) => {
+                item_scores: activityState.allChildren.map((child) => {
                     const idx = docIds.indexOf(child.id);
                     return {
                         id: docIds[idx],
@@ -785,18 +794,19 @@ describe("Activity reducer tests", () => {
                     itemAttemptNumbers,
                     sourceHash,
                 },
-                activityId: "newId",
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
                 ...newInfoObj,
             },
         ]);
 
-        if (!newAttempt) {
+        if (!new_attempt) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            expect("newAttempt" in spy.mock.lastCall![0]).eq(false);
+            expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         }
-        if (!newAttemptForItem) {
+        if (!new_attempt_for_item) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+            expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
         }
     }
 
@@ -872,8 +882,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 1,
-            newDoenetStateIdx: 0,
+            item_updated: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -900,9 +910,9 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
+            item_updated: 2,
             sourceHash,
-            newDoenetStateIdx: 1,
+            new_doenet_state_idx: 1,
             spy,
         });
 
@@ -926,10 +936,10 @@ describe("Activity reducer tests", () => {
             docAttemptNumbers,
             docStates,
             docIds,
-            newDoenetStateIdx: 1,
+            new_doenet_state_idx: 1,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
+            item_updated: 2,
             sourceHash,
             spy,
         });
@@ -957,7 +967,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            newAttempt: true,
+            new_attempt: true,
             sourceHash,
             spy,
         });
@@ -985,8 +995,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 3,
-            newDoenetStateIdx: 2,
+            item_updated: 3,
+            new_doenet_state_idx: 2,
             sourceHash,
             spy,
         });
@@ -1062,8 +1072,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 1,
-            newDoenetStateIdx: 0,
+            item_updated: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -1090,8 +1100,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1118,8 +1128,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1150,9 +1160,9 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            newAttempt: true,
-            newAttemptForItem: childIds.indexOf(docIds[0]) + 1,
-            newDoenetStateIdx: 0,
+            new_attempt: true,
+            new_attempt_for_item: childIds.indexOf(docIds[0]) + 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -1180,8 +1190,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 1,
-            newDoenetStateIdx: 0,
+            item_updated: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -1209,8 +1219,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 3,
-            newDoenetStateIdx: 2,
+            item_updated: 3,
+            new_doenet_state_idx: 2,
             sourceHash,
             spy,
         });
@@ -1238,8 +1248,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1270,9 +1280,9 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            newAttempt: true,
-            newAttemptForItem: childIds.indexOf(docIds[1]) + 1,
-            newDoenetStateIdx: 1,
+            new_attempt: true,
+            new_attempt_for_item: childIds.indexOf(docIds[1]) + 1,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1300,8 +1310,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1318,10 +1328,10 @@ describe("Activity reducer tests", () => {
         docIds,
         attemptNumber,
         itemAttemptNumbers,
-        itemUpdated,
-        newAttempt,
-        newAttemptForItem,
-        newDoenetStateIdx,
+        item_updated,
+        new_attempt,
+        new_attempt_for_item,
+        new_doenet_state_idx,
         sourceHash,
         spy,
     }: {
@@ -1335,10 +1345,10 @@ describe("Activity reducer tests", () => {
         docIds: string[];
         attemptNumber: number;
         itemAttemptNumbers: number[];
-        itemUpdated?: number;
-        newAttempt?: boolean;
-        newAttemptForItem?: number;
-        newDoenetStateIdx?: number;
+        item_updated?: number;
+        new_attempt?: boolean;
+        new_attempt_for_item?: number;
+        new_doenet_state_idx?: number;
         sourceHash: string;
         spy: MockInstance;
     }) {
@@ -1389,29 +1399,29 @@ describe("Activity reducer tests", () => {
         }
 
         const newInfoObj: {
-            newAttempt?: boolean;
-            newAttemptForItem?: number;
-            newDoenetStateIdx?: number;
-            itemUpdated?: number;
+            new_attempt?: boolean;
+            new_attempt_for_item?: number;
+            new_doenet_state_idx?: number;
+            item_updated?: number;
         } = {};
-        if (newAttempt) {
-            newInfoObj.newAttempt = true;
+        if (new_attempt) {
+            newInfoObj.new_attempt = true;
         }
-        if (newAttemptForItem) {
-            newInfoObj.newAttemptForItem = newAttemptForItem;
+        if (new_attempt_for_item) {
+            newInfoObj.new_attempt_for_item = new_attempt_for_item;
         }
-        if (newDoenetStateIdx !== undefined) {
-            newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
+        if (new_doenet_state_idx !== undefined) {
+            newInfoObj.new_doenet_state_idx = new_doenet_state_idx;
         }
-        if (itemUpdated !== undefined) {
-            newInfoObj.itemUpdated = itemUpdated;
+        if (item_updated !== undefined) {
+            newInfoObj.item_updated = item_updated;
         }
 
         expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: creditAchieved,
-                itemScores: activityState.allChildren.map((child) => {
+                item_scores: activityState.allChildren.map((child) => {
                     const idx = selIds.indexOf(child.id);
                     return {
                         id: selIds[idx],
@@ -1427,18 +1437,19 @@ describe("Activity reducer tests", () => {
                     itemAttemptNumbers,
                     sourceHash,
                 },
-                activityId: "newId",
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
                 ...newInfoObj,
             },
         ]);
 
-        if (!newAttempt) {
+        if (!new_attempt) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            expect("newAttempt" in spy.mock.lastCall![0]).eq(false);
+            expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         }
-        if (!newAttemptForItem) {
+        if (!new_attempt_for_item) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+            expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
         }
     }
 
@@ -1524,8 +1535,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 1,
-            newDoenetStateIdx: 0,
+            item_updated: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -1557,8 +1568,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1590,8 +1601,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1644,7 +1655,7 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            newAttempt: true,
+            new_attempt: true,
             spy,
             sourceHash,
         });
@@ -1675,8 +1686,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1767,8 +1778,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 1,
-            newDoenetStateIdx: 0,
+            item_updated: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -1800,8 +1811,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1833,8 +1844,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1883,9 +1894,9 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            newAttempt: true,
-            newAttemptForItem: childIds.indexOf(selIds[1]) + 1,
-            newDoenetStateIdx: 1,
+            new_attempt: true,
+            new_attempt_for_item: childIds.indexOf(selIds[1]) + 1,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1917,8 +1928,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -1950,8 +1961,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -2000,9 +2011,9 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            newAttempt: true,
-            newAttemptForItem: childIds.indexOf(selIds[0]) + 1,
-            newDoenetStateIdx: 0,
+            new_attempt: true,
+            new_attempt_for_item: childIds.indexOf(selIds[0]) + 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -2034,8 +2045,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 1,
-            newDoenetStateIdx: 0,
+            item_updated: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -2049,10 +2060,10 @@ describe("Activity reducer tests", () => {
         docIds,
         attemptNumber,
         itemAttemptNumbers,
-        itemUpdated,
-        newAttempt,
-        newAttemptForItem,
-        newDoenetStateIdx,
+        item_updated,
+        new_attempt,
+        new_attempt_for_item,
+        new_doenet_state_idx,
         sourceHash,
         spy,
     }: {
@@ -2063,10 +2074,10 @@ describe("Activity reducer tests", () => {
         docIds: string[];
         attemptNumber: number;
         itemAttemptNumbers: number[];
-        itemUpdated?: number;
-        newAttempt?: boolean;
-        newAttemptForItem?: number;
-        newDoenetStateIdx?: number;
+        item_updated?: number;
+        new_attempt?: boolean;
+        new_attempt_for_item?: number;
+        new_doenet_state_idx?: number;
         sourceHash: string;
         spy: MockInstance;
     }) {
@@ -2105,29 +2116,29 @@ describe("Activity reducer tests", () => {
         }
 
         const newInfoObj: {
-            newAttempt?: boolean;
-            newAttemptForItem?: number;
-            newDoenetStateIdx?: number;
-            itemUpdated?: number;
+            new_attempt?: boolean;
+            new_attempt_for_item?: number;
+            new_doenet_state_idx?: number;
+            item_updated?: number;
         } = {};
-        if (newAttempt) {
-            newInfoObj.newAttempt = true;
+        if (new_attempt) {
+            newInfoObj.new_attempt = true;
         }
-        if (newAttemptForItem) {
-            newInfoObj.newAttemptForItem = newAttemptForItem;
+        if (new_attempt_for_item) {
+            newInfoObj.new_attempt_for_item = new_attempt_for_item;
         }
-        if (newDoenetStateIdx !== undefined) {
-            newInfoObj.newDoenetStateIdx = newDoenetStateIdx;
+        if (new_doenet_state_idx !== undefined) {
+            newInfoObj.new_doenet_state_idx = new_doenet_state_idx;
         }
-        if (itemUpdated !== undefined) {
-            newInfoObj.itemUpdated = itemUpdated;
+        if (item_updated !== undefined) {
+            newInfoObj.item_updated = item_updated;
         }
 
         expect(spy.mock.lastCall).eqls([
             {
                 subject: "SPLICE.reportScoreAndState",
                 score: creditAchieved,
-                itemScores: [
+                item_scores: [
                     {
                         id: docIds[0],
                         score: docCredits[0],
@@ -2149,18 +2160,19 @@ describe("Activity reducer tests", () => {
                     itemAttemptNumbers,
                     sourceHash,
                 },
-                activityId: "newId",
+                activity_id: "newId",
+                message_id: spy.mock.lastCall![0].message_id,
                 ...newInfoObj,
             },
         ]);
 
-        if (!newAttempt) {
+        if (!new_attempt) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            expect("newAttempt" in spy.mock.lastCall![0]).eq(false);
+            expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         }
-        if (!newAttemptForItem) {
+        if (!new_attempt_for_item) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            expect("newAttemptForItem" in spy.mock.lastCall![0]).eq(false);
+            expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
         }
     }
 
@@ -2233,8 +2245,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 1,
-            newDoenetStateIdx: 0,
+            item_updated: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -2262,8 +2274,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -2291,8 +2303,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -2333,9 +2345,9 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            newAttempt: true,
-            newAttemptForItem: 2,
-            newDoenetStateIdx: 1,
+            new_attempt: true,
+            new_attempt_for_item: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -2363,8 +2375,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -2392,8 +2404,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 2,
-            newDoenetStateIdx: 1,
+            item_updated: 2,
+            new_doenet_state_idx: 1,
             sourceHash,
             spy,
         });
@@ -2433,9 +2445,9 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            newAttempt: true,
-            newAttemptForItem: 1,
-            newDoenetStateIdx: 0,
+            new_attempt: true,
+            new_attempt_for_item: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });
@@ -2463,8 +2475,8 @@ describe("Activity reducer tests", () => {
             docIds,
             attemptNumber,
             itemAttemptNumbers,
-            itemUpdated: 1,
-            newDoenetStateIdx: 0,
+            item_updated: 1,
+            new_doenet_state_idx: 0,
             sourceHash,
             spy,
         });

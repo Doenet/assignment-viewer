@@ -19,6 +19,7 @@ export function Activity({
     answerResponseCountsByItem = [],
     state,
     doenetStates,
+    loadedStateNum,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -45,6 +46,7 @@ export function Activity({
     answerResponseCountsByItem?: Record<string, number>[];
     state: ActivityState;
     doenetStates: unknown[];
+    loadedStateNum: number;
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
@@ -78,6 +80,7 @@ export function Activity({
                     answerResponseCountsByItem={answerResponseCountsByItem}
                     state={state}
                     doenetStates={doenetStates}
+                    loadedStateNum={loadedStateNum}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
@@ -109,6 +112,7 @@ export function Activity({
                     answerResponseCountsByItem={answerResponseCountsByItem}
                     state={state}
                     doenetStates={doenetStates}
+                    loadedStateNum={loadedStateNum}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}
@@ -140,6 +144,7 @@ export function Activity({
                     answerResponseCountsByItem={answerResponseCountsByItem}
                     state={state}
                     doenetStates={doenetStates}
+                    loadedStateNum={loadedStateNum}
                     reportScoreAndStateCallback={reportScoreAndStateCallback}
                     checkRender={checkRender}
                     checkHidden={checkHidden}

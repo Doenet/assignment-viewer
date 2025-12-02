@@ -19,6 +19,7 @@ export function SequenceActivity({
     answerResponseCountsByItem = [],
     state,
     doenetStates,
+    loadedStateNum,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -45,6 +46,7 @@ export function SequenceActivity({
     state: SequenceState;
     answerResponseCountsByItem?: Record<string, number>[];
     doenetStates: unknown[];
+    loadedStateNum: number;
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
@@ -68,6 +70,7 @@ export function SequenceActivity({
                 key={activity.id}
                 state={activity}
                 doenetStates={doenetStates}
+                loadedStateNum={loadedStateNum}
                 flags={flags}
                 baseId={baseId}
                 maxAttemptsAllowed={maxAttemptsAllowed}

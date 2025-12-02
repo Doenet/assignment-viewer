@@ -3,6 +3,6 @@
     "type": "singleDoc",
     "isDescription": false,
     "doenetML": "<problem>Enter <selectFromSequence name='n' from='11' to='15' />: <answer name='ans'>$n</answer></problem>",
-    "version": "0.7.0-beta2",
+    "version": "0.7.0-beta16",
     "numVariants": 5
 }

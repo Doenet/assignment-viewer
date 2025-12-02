@@ -9,7 +9,7 @@
             "type": "singleDoc",
             "isDescription": true,
             "doenetML": "Title page",
-            "version": "0.7.0-beta2",
+            "version": "0.7.0-beta16",
             "numVariants": 1
         },
         {
@@ -17,7 +17,7 @@
             "type": "singleDoc",
             "isDescription": false,
             "doenetML": "<problem>Enter <selectFromSequence name='n' from='1' to='4' />: <answer name='ans'>$n</answer></problem>",
-            "version": "0.7.0-beta2",
+            "version": "0.7.0-beta16",
             "numVariants": 4
         },
         {
@@ -25,7 +25,7 @@
             "type": "singleDoc",
             "isDescription": false,
             "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='h' to='i' />: <answer name='ans'>$a</answer></question>",
-            "version": "0.7.0-beta2",
+            "version": "0.7.0-beta16",
             "numVariants": 2
         },
         {
@@ -33,7 +33,7 @@
             "type": "singleDoc",
             "isDescription": true,
             "doenetML": "Intermediate instructions <selectFromSequence length='3' />",
-            "version": "0.7.0-beta2",
+            "version": "0.7.0-beta16",
             "numVariants": 3
         },
         {
@@ -41,7 +41,7 @@
             "type": "singleDoc",
             "isDescription": false,
             "doenetML": "<problem>Enter <selectFromSequence name='n' from='11' to='15' />: <answer name='ans'>$n</answer></problem>",
-            "version": "0.7.0-beta2",
+            "version": "0.7.0-beta16",
             "numVariants": 5
         },
         {
@@ -49,7 +49,7 @@
             "type": "singleDoc",
             "isDescription": false,
             "doenetML": "<question>Enter <text name='a'>z</text>: <answer name='ans'>$a</answer></question>",
-            "version": "0.7.0-beta2",
+            "version": "0.7.0-beta16",
             "numVariants": 1
         },
         {
@@ -57,7 +57,7 @@
             "type": "singleDoc",
             "isDescription": false,
             "doenetML": "<question>Enter <selectFromSequence name='a' type='letters' from='a' to='c' />: <answer name='ans'>$a</answer></question>",
-            "version": "0.7.0-beta2",
+            "version": "0.7.0-beta16",
             "numVariants": 3
         }
     ]

@@ -19,6 +19,7 @@ export function SingleDocActivity({
     answerResponseCountsByItem = [],
     state,
     doenetStates,
+    loadedStateNum,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -45,6 +46,7 @@ export function SingleDocActivity({
     answerResponseCountsByItem?: Record<string, number>[];
     state: SingleDocState;
     doenetStates: unknown[];
+    loadedStateNum: number;
     reportScoreAndStateCallback: (args: unknown) => void;
     checkRender: (state: ActivityState) => boolean;
     checkHidden: (state: ActivityState) => boolean;
@@ -63,6 +65,7 @@ export function SingleDocActivity({
     const [rendered, setRendered] = useState(false);
 
     const [attemptNumber, setAttemptNumber] = useState(state.attemptNumber);
+    const [loadedStateNumUsed, setLoadedStateNumUsed] = useState(0);
     const [initialDoenetState, setInitialDoenetState] = useState<Record<
         string,
         unknown
@@ -75,6 +78,16 @@ export function SingleDocActivity({
             any
         > | null,
     );
+
+    console.log({
+        doenetStateIdx: state.doenetStateIdx,
+        resultingState:
+            state.doenetStateIdx !== null && doenetStates[state.doenetStateIdx],
+        attemptNumber,
+        attemptNumberInState: state.attemptNumber,
+        loadedStateNum,
+        usedLoadedStateNum: loadedStateNumUsed,
+    });
 
     const [requestedVariantIndex, setRequestedVariantIndex] = useState(
         state.currentVariant,
@@ -109,8 +122,12 @@ export function SingleDocActivity({
     // Note: given the way the `<DoenetViewer>` iframe is set up, any changes in props
     // will reinitialize the activity. Hence, we make sure that no props change
     // unless the attempt number has changed.
-    if (state.attemptNumber !== attemptNumber) {
+    if (
+        state.attemptNumber !== attemptNumber ||
+        loadedStateNumUsed !== loadedStateNum
+    ) {
         setAttemptNumber(state.attemptNumber);
+        setLoadedStateNumUsed(loadedStateNum);
 
         setInitialDoenetState(
             (state.doenetStateIdx === null
