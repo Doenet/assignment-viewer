@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import {
     ActivityVariantRecord,
     ReportScoreByItemMessage,
@@ -96,9 +97,10 @@ export function activityDoenetStateReducer(
                 );
                 const message: ReportScoreByItemMessage = {
                     score: action.state.activityState.creditAchieved,
-                    itemScores,
+                    item_scores: itemScores,
                     subject: "SPLICE.reportScoreByItem",
-                    activityId: action.baseId,
+                    activity_id: action.baseId,
+                    message_id: nanoid(),
                 };
                 window.postMessage(message);
             }
@@ -127,10 +129,11 @@ export function activityDoenetStateReducer(
                         sourceHash: action.sourceHash,
                     },
                     score: newActivityState.creditAchieved,
-                    itemScores,
+                    item_scores: itemScores,
                     subject: "SPLICE.reportScoreAndState",
-                    activityId: action.baseId,
-                    newAttempt: true,
+                    activity_id: action.baseId,
+                    message_id: nanoid(),
+                    new_attempt: true,
                 };
                 window.postMessage(message);
             }
@@ -185,12 +188,13 @@ export function activityDoenetStateReducer(
                         sourceHash: action.sourceHash,
                     },
                     score: newActivityState.creditAchieved,
-                    itemScores,
-                    newDoenetStateIdx: action.doenetStateIdx,
+                    item_scores: itemScores,
+                    new_doenet_state_idx: action.doenetStateIdx,
                     subject: "SPLICE.reportScoreAndState",
-                    activityId: action.baseId,
-                    newAttempt: true,
-                    newAttemptForItem,
+                    activity_id: action.baseId,
+                    message_id: nanoid(),
+                    new_attempt: true,
+                    new_attempt_for_item: newAttemptForItem,
                 };
 
                 window.postMessage(message);
@@ -221,11 +225,12 @@ export function activityDoenetStateReducer(
                         itemAttemptNumbers: state.itemAttemptNumbers,
                     },
                     score: newActivityState.creditAchieved,
-                    itemScores,
-                    itemUpdated,
-                    newDoenetStateIdx: action.doenetStateIdx,
+                    item_scores: itemScores,
+                    item_updated: itemUpdated,
+                    new_doenet_state_idx: action.doenetStateIdx,
                     subject: "SPLICE.reportScoreAndState",
-                    activityId: action.baseId,
+                    activity_id: action.baseId,
+                    message_id: nanoid(),
                 };
 
                 window.postMessage(message);

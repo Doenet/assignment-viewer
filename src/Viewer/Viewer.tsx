@@ -178,147 +178,78 @@ export function Viewer({
 
     useEffect(() => {
         const listenersAdded: ((event: MessageEvent) => void)[] = [];
-        const timeoutIdsAdded: number[] = [];
-        function loadState() {
-            return new Promise<ActivityAndDoenetState | null>(
-                (resolve, reject) => {
-                    const messageId = nanoid();
 
-                    window.postMessage({
-                        subject: "SPLICE.getState",
-                        messageId,
-                        activityId,
-                        userId,
-                    });
+        function requestLoadState() {
+            const message_id = nanoid();
 
-                    let waitingToLoadState = true;
-                    let timeoutId = -1;
+            window.postMessage({
+                subject: "SPLICE.getState",
+                message_id,
+                activity_id: activityId,
+                user_id: userId,
+            });
 
-                    const loadStateListener = function (event: MessageEvent) {
-                        if (event.origin !== window.location.origin) {
-                            return;
-                        }
+            const loadStateListener = function (event: MessageEvent) {
+                if (event.origin !== window.location.origin) {
+                    return;
+                }
 
-                        if (
-                            event.data.subject === "SPLICE.getState.response" &&
-                            event.data.messageId === messageId
-                        ) {
-                            waitingToLoadState = false;
-                            if (event.data.success) {
-                                if (event.data.loadedState) {
-                                    const exportedState: unknown =
-                                        event.data.state;
-                                    if (
-                                        isExportedActivityState(exportedState)
-                                    ) {
-                                        if (
-                                            validateStateAndSource(
-                                                exportedState,
-                                                source,
-                                            )
-                                        ) {
-                                            const state =
-                                                addSourceToActivityState(
-                                                    exportedState.activityState,
-                                                    source,
-                                                );
-                                            resolve({
-                                                activityState: state,
-                                                doenetStates:
-                                                    exportedState.doenetStates,
-                                                itemAttemptNumbers:
-                                                    exportedState.itemAttemptNumbers,
-                                            });
-                                        } else {
-                                            reject(
-                                                Error(
-                                                    "Received state did not match source",
-                                                ),
-                                            );
-                                        }
-                                    } else {
-                                        reject(Error("Received invalid state"));
-                                    }
-                                } else {
-                                    resolve(null);
-                                }
-                            } else {
-                                reject(Error("Error loading assignment state"));
-                            }
-
-                            window.removeEventListener(
-                                "message",
-                                loadStateListener,
+                if (
+                    event.data.subject === "SPLICE.getState.response" &&
+                    event.data.message_id === message_id
+                ) {
+                    const exportedState: unknown = event.data.state;
+                    if (isExportedActivityState(exportedState)) {
+                        if (validateStateAndSource(exportedState, source)) {
+                            const state = addSourceToActivityState(
+                                exportedState.activityState,
+                                source,
                             );
-                            clearTimeout(timeoutId);
+
+                            activityDoenetStateDispatch({
+                                type: "set",
+                                state: {
+                                    activityState: state,
+                                    doenetStates: exportedState.doenetStates,
+                                    itemAttemptNumbers:
+                                        exportedState.itemAttemptNumbers,
+                                },
+                                allowSaveState: flags.allowSaveState,
+                                baseId: activityId,
+                            });
                         }
-                    };
+                    }
 
-                    window.addEventListener("message", loadStateListener);
-                    listenersAdded.push(loadStateListener);
+                    window.removeEventListener("message", loadStateListener);
+                }
+            };
 
-                    const MESSAGE_TIMEOUT = 15000;
-
-                    timeoutId = setTimeout(() => {
-                        if (!waitingToLoadState) {
-                            return;
-                        }
-                        reject(Error("Time out loading assignment state"));
-                    }, MESSAGE_TIMEOUT);
-
-                    timeoutIdsAdded.push(timeoutId);
-                },
-            );
+            window.addEventListener("message", loadStateListener);
+            listenersAdded.push(loadStateListener);
         }
 
-        function getNewActivityState() {
-            try {
-                activityDoenetStateDispatch({
-                    type: "generateNewActivityAttempt",
-                    numActivityVariants,
-                    initialQuestionCounter: 1,
-                    allowSaveState: flags.allowSaveState,
-                    baseId: activityId,
-                    sourceHash,
-                });
-            } catch (e) {
-                const message = e instanceof Error ? e.message : "";
-                setErrMsg(`Error in activity: ${message}`);
-            }
+        try {
+            activityDoenetStateDispatch({
+                type: "generateNewActivityAttempt",
+                numActivityVariants,
+                initialQuestionCounter: 1,
+                allowSaveState: flags.allowSaveState,
+                baseId: activityId,
+                sourceHash,
+            });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : "";
+            setErrMsg(`Error in activity: ${message}`);
         }
 
         if (flags.allowLoadState) {
-            loadState()
-                .then((state) => {
-                    if (isActivityAndDoenetState(state)) {
-                        activityDoenetStateDispatch({
-                            type: "set",
-                            state,
-                            allowSaveState: flags.allowSaveState,
-                            baseId: activityId,
-                        });
-                    } else if (state === null) {
-                        getNewActivityState();
-                    } else {
-                        setErrMsg(`Invalid state returned`);
-                    }
-                })
-                .catch((e: unknown) => {
-                    setErrMsg(
-                        `Failed to load state: ${e instanceof Error ? e.message : ""}`,
-                    );
-                });
-        } else {
-            getNewActivityState();
+            requestLoadState();
         }
 
         return () => {
             // make sure all listeners are removed
             for (const listener of listenersAdded) {
                 window.removeEventListener("message", listener);
-            }
-            for (const timeoutId of timeoutIdsAdded) {
-                clearTimeout(timeoutId);
             }
         };
     }, [
@@ -343,10 +274,10 @@ export function Viewer({
             activityDoenetStateDispatch({
                 type: "updateSingleState",
                 docId: msg.docId,
-                doenetState: msg.data.state,
+                doenetState: msg.state,
                 doenetStateIdx: itemSequence.indexOf(msg.docId),
                 itemSequence,
-                creditAchieved: msg.data.score,
+                creditAchieved: msg.score,
                 allowSaveState: flags.allowSaveState,
                 baseId: activityId,
                 sourceHash,

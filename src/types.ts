@@ -53,10 +53,8 @@ export function isDocumentStructureData(
 export type singleDocReportStateMessage = {
     activityId: string;
     docId: string;
-    data: {
-        score: number;
-        state: unknown;
-    };
+    score: number;
+    state: unknown;
 };
 
 export function isSingleDocReportStateMessage(
@@ -70,29 +68,27 @@ export function isSingleDocReportStateMessage(
         typeof typedObj === "object" &&
         typeof typedObj.activityId === "string" &&
         typeof typedObj.docId === "string" &&
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        typedObj.data !== null &&
-        typeof typedObj.data === "object" &&
-        typeof typedObj.data.score === "number"
+        typeof typedObj.score === "number"
     );
 }
 
 export type ReportStateMessage = {
     subject: "SPLICE.reportScoreAndState";
-    activityId: string;
+    message_id: string;
+    activity_id: string;
     score: number;
-    itemScores: {
+    item_scores: {
         id: string;
         score: number;
         docId: string;
         shuffledOrder: number;
         variant: number;
     }[];
-    itemUpdated?: number;
+    item_updated?: number;
     state: ExportedActivityState;
-    newAttempt?: boolean;
-    newAttemptForItem?: number;
-    newDoenetStateIdx?: number;
+    new_attempt?: boolean;
+    new_attempt_for_item?: number;
+    new_doenet_state_idx?: number;
 };
 
 export function isReportStateMessage(obj: unknown): obj is ReportStateMessage {
@@ -104,10 +100,11 @@ export function isReportStateMessage(obj: unknown): obj is ReportStateMessage {
         typeof typedObj === "object" &&
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         typedObj.subject === "SPLICE.reportScoreAndState" &&
-        typeof typedObj.activityId === "string" &&
+        typeof typedObj.message_id === "string" &&
+        typeof typedObj.activity_id === "string" &&
         typeof typedObj.score === "number" &&
-        Array.isArray(typedObj.itemScores) &&
-        typedObj.itemScores.every(
+        Array.isArray(typedObj.item_scores) &&
+        typedObj.item_scores.every(
             (item) =>
                 typeof item.id === "string" &&
                 typeof item.score === "number" &&
@@ -115,23 +112,24 @@ export function isReportStateMessage(obj: unknown): obj is ReportStateMessage {
                 typeof item.shuffledOrder === "number" &&
                 typeof item.variant === "number",
         ) &&
-        (typedObj.itemUpdated === undefined ||
-            typeof typedObj.itemUpdated === "number") &&
+        (typedObj.item_updated === undefined ||
+            typeof typedObj.item_updated === "number") &&
         isExportedActivityState(typedObj.state) &&
-        (typedObj.newAttempt === undefined ||
-            typeof typedObj.newAttempt === "boolean") &&
-        (typedObj.newAttemptForItem === undefined ||
-            typeof typedObj.newAttemptForItem === "number") &&
-        (typedObj.newDoenetStateIdx === undefined ||
-            typeof typedObj.newDoenetStateIdx === "number")
+        (typedObj.new_attempt === undefined ||
+            typeof typedObj.new_attempt === "boolean") &&
+        (typedObj.new_attempt_for_item === undefined ||
+            typeof typedObj.new_attempt_for_item === "number") &&
+        (typedObj.new_doenet_state_idx === undefined ||
+            typeof typedObj.new_doenet_state_idx === "number")
     );
 }
 
 export type ReportScoreByItemMessage = {
     subject: "SPLICE.reportScoreByItem";
-    activityId: string;
+    message_id: string;
+    activity_id: string;
     score: number;
-    itemScores: {
+    item_scores: {
         id: string;
         score: number;
         docId: string;
@@ -143,18 +141,19 @@ export type ReportScoreByItemMessage = {
 export function isReportScoreByItemMessage(
     obj: unknown,
 ): obj is ReportScoreByItemMessage {
-    const typeObj = obj as ReportScoreByItemMessage;
+    const typedObj = obj as ReportScoreByItemMessage;
 
     return (
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        typeObj !== null &&
-        typeof typeObj === "object" &&
+        typedObj !== null &&
+        typeof typedObj === "object" &&
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        typeObj.subject === "SPLICE.reportScoreByItem" &&
-        typeof typeObj.activityId === "string" &&
-        typeof typeObj.score === "number" &&
-        Array.isArray(typeObj.itemScores) &&
-        typeObj.itemScores.every(
+        typedObj.subject === "SPLICE.reportScoreByItem" &&
+        typeof typedObj.message_id === "string" &&
+        typeof typedObj.activity_id === "string" &&
+        typeof typedObj.score === "number" &&
+        Array.isArray(typedObj.item_scores) &&
+        typedObj.item_scores.every(
             (item) =>
                 typeof item.id === "string" &&
                 typeof item.score === "number" &&

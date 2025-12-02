@@ -3,419 +3,80 @@
         "type": "sequence",
         "id": "seq",
         "parentId": null,
-        "initialVariant": 640554,
-        "creditAchieved": 0,
+        "initialVariant": 600722,
+        "creditAchieved": 0.5,
         "allChildren": [
             {
                 "type": "select",
                 "id": "sel",
                 "parentId": "seq",
-                "initialVariant": 120384,
+                "initialVariant": 16517,
                 "creditAchieved": 0,
                 "allChildren": [
                     {
                         "type": "singleDoc",
-                        "id": "qrf|1",
+                        "id": "qrf",
                         "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 1,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|2",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 2,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|3",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
+                        "initialVariant": 391851,
                         "creditAchieved": 0,
                         "attemptNumber": 1,
-                        "currentVariant": 3,
-                        "previousVariants": [3],
-                        "initialQuestionCounter": 3,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 3,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|4",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 4,
-                        "previousVariants": [4],
-                        "initialQuestionCounter": 3,
-                        "doenetStateIdx": 1,
-                        "restrictToVariantSlice": {
-                            "idx": 4,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|5",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 5,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|6",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 6,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|7",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 7,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|8",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 8,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|9",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 9,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|10",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 10,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|1",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 1,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|2",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 2,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|3",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 3,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|4",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 4,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|5",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 5,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|6",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 6,
-                        "previousVariants": [6],
+                        "currentVariant": 5,
+                        "previousVariants": [
+                            5
+                        ],
                         "initialQuestionCounter": 1,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 6,
-                            "numSlices": 12
-                        }
+                        "doenetStateIdx": 0
                     },
                     {
                         "type": "singleDoc",
-                        "id": "abc|7",
+                        "id": "abc",
                         "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 7,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|8",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 8,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|9",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 9,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|10",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 10,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|11",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 11,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|12",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 12,
-                            "numSlices": 12
-                        }
+                        "initialVariant": 944199,
+                        "creditAchieved": 0.5,
+                        "attemptNumber": 1,
+                        "currentVariant": 2,
+                        "previousVariants": [
+                            2
+                        ],
+                        "initialQuestionCounter": 1,
+                        "doenetStateIdx": 0
                     }
                 ],
-                "attemptNumber": 1,
+                "attemptNumber": 2,
                 "selectedChildren": [
                     {
                         "type": "singleDoc",
-                        "id": "abc|6",
+                        "id": "qrf",
                         "parentId": "sel",
-                        "initialVariant": 396719,
+                        "initialVariant": 391851,
                         "creditAchieved": 0,
                         "attemptNumber": 1,
-                        "currentVariant": 6,
-                        "previousVariants": [6],
+                        "currentVariant": 5,
+                        "previousVariants": [
+                            5
+                        ],
                         "initialQuestionCounter": 1,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 6,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|4",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 4,
-                        "previousVariants": [4],
-                        "initialQuestionCounter": 3,
-                        "doenetStateIdx": 1,
-                        "restrictToVariantSlice": {
-                            "idx": 4,
-                            "numSlices": 10
-                        }
+                        "doenetStateIdx": 0
                     }
                 ],
-                "previousSelections": ["abc|6", "qrf|3", "qrf|4"],
-                "initialQuestionCounter": 3
+                "previousSelections": [
+                    "abc",
+                    "qrf"
+                ],
+                "initialQuestionCounter": 1
             },
             {
                 "type": "select",
                 "id": "sel2",
                 "parentId": "seq",
-                "initialVariant": 574127,
-                "creditAchieved": 0,
+                "initialVariant": 900865,
+                "creditAchieved": 1,
                 "allChildren": [
                     {
                         "type": "singleDoc",
                         "id": "sel2a",
                         "parentId": "sel2",
-                        "initialVariant": 933832,
+                        "initialVariant": 107834,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
@@ -427,7 +88,7 @@
                         "type": "singleDoc",
                         "id": "sel2b",
                         "parentId": "sel2",
-                        "initialVariant": 154678,
+                        "initialVariant": 63578,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
@@ -439,19 +100,21 @@
                         "type": "singleDoc",
                         "id": "sel2c",
                         "parentId": "sel2",
-                        "initialVariant": 516352,
-                        "creditAchieved": 0,
+                        "initialVariant": 380803,
+                        "creditAchieved": 1,
                         "attemptNumber": 1,
-                        "currentVariant": 4,
-                        "previousVariants": [4],
-                        "initialQuestionCounter": 4,
-                        "doenetStateIdx": null
+                        "currentVariant": 8,
+                        "previousVariants": [
+                            8
+                        ],
+                        "initialQuestionCounter": 2,
+                        "doenetStateIdx": 1
                     },
                     {
                         "type": "singleDoc",
                         "id": "sel2d",
                         "parentId": "sel2",
-                        "initialVariant": 546636,
+                        "initialVariant": 52343,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
@@ -466,17 +129,21 @@
                         "type": "singleDoc",
                         "id": "sel2c",
                         "parentId": "sel2",
-                        "initialVariant": 516352,
-                        "creditAchieved": 0,
+                        "initialVariant": 380803,
+                        "creditAchieved": 1,
                         "attemptNumber": 1,
-                        "currentVariant": 4,
-                        "previousVariants": [4],
-                        "initialQuestionCounter": 4,
-                        "doenetStateIdx": null
+                        "currentVariant": 8,
+                        "previousVariants": [
+                            8
+                        ],
+                        "initialQuestionCounter": 2,
+                        "doenetStateIdx": 1
                     }
                 ],
-                "previousSelections": ["sel2c"],
-                "initialQuestionCounter": 4
+                "previousSelections": [
+                    "sel2c"
+                ],
+                "initialQuestionCounter": 2
             }
         ],
         "attemptNumber": 1,
@@ -485,412 +152,73 @@
                 "type": "select",
                 "id": "sel",
                 "parentId": "seq",
-                "initialVariant": 120384,
+                "initialVariant": 16517,
                 "creditAchieved": 0,
                 "allChildren": [
                     {
                         "type": "singleDoc",
-                        "id": "qrf|1",
+                        "id": "qrf",
                         "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 1,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|2",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 2,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|3",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
+                        "initialVariant": 391851,
                         "creditAchieved": 0,
                         "attemptNumber": 1,
-                        "currentVariant": 3,
-                        "previousVariants": [3],
-                        "initialQuestionCounter": 3,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 3,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|4",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 4,
-                        "previousVariants": [4],
-                        "initialQuestionCounter": 3,
-                        "doenetStateIdx": 1,
-                        "restrictToVariantSlice": {
-                            "idx": 4,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|5",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 5,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|6",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 6,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|7",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 7,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|8",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 8,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|9",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 9,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|10",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 10,
-                            "numSlices": 10
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|1",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 1,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|2",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 2,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|3",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 3,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|4",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 4,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|5",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 5,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|6",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 6,
-                        "previousVariants": [6],
+                        "currentVariant": 5,
+                        "previousVariants": [
+                            5
+                        ],
                         "initialQuestionCounter": 1,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 6,
-                            "numSlices": 12
-                        }
+                        "doenetStateIdx": 0
                     },
                     {
                         "type": "singleDoc",
-                        "id": "abc|7",
+                        "id": "abc",
                         "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 7,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|8",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 8,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|9",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 9,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|10",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 10,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|11",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 11,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "abc|12",
-                        "parentId": "sel",
-                        "initialVariant": 396719,
-                        "creditAchieved": 0,
-                        "attemptNumber": 0,
-                        "currentVariant": 0,
-                        "previousVariants": [],
-                        "initialQuestionCounter": 0,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 12,
-                            "numSlices": 12
-                        }
+                        "initialVariant": 944199,
+                        "creditAchieved": 0.5,
+                        "attemptNumber": 1,
+                        "currentVariant": 2,
+                        "previousVariants": [
+                            2
+                        ],
+                        "initialQuestionCounter": 1,
+                        "doenetStateIdx": 0
                     }
                 ],
-                "attemptNumber": 1,
+                "attemptNumber": 2,
                 "selectedChildren": [
                     {
                         "type": "singleDoc",
-                        "id": "abc|6",
+                        "id": "qrf",
                         "parentId": "sel",
-                        "initialVariant": 396719,
+                        "initialVariant": 391851,
                         "creditAchieved": 0,
                         "attemptNumber": 1,
-                        "currentVariant": 6,
-                        "previousVariants": [6],
+                        "currentVariant": 5,
+                        "previousVariants": [
+                            5
+                        ],
                         "initialQuestionCounter": 1,
-                        "doenetStateIdx": null,
-                        "restrictToVariantSlice": {
-                            "idx": 6,
-                            "numSlices": 12
-                        }
-                    },
-                    {
-                        "type": "singleDoc",
-                        "id": "qrf|4",
-                        "parentId": "sel",
-                        "initialVariant": 573303,
-                        "creditAchieved": 0,
-                        "attemptNumber": 1,
-                        "currentVariant": 4,
-                        "previousVariants": [4],
-                        "initialQuestionCounter": 3,
-                        "doenetStateIdx": 1,
-                        "restrictToVariantSlice": {
-                            "idx": 4,
-                            "numSlices": 10
-                        }
+                        "doenetStateIdx": 0
                     }
                 ],
-                "previousSelections": ["abc|6", "qrf|3", "qrf|4"],
-                "initialQuestionCounter": 3
+                "previousSelections": [
+                    "abc",
+                    "qrf"
+                ],
+                "initialQuestionCounter": 1
             },
             {
                 "type": "select",
                 "id": "sel2",
                 "parentId": "seq",
-                "initialVariant": 574127,
-                "creditAchieved": 0,
+                "initialVariant": 900865,
+                "creditAchieved": 1,
                 "allChildren": [
                     {
                         "type": "singleDoc",
                         "id": "sel2a",
                         "parentId": "sel2",
-                        "initialVariant": 933832,
+                        "initialVariant": 107834,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
@@ -902,7 +230,7 @@
                         "type": "singleDoc",
                         "id": "sel2b",
                         "parentId": "sel2",
-                        "initialVariant": 154678,
+                        "initialVariant": 63578,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
@@ -914,19 +242,21 @@
                         "type": "singleDoc",
                         "id": "sel2c",
                         "parentId": "sel2",
-                        "initialVariant": 516352,
-                        "creditAchieved": 0,
+                        "initialVariant": 380803,
+                        "creditAchieved": 1,
                         "attemptNumber": 1,
-                        "currentVariant": 4,
-                        "previousVariants": [4],
-                        "initialQuestionCounter": 4,
-                        "doenetStateIdx": null
+                        "currentVariant": 8,
+                        "previousVariants": [
+                            8
+                        ],
+                        "initialQuestionCounter": 2,
+                        "doenetStateIdx": 1
                     },
                     {
                         "type": "singleDoc",
                         "id": "sel2d",
                         "parentId": "sel2",
-                        "initialVariant": 546636,
+                        "initialVariant": 52343,
                         "creditAchieved": 0,
                         "attemptNumber": 0,
                         "currentVariant": 0,
@@ -941,33 +271,59 @@
                         "type": "singleDoc",
                         "id": "sel2c",
                         "parentId": "sel2",
-                        "initialVariant": 516352,
-                        "creditAchieved": 0,
+                        "initialVariant": 380803,
+                        "creditAchieved": 1,
                         "attemptNumber": 1,
-                        "currentVariant": 4,
-                        "previousVariants": [4],
-                        "initialQuestionCounter": 4,
-                        "doenetStateIdx": null
+                        "currentVariant": 8,
+                        "previousVariants": [
+                            8
+                        ],
+                        "initialQuestionCounter": 2,
+                        "doenetStateIdx": 1
                     }
                 ],
-                "previousSelections": ["sel2c"],
-                "initialQuestionCounter": 4
+                "previousSelections": [
+                    "sel2c"
+                ],
+                "initialQuestionCounter": 2
             }
         ]
     },
-    "sourceHash": "372925bb55564f82bcf24f0534e6f0f416924bac",
+    "sourceHash": "bf5e6289a81bcf859688f8aa8195b2edd4b73fae",
     "doenetStates": [
-        null,
         {
             "cid": "bafkreihsl5tcsjhj6g5ffdibj3ssse7fpnsgib6qqddlb7sw7ljlycpzwq",
-            "coreInfo": "{\"generatedVariantString\":\"{\\\"index\\\":4,\\\"name\\\":\\\"d\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_document1\\\"},\\\"subvariants\\\":[{\\\"index\\\":4,\\\"name\\\":\\\"d\\\",\\\"meta\\\":{\\\"createdBy\\\":\\\"/_problem1\\\"},\\\"subvariants\\\":[{\\\"indices\\\":[8],\\\"meta\\\":{\\\"createdBy\\\":\\\"/_selectfromsequence1\\\"}}]}]}\",\"allPossibleVariants\":[\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\",\"h\",\"i\",\"j\"],\"rendererTypesInDocument\":[\"section\",\"answer\",\"mathInput\",\"vector\",\"math\",\"number\",\"text\"],\"documentToRender\":{\"componentName\":\"/_document1\",\"effectiveName\":\"/_document1\",\"componentType\":\"document\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_document1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_document1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_document1\"}}}}",
-            "coreState": "{\"/_selectfromsequence1\":{\"errorMessage\":\"\",\"selectedValues\":[8],\"selectedIndices\":[8]},\"/__mathinput_KXh6glTyP5\":{\"rawRendererValue\":\"\",\"lastValueForDisplay\":\"＿\"},\"/__math_d9bmzOvKly\":{\"expressionWithCodes\":4},\"/_answer1\":{\"justSubmitted\":true,\"creditAchieved\":0,\"responseHasBeenSubmitted\":true,\"numSubmittedResponses\":1,\"submittedResponses\":{\"0\":\"＿\",\"mergeObject\":true},\"submittedResponsesComponentType\":[\"math\"],\"creditAchievedDependenciesAtSubmit\":\"XrOtMqA/+Szv0itkDLp7Y9CdvuU=\",\"numSubmissions\":1},\"/_document1\":{\"theme\":\"light\"},\"/__award_XTZPmlFGuS\":{\"awarded\":false,\"creditAchieved\":0,\"fractionSatisfied\":0}}",
-            "rendererState": "{\"__componentNeedingUpdateValue\":null,\"/__mathinput_KXh6glTyP5\":{\"stateValues\":{\"minWidth\":50,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"includeCheckWork\":true,\"suppressCheckwork\":false,\"creditAchieved\":0,\"valueHasBeenValidated\":true,\"showCorrectness\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"label\":\"\",\"labelHasLatex\":false,\"labelForGraph\":\"\",\"valueForDisplay\":\"＿\",\"rawRendererValue\":\"\"},\"childrenInstructions\":[]},\"/_answer1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"fixed\":false,\"fixLocation\":false,\"disabledOriginal\":false,\"showCorrectness\":true,\"inputChildren\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\"}],\"inputChildrenWithValues\":[{\"componentType\":\"mathInput\",\"componentName\":\"/__mathinput_KXh6glTyP5\",\"stateValues\":{\"value\":\"＿\"}}],\"suppressCheckwork\":false,\"delegateCheckWork\":true,\"creditAchieved\":0,\"justSubmitted\":true,\"numAttemptsLeft\":{\"objectType\":\"special-numeric\",\"stringValue\":\"Infinity\"},\"disabled\":false},\"childrenInstructions\":[{\"componentName\":\"/__mathinput_KXh6glTyP5\",\"effectiveName\":\"/__mathinput_KXh6glTyP5\",\"componentType\":\"mathInput\",\"rendererType\":\"mathInput\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateRawValue\":{\"actionName\":\"updateRawValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"updateValue\":{\"actionName\":\"updateValue\",\"componentName\":\"/__mathinput_KXh6glTyP5\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}}]},\"/__number_SYcjAbK4Kk\":{\"stateValues\":{\"renderAsMath\":false,\"draggable\":true,\"layer\":0,\"positionFromAnchor\":\"center\",\"hidden\":false,\"disabled\":false,\"fixed\":true,\"fixLocation\":false,\"selectedStyle\":{\"lineColor\":\"#648FFF\",\"lineColorWord\":\"blue\",\"lineColorDarkMode\":\"#648FFF\",\"lineColorWordDarkMode\":\"blue\",\"lineOpacity\":0.7,\"lineWidth\":4,\"lineWidthWord\":\"thick\",\"lineStyle\":\"solid\",\"lineStyleWord\":\"\",\"markerColor\":\"#648FFF\",\"markerColorWord\":\"blue\",\"markerColorDarkMode\":\"#648FFF\",\"markerColorWordDarkMode\":\"blue\",\"markerOpacity\":0.7,\"markerStyle\":\"circle\",\"markerStyleWord\":\"point\",\"markerSize\":5,\"fillColor\":\"#648FFF\",\"fillColorWord\":\"blue\",\"fillColorDarkMode\":\"#648FFF\",\"fillColorWordDarkMode\":\"blue\",\"fillOpacity\":0.3,\"textColor\":\"black\",\"textColorWord\":\"black\",\"textColorDarkMode\":\"white\",\"textColorWordDarkMode\":\"white\"},\"anchor\":[\"vector\",0,0],\"text\":\"8\"},\"childrenInstructions\":[]},\"/_problem1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"boxed\":false,\"asList\":false,\"hidden\":false,\"disabled\":false,\"fixed\":false,\"fixLocation\":false,\"inAList\":false,\"titleChildName\":null,\"title\":\"Problem 3\",\"titlePrefix\":\"Problem 3\",\"containerTag\":\"article\",\"level\":1,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":0,\"collapsible\":false,\"open\":true,\"rendered\":true,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"_compositeReplacementActiveRange\":[{\"compositeName\":\"/_selectfromsequence1\",\"firstInd\":2,\"lastInd\":2,\"asList\":true,\"potentialListComponents\":[true]}]},\"childrenInstructions\":[\"2+2=\",{\"componentName\":\"/_answer1\",\"effectiveName\":\"/_answer1\",\"componentType\":\"answer\",\"rendererType\":\"answer\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_answer1\"},\"submitAnswer\":{\"actionName\":\"submitAnswer\",\"componentName\":\"/_answer1\"}}},{\"componentName\":\"/__number_SYcjAbK4Kk\",\"effectiveName\":\"/__number_SYcjAbK4Kk\",\"componentType\":\"number\",\"rendererType\":\"number\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"moveNumber\":{\"actionName\":\"moveNumber\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"numberClicked\":{\"actionName\":\"numberClicked\",\"componentName\":\"/__number_SYcjAbK4Kk\"},\"numberFocused\":{\"actionName\":\"numberFocused\",\"componentName\":\"/__number_SYcjAbK4Kk\"}}}]},\"/_document1\":{\"stateValues\":{\"submitLabel\":\"Check Work\",\"submitLabelNoCorrectness\":\"Submit Response\",\"hidden\":false,\"disabled\":false,\"fixed\":null,\"fixLocation\":false,\"titleChildName\":null,\"title\":\"\",\"level\":0,\"justSubmitted\":true,\"showCorrectness\":true,\"creditAchieved\":0,\"createSubmitAllButton\":false,\"suppressAnswerSubmitButtons\":false,\"suppressCheckwork\":false,\"containerTag\":\"div\"},\"childrenInstructions\":[{\"componentName\":\"/_problem1\",\"effectiveName\":\"/_problem1\",\"componentType\":\"problem\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentName\":\"/_problem1\"},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentName\":\"/_problem1\"},\"revealSection\":{\"actionName\":\"revealSection\",\"componentName\":\"/_problem1\"},\"closeSection\":{\"actionName\":\"closeSection\",\"componentName\":\"/_problem1\"},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentName\":\"/_problem1\"}}}]}}",
-            "docId": "qrf|4",
+            "coreInfo": "{\"generatedVariantString\":\"{\\\"index\\\":5,\\\"name\\\":\\\"e\\\",\\\"meta\\\":{\\\"createdBy\\\":0},\\\"subvariants\\\":[{\\\"index\\\":5,\\\"name\\\":\\\"e\\\",\\\"meta\\\":{\\\"createdBy\\\":1},\\\"subvariants\\\":[{\\\"indices\\\":[7],\\\"meta\\\":{\\\"createdBy\\\":3}}]}]}\",\"allPossibleVariants\":[\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\",\"h\",\"i\",\"j\"],\"rendererTypesInDocument\":[\"_error\",\"section\",\"answer\",\"mathInput\",\"vector\",\"math\",\"number\",\"text\"],\"documentToRender\":{\"componentIdx\":0,\"effectiveIdx\":0,\"id\":\"0\",\"componentType\":\"document\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentIdx\":0},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentIdx\":0},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentIdx\":0}}}}",
+            "coreState": "{}",
+            "rendererState": null,
+            "initializeCounters": {
+                "question": 1,
+                "problem": 1,
+                "exercise": 1
+            },
+            "docId": "qrf",
+            "attemptNumber": 1,
+            "activityId": "apple",
+            "onSubmission": false
+        },
+        {
+            "cid": "bafkreihbvngtphzmq2ronni2hub7ipzk5jxa5fy7noj676djkyyzvuwfp4",
+            "coreInfo": "{\"generatedVariantString\":\"{\\\"index\\\":8,\\\"name\\\":\\\"h\\\",\\\"meta\\\":{\\\"createdBy\\\":0},\\\"subvariants\\\":[{\\\"index\\\":8,\\\"name\\\":\\\"h\\\",\\\"meta\\\":{\\\"createdBy\\\":1},\\\"subvariants\\\":[{\\\"indices\\\":[5],\\\"meta\\\":{\\\"createdBy\\\":3}}]}]}\",\"allPossibleVariants\":[\"a\",\"b\",\"c\",\"d\",\"e\",\"f\",\"g\",\"h\",\"i\",\"j\"],\"rendererTypesInDocument\":[\"_error\",\"section\",\"p\",\"number\",\"text\",\"answer\",\"mathInput\",\"vector\",\"math\"],\"documentToRender\":{\"componentIdx\":0,\"effectiveIdx\":0,\"id\":\"0\",\"componentType\":\"document\",\"rendererType\":\"section\",\"actions\":{\"copyDoenetMLToClipboard\":{\"actionName\":\"copyDoenetMLToClipboard\",\"componentIdx\":0},\"submitAllAnswers\":{\"actionName\":\"submitAllAnswers\",\"componentIdx\":0},\"recordVisibilityChange\":{\"actionName\":\"recordVisibilityChange\",\"componentIdx\":0}}}}",
+            "coreState": "{\"0\":{\"theme\":\"light\"},\"3\":{\"errorMessage\":\"\",\"selectedValues\":[5],\"selectedIndices\":[5]},\"4\":{\"justSubmitted\":true,\"hasBeenCorrect\":true,\"creditAchieved\":1,\"responseHasBeenSubmitted\":true,\"numSubmittedResponses\":1,\"submittedResponses\":{\"0\":5,\"mergeObject\":true},\"submittedResponsesComponentType\":[\"math\"],\"creditAchievedDependenciesAtSubmit\":\"cqFy58lJIxrossf7YSSYnUwKntM=\",\"numSubmissions\":1,\"numPreviousIncorrectSubmissions\":0,\"creditFactorUsed\":1},\"6\":{\"awarded\":true,\"creditAchieved\":1,\"fractionSatisfied\":1},\"7\":{\"rawRendererValue\":\"5\",\"lastValueForDisplay\":5,\"immediateValue\":5,\"immediateValueChanged\":true,\"dontUpdateRawValueInDefinition\":false,\"valueChanged\":true,\"value\":5}}",
+            "rendererState": null,
+            "initializeCounters": {
+                "question": 2,
+                "problem": 2,
+                "exercise": 2
+            },
+            "docId": "sel2c",
             "attemptNumber": 1,
             "activityId": "apple",
             "onSubmission": true
         }
     ],
-    "itemAttemptNumbers": [1, 2, 1]
+    "itemAttemptNumbers": [
+        2,
+        1
+    ]
 }

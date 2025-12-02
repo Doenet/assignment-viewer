@@ -253,7 +253,7 @@ function App() {
 
     useEffect(() => {
         const stateListener = function (e: MessageEvent) {
-            if (e.data.activityId !== activityId) {
+            if (e.data.activity_id !== activityId) {
                 return;
             }
 
@@ -264,24 +264,23 @@ function App() {
             if (isReportStateMessage(msg)) {
                 setActivityState(msg.state);
                 setScore(msg.score);
-                setItemScores(msg.itemScores);
+                setItemScores(msg.item_scores);
             } else if (isReportScoreByItemMessage(msg)) {
                 setScore(msg.score);
-                setItemScores(msg.itemScores);
+                setItemScores(msg.item_scores);
             } else if (e.data.subject === "SPLICE.getState") {
                 const haveState = validateStateAndSource(
                     initialAssignmentState,
                     activitySource,
                 );
 
-                window.postMessage({
-                    subject: "SPLICE.getState.response",
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    messageId: e.data.messageId,
-                    success: true,
-                    loadedState: haveState,
-                    state: haveState ? initialAssignmentState : null,
-                });
+                if (haveState) {
+                    window.postMessage({
+                        subject: "SPLICE.getState.response",
+                        message_id: e.data.message_id,
+                        state: initialAssignmentState,
+                    });
+                }
             }
         };
 
