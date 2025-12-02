@@ -6,7 +6,10 @@
     "license": "AGPL-3.0-or-later",
     "homepage": "https://github.com/Doenet/assignment-viewer#readme",
     "type": "module",
-    "repository": "github:Doenet/assignment-viewer",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Doenet/assignment-viewer.git"
+    },
     "files": [
         "/dist"
     ],
