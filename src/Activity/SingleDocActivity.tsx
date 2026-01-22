@@ -203,6 +203,7 @@ export function SingleDocActivity({
                                 ? "not-allowed"
                                 : "pointer",
                         }}
+                        data-test="New Item Attempt Button"
                     >
                         New {itemWord} attempt{" "}
                         {maxAttemptsAllowed > 0

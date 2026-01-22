@@ -487,6 +487,7 @@ export function Viewer({
                             borderRadius: "10px",
                             padding: "5px 20px",
                         }}
+                        data-test="Cancel Create New Attempt"
                     >
                         Cancel
                     </button>
@@ -505,6 +506,7 @@ export function Viewer({
                             borderRadius: "10px",
                             padding: "5px 20px",
                         }}
+                        data-test="Confirm Create New Attempt"
                     >
                         Create new attempt
                     </button>
