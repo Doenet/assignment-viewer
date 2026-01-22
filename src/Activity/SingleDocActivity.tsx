@@ -164,7 +164,6 @@ export function SingleDocActivity({
                     requestedVariantIndex={requestedVariantIndex}
                     flags={flags}
                     activityId={baseId}
-                    prefixForIds={state.id}
                     docId={state.id}
                     forceDisable={forceDisable}
                     forceShowCorrectness={forceShowCorrectness}
