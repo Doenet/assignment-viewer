@@ -13,19 +13,22 @@
     "files": [
         "/dist"
     ],
+    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
             "require": "./dist/index.js"
         },
         "./*": {
+            "types": "./dist/*.d.ts",
             "import": "./dist/*",
             "require": "./dist/*"
         }
     },
     "scripts": {
         "dev": "vite",
-        "build": "tsc -b && vite build",
+        "build": "vite build",
         "test": "vitest",
         "lint": "eslint .",
         "preview": "vite preview",
