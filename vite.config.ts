@@ -14,7 +14,17 @@ const fullReloadAlways: Plugin = {
 const EXTERNAL_DEPS = ["react", "react-dom", "@doenet/doenetml-iframe"];
 
 export default defineConfig({
-    plugins: [react(), dts(), fullReloadAlways],
+    plugins: [
+        react(),
+        dts({
+            include: ["src"],
+            exclude: ["**/*.test.ts", "**/*.test.tsx", "src/test/**"],
+            outDir: "dist",
+            tsconfigPath: "./tsconfig.app.json",
+            rollupTypes: true,
+        }),
+        fullReloadAlways,
+    ],
     build: {
         minify: false,
         lib: {

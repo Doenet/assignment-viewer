@@ -2,7 +2,7 @@
     "name": "@doenet/assignment-viewer",
     "private": false,
     "description": "View assignments from questions written in DoenetML",
-    "version": "0.1.0-alpha-14",
+    "version": "0.1.0-alpha-15",
     "license": "AGPL-3.0-or-later",
     "homepage": "https://github.com/Doenet/assignment-viewer#readme",
     "type": "module",
@@ -13,19 +13,22 @@
     "files": [
         "/dist"
     ],
+    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
             "require": "./dist/index.js"
         },
         "./*": {
+            "types": "./dist/*.d.ts",
             "import": "./dist/*",
             "require": "./dist/*"
         }
     },
     "scripts": {
         "dev": "vite",
-        "build": "tsc -b && vite build",
+        "build": "vite build",
         "test": "vitest",
         "lint": "eslint .",
         "preview": "vite preview",
