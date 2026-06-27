@@ -13,6 +13,8 @@ export function SelectActivity({
     forceShowSolution = false,
     forceUnsuppressCheckwork = false,
     doenetViewerUrl,
+    standaloneUrl,
+    cssUrl,
     fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
@@ -40,6 +42,8 @@ export function SelectActivity({
     forceShowSolution?: boolean;
     forceUnsuppressCheckwork?: boolean;
     doenetViewerUrl?: string;
+    standaloneUrl?: string;
+    cssUrl?: string;
     fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
     showAnswerResponseMenu?: boolean;
@@ -80,6 +84,8 @@ export function SelectActivity({
                 forceShowSolution={forceShowSolution}
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                 doenetViewerUrl={doenetViewerUrl}
+                standaloneUrl={standaloneUrl}
+                cssUrl={cssUrl}
                 fetchExternalDoenetML={fetchExternalDoenetML}
                 darkMode={darkMode}
                 showAnswerResponseMenu={showAnswerResponseMenu}

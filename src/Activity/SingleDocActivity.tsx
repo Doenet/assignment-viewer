@@ -13,6 +13,8 @@ export function SingleDocActivity({
     forceShowSolution = false,
     forceUnsuppressCheckwork = false,
     doenetViewerUrl,
+    standaloneUrl,
+    cssUrl,
     fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
@@ -40,6 +42,8 @@ export function SingleDocActivity({
     forceShowSolution?: boolean;
     forceUnsuppressCheckwork?: boolean;
     doenetViewerUrl?: string;
+    standaloneUrl?: string;
+    cssUrl?: string;
     fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
     showAnswerResponseMenu?: boolean;
@@ -170,6 +174,8 @@ export function SingleDocActivity({
                     forceShowSolution={forceShowSolution}
                     forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                     doenetViewerUrl={doenetViewerUrl}
+                    standaloneUrl={standaloneUrl}
+                    cssUrl={cssUrl}
                     fetchExternalDoenetML={fetchExternalDoenetML}
                     darkMode={darkMode}
                     showAnswerResponseMenu={showAnswerResponseMenu}
@@ -195,7 +201,8 @@ export function SingleDocActivity({
                         disabled={attemptButtonDisabled}
                         style={{
                             marginLeft: "20px",
-                            backgroundColor: "rgb(237, 242, 247)",
+                            backgroundColor: "var(--buttonSurfaceAlt)",
+                            color: "var(--canvasText)",
                             opacity: attemptButtonDisabled ? 0.4 : "inherit",
                             borderRadius: "10px",
                             padding: "5px 20px",
