@@ -114,10 +114,12 @@ export function ActivityViewer({
     let foundPropChange = false;
     let key: keyof PropSet;
     for (key in thisPropSet) {
+        // eslint-disable-next-line react-hooks/refs
         if (thisPropSet[key] !== lastPropSet.current[key]) {
             foundPropChange = true;
         }
     }
+    // eslint-disable-next-line react-hooks/refs
     lastPropSet.current = thisPropSet;
 
     if (foundPropChange) {

@@ -22,8 +22,6 @@ import {
     gatherDocumentStructure,
     initializeActivityAndDoenetState,
     getNumItems,
-    ActivityAndDoenetState,
-    isActivityAndDoenetState,
     createSourceHash,
 } from "../Activity/activityState";
 import { Activity } from "../Activity/Activity";
@@ -95,6 +93,7 @@ export function Viewer({
             return { ...docStructure, sourceHash, numItems };
         } catch (e) {
             const message = e instanceof Error ? e.message : "";
+            // eslint-disable-next-line react-hooks/set-state-in-render
             setErrMsg(`Error in activity source: ${message}`);
             return {
                 numActivityVariants: {},

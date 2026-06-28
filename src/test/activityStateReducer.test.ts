@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { afterEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { SequenceSource } from "../Activity/sequenceState";
 import {

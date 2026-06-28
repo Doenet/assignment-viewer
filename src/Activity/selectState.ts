@@ -179,7 +179,7 @@ export function initializeSelectState({
     numActivityVariants: ActivityVariantRecord;
     restrictToVariantSlice?: RestrictToVariantSlice;
 }): SelectState {
-    const rngSeed = variant.toString() + "|" + source.id.toString();
+    const rngSeed = variant.toString() + "|" + source.id;
 
     const rng = rngClass(rngSeed);
 
@@ -388,7 +388,7 @@ export function generateNewSelectAttempt({
     const rngSeed =
         state.initialVariant.toString() +
         "|" +
-        state.id.toString() +
+        state.id +
         "|" +
         state.attemptNumber.toString() +
         "|" +
@@ -553,7 +553,7 @@ export function generateNewSingleDocAttemptForMultiSelect({
     const rngSeed =
         state.initialVariant.toString() +
         "|" +
-        state.id.toString() +
+        state.id +
         "|" +
         state.attemptNumber.toString() +
         "|" +

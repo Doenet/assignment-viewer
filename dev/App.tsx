@@ -302,6 +302,7 @@ function App() {
                 if (haveState) {
                     window.postMessage({
                         subject: "SPLICE.getState.response",
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         message_id: e.data.message_id,
                         state: initialAssignmentState,
                     });

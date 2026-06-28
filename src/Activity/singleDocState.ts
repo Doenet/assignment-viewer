@@ -209,7 +209,7 @@ export function generateNewSingleDocAttempt({
     const rngSeed =
         state.initialVariant.toString() +
         "|" +
-        state.id.toString() +
+        state.id +
         "|" +
         state.attemptNumber.toString() +
         "|" +
