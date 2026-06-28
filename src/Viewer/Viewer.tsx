@@ -45,8 +45,6 @@ export function Viewer({
     addVirtualKeyboard: _addVirtualKeyboard = true,
     externalVirtualKeyboardProvided: _externalVirtualKeyboardProvided = false,
     doenetViewerUrl,
-    standaloneUrl,
-    cssUrl,
     fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
@@ -71,8 +69,6 @@ export function Viewer({
     addVirtualKeyboard?: boolean;
     externalVirtualKeyboardProvided?: boolean;
     doenetViewerUrl?: string;
-    standaloneUrl?: string;
-    cssUrl?: string;
     fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
     showAnswerResponseMenu?: boolean;
@@ -596,8 +592,6 @@ export function Viewer({
                 forceShowSolution={forceShowSolution}
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                 doenetViewerUrl={doenetViewerUrl}
-                standaloneUrl={standaloneUrl}
-                cssUrl={cssUrl}
                 fetchExternalDoenetML={fetchExternalDoenetML}
                 darkMode={darkMode}
                 showAnswerResponseMenu={showAnswerResponseMenu}

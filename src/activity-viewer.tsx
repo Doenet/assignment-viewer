@@ -49,8 +49,6 @@ export function ActivityViewer({
     addVirtualKeyboard = true,
     externalVirtualKeyboardProvided = false,
     doenetViewerUrl,
-    standaloneUrl,
-    cssUrl,
     fetchExternalDoenetML,
     darkMode = "system",
     showAnswerResponseMenu = false,
@@ -76,8 +74,6 @@ export function ActivityViewer({
     addVirtualKeyboard?: boolean;
     externalVirtualKeyboardProvided?: boolean;
     doenetViewerUrl?: string;
-    standaloneUrl?: string;
-    cssUrl?: string;
     fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: ThemeSetting;
     showAnswerResponseMenu?: boolean;
@@ -165,8 +161,6 @@ export function ActivityViewer({
                         externalVirtualKeyboardProvided
                     }
                     doenetViewerUrl={doenetViewerUrl}
-                    standaloneUrl={standaloneUrl}
-                    cssUrl={cssUrl}
                     fetchExternalDoenetML={fetchExternalDoenetML}
                     darkMode={resolvedTheme}
                     showAnswerResponseMenu={showAnswerResponseMenu}
