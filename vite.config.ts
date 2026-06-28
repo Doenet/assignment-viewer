@@ -1,47 +1,12 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import dts from "vite-plugin-dts";
-import path from "path";
-import fs from "fs";
 
 const fullReloadAlways: Plugin = {
     name: "full-reload",
     handleHotUpdate({ server }) {
         server.ws.send({ type: "full-reload" });
         return [];
-    },
-};
-
-const STANDALONE_DIR = path.resolve(
-    __dirname,
-    "../DoenetML/packages/standalone/dist",
-);
-
-const serveDoenetStandalone: Plugin = {
-    name: "serve-doenet-standalone",
-    configureServer(server) {
-        server.middlewares.use(
-            "/doenet-standalone/",
-            (req, res, next) => {
-                const filePath = path.join(
-                    STANDALONE_DIR,
-                    (req.url ?? "/").replace(/^\//, ""),
-                );
-                if (fs.existsSync(filePath)) {
-                    const ext = path.extname(filePath);
-                    const contentType =
-                        ext === ".js"
-                            ? "application/javascript"
-                            : ext === ".css"
-                              ? "text/css"
-                              : "application/octet-stream";
-                    res.writeHead(200, { "Content-Type": contentType });
-                    res.end(fs.readFileSync(filePath));
-                } else {
-                    next();
-                }
-            },
-        );
     },
 };
 
@@ -59,7 +24,6 @@ export default defineConfig({
             rollupTypes: true,
         }),
         fullReloadAlways,
-        serveDoenetStandalone,
     ],
     build: {
         minify: false,

@@ -22,10 +22,13 @@ function getSystemTheme(): ResolvedTheme {
 function subscribeToSystemTheme(onChange: () => void): () => void {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
+    return () => {
+        mq.removeEventListener("change", onChange);
+    };
 }
 
 function subscribeToPinnedTheme(): () => void {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
 }
 

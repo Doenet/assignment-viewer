@@ -109,11 +109,11 @@ describe("ActivityViewer — dark mode", () => {
                     <div>
                         <button
                             data-test="toggle"
-                            onClick={() =>
+                            onClick={() => {
                                 setDarkMode((m) =>
                                     m === "dark" ? "light" : "dark",
-                                )
-                            }
+                                );
+                            }}
                         >
                             Toggle
                         </button>

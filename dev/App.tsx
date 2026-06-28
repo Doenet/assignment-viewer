@@ -393,8 +393,6 @@ function App() {
                 maxAttemptsAllowed={maxAttempts}
                 itemWord="question"
                 darkMode={darkMode}
-                standaloneUrl="/doenet-standalone/doenet-standalone.js"
-                cssUrl="/doenet-standalone/style.css"
             />
         </div>
     );
