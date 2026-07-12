@@ -13,13 +13,38 @@ export type ThemeSetting = "dark" | "light" | "system";
  */
 export type ResolvedTheme = "dark" | "light";
 
+const DEFAULT_THEME: ResolvedTheme = "light";
+
+// No-op unsubscribe used when there is nothing to listen to (a pinned theme,
+// or an environment without `matchMedia`).
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = () => {};
+
+/**
+ * Returns `true` when `window.matchMedia` is usable. It is absent in
+ * non-browser environments (SSR) and in some test environments (e.g. jsdom),
+ * so callers must fall back to a safe default when this is `false`.
+ */
+function canMatchMedia(): boolean {
+    return (
+        typeof window !== "undefined" &&
+        typeof window.matchMedia === "function"
+    );
+}
+
 function getSystemTheme(): ResolvedTheme {
+    if (!canMatchMedia()) {
+        return DEFAULT_THEME;
+    }
     return window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light";
 }
 
 function subscribeToSystemTheme(onChange: () => void): () => void {
+    if (!canMatchMedia()) {
+        return noop;
+    }
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     mq.addEventListener("change", onChange);
     return () => {
@@ -28,8 +53,7 @@ function subscribeToSystemTheme(onChange: () => void): () => void {
 }
 
 function subscribeToPinnedTheme(): () => void {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    return () => {};
+    return noop;
 }
 
 /**
@@ -37,19 +61,20 @@ function subscribeToPinnedTheme(): () => void {
  *
  * When the setting is `"system"`, the resolved value tracks the
  * `prefers-color-scheme` media query and updates live when the user changes
- * their OS/browser preference.
+ * their OS/browser preference. When the setting is pinned to `"light"` or
+ * `"dark"`, the media query is never read, so the hook is safe to use in SSR
+ * and test environments where `window.matchMedia` is unavailable.
  */
 export function useResolvedTheme(setting: ThemeSetting): ResolvedTheme {
-    const subscribe =
-        setting === "system" ? subscribeToSystemTheme : subscribeToPinnedTheme;
-    const systemTheme = useSyncExternalStore(
-        subscribe,
-        getSystemTheme,
-        () => "light" as ResolvedTheme,
-    );
+    const isSystem = setting === "system";
 
-    if (setting === "system") {
-        return systemTheme;
-    }
-    return setting;
+    // When pinned, take a snapshot of the fixed setting rather than reading
+    // `matchMedia`, so pinned themes never depend on the browser environment.
+    const getPinnedSnapshot = () => setting as ResolvedTheme;
+
+    return useSyncExternalStore(
+        isSystem ? subscribeToSystemTheme : subscribeToPinnedTheme,
+        isSystem ? getSystemTheme : getPinnedSnapshot,
+        isSystem ? () => DEFAULT_THEME : getPinnedSnapshot,
+    );
 }
