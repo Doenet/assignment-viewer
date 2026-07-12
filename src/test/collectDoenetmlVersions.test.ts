@@ -49,4 +49,16 @@ describe("collectDoenetmlVersions", () => {
 
         expect(collectDoenetmlVersions(source)).eqls(["0.7.4", "0.6.5", "0.7"]);
     });
+
+    it("a container with no documents yields no versions", () => {
+        const source: SequenceSource = {
+            id: "seq",
+            type: "sequence",
+            title: "empty",
+            shuffle: false,
+            items: [],
+        } as SequenceSource;
+
+        expect(collectDoenetmlVersions(source)).eqls([]);
+    });
 });

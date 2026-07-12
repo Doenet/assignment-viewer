@@ -72,6 +72,54 @@ describe("ActivityViewer — mixed DoenetML versions are reported to the host", 
         });
     });
 
+    it("reports only once when the host re-renders with a fresh source object each render", () => {
+        const received: ActivityViewerWarning[][] = [];
+
+        // A host that hands the viewer a brand-new (deep-cloned) but equal
+        // `source` object on every render — the pattern the viewer's
+        // `propSetKey` sameness check is built to tolerate. The warning must
+        // still be reported exactly once, not once per render.
+        function Host() {
+            const [renderCount, setRenderCount] = React.useState(0);
+            const freshSource = JSON.parse(
+                JSON.stringify(MIXED_SOURCE),
+            ) as ActivitySource;
+            return (
+                <div>
+                    <button
+                        data-cy="rerender"
+                        onClick={() => {
+                            setRenderCount((n) => n + 1);
+                        }}
+                    >
+                        re-render {renderCount}
+                    </button>
+                    <ActivityViewer
+                        source={freshSource}
+                        activityId="mixed"
+                        addVirtualKeyboard={false}
+                        reportWarningsCallback={(warnings) => {
+                            received.push(warnings);
+                        }}
+                    />
+                </div>
+            );
+        }
+
+        cy.mount(<Host />);
+
+        cy.wrap(null).should(() => {
+            expect(received, "reported once").to.have.length(1);
+        });
+        cy.get('[data-cy="rerender"]').click().click().click();
+        cy.wrap(null).should(() => {
+            expect(
+                received,
+                "still reported once after re-renders",
+            ).to.have.length(1);
+        });
+    });
+
     it("stays silent for a uniform assignment", () => {
         const received: ActivityViewerWarning[][] = [];
         cy.mount(

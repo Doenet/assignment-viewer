@@ -141,25 +141,35 @@ export function ActivityViewer({
         return [];
     }, [source]);
 
-    // Report warnings once per source analysis (not once per render, and
-    // not re-reported when only the callback identity changes — hence the
-    // ref indirection).
+    // Report each distinct set of warnings at most once — not once per
+    // render. `warnings` is a fresh array whenever the consumer passes a
+    // new-but-equal `source` object each render (the same pattern
+    // `propSetKey` below is built to tolerate), so dedupe on the serialized
+    // content rather than on the array identity. The callback is read through
+    // a ref so a change in its identity alone never triggers a re-report.
     const reportWarningsCallbackRef = useRef(reportWarningsCallback);
     useEffect(() => {
         reportWarningsCallbackRef.current = reportWarningsCallback;
     });
+    const lastReportedWarningsKey = useRef<string | null>(null);
     useEffect(() => {
-        if (warnings.length > 0) {
-            for (const warning of warnings) {
-                // `mixedDoenetmlVersions` is currently the only type.
-                console.warn(
-                    `ActivityViewer: this assignment mixes DoenetML versions (${warning.versions.join(
-                        ", ",
-                    )}). Each distinct version loads its own multi-MB standalone bundle; normalize the documents' \`version\` fields to avoid the multiplied download/parse cost (saved state survives, as its hash ignores \`version\`).`,
-                );
-            }
-            reportWarningsCallbackRef.current?.(warnings);
+        const warningsKey = JSON.stringify(warnings);
+        if (warningsKey === lastReportedWarningsKey.current) {
+            return;
         }
+        lastReportedWarningsKey.current = warningsKey;
+        if (warnings.length === 0) {
+            return;
+        }
+        for (const warning of warnings) {
+            // `mixedDoenetmlVersions` is currently the only type.
+            console.warn(
+                `ActivityViewer: this assignment mixes DoenetML versions (${warning.versions.join(
+                    ", ",
+                )}). Each distinct version loads its own multi-MB standalone bundle; normalize the documents' \`version\` fields to avoid the multiplied download/parse cost (saved state survives, as its hash ignores \`version\`).`,
+            );
+        }
+        reportWarningsCallbackRef.current?.(warnings);
     }, [warnings]);
 
     // Serializing the source is how prop "sameness" is detected for
