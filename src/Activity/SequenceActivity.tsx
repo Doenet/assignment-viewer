@@ -14,9 +14,5 @@ export const SequenceActivity = memo(function SequenceActivity({
         );
     }
 
-    return (
-        <div hidden={!props.checkRender(state)} key={state.attemptNumber}>
-            {activityList}
-        </div>
-    );
+    return <div key={state.attemptNumber}>{activityList}</div>;
 });

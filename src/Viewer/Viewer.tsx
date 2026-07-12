@@ -23,6 +23,7 @@ import {
     getNumItems,
     createSourceHash,
 } from "../Activity/activityState";
+import type { MountPolicy } from "@doenet/doenetml-iframe";
 import { Activity } from "../Activity/Activity";
 import { activityDoenetStateReducer } from "../Activity/activityStateReducer";
 import { useContentStable } from "../utils/hooks";
@@ -44,13 +45,17 @@ export function Viewer({
     forceUnsuppressCheckwork = false,
     addVirtualKeyboard: _addVirtualKeyboard = true,
     externalVirtualKeyboardProvided: _externalVirtualKeyboardProvided = false,
-    doenetViewerUrl,
+    standaloneUrl,
+    cssUrl,
+    doenetmlVersion,
     fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
     answerResponseCountsByItem = [],
     showTitle = true,
     itemWord = "item",
+    mountPolicy,
+    useSharedCoreWorker = false,
 }: {
     source: ActivitySource;
     flags: DoenetMLFlags;
@@ -68,13 +73,17 @@ export function Viewer({
     forceUnsuppressCheckwork?: boolean;
     addVirtualKeyboard?: boolean;
     externalVirtualKeyboardProvided?: boolean;
-    doenetViewerUrl?: string;
+    standaloneUrl?: string;
+    cssUrl?: string;
+    doenetmlVersion?: string;
     fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
     showAnswerResponseMenu?: boolean;
     answerResponseCountsByItem?: Record<string, number>[];
     showTitle?: boolean;
     itemWord?: string;
+    mountPolicy: MountPolicy;
+    useSharedCoreWorker?: boolean;
 }) {
     const initialPass = useRef(true);
 
@@ -131,7 +140,7 @@ export function Viewer({
     // Content-stable: every reducer action (each score report included)
     // rebuilds `activityState`, but the sequence of item ids rarely changes.
     // Keeping the previous identity when the ids match lets everything
-    // derived from it (`itemIdsToRender`, `checkRender`, the memoized item
+    // derived from it (`itemIndexById`, the callbacks, the memoized item
     // subtrees) stay stable across reports.
     const computedItemSequence = useMemo(
         () => getItemSequence(activityState),
@@ -152,7 +161,6 @@ export function Viewer({
     const currentItemId = itemSequence[currentItemIdx];
 
     const [itemsRendered, setItemsRendered] = useState<string[]>([]);
-    const [itemsVisible, setItemsVisible] = useState<string[]>([]);
 
     const [newAttemptNum, setNewAttemptNum] = useState(0);
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -160,64 +168,23 @@ export function Viewer({
 
     const attemptNumber = activityState.attemptNumber;
 
-    // The items allowed to mount their viewer, *derived* from which items
-    // have finished rendering: everything already rendered plus (at most)
-    // one in-flight item — in paginated mode the current item, then a
-    // prefetch of the next and previous; in scroll mode the first visible
-    // unrendered item. Deriving (rather than accumulating in state) keeps
-    // the schedule consistent through attempt resets and item regeneration,
-    // which simply remove ids from `itemsRendered`.
-    const itemIdsToRender = useMemo(() => {
-        const toRender = new Set(itemsRendered);
-        if (paginate) {
-            const currentItemId = itemSequence[currentItemIdx];
-            toRender.add(currentItemId);
-            if (itemsRendered.includes(currentItemId)) {
-                const nextItemId = itemSequence[currentItemIdx + 1];
-                if (currentItemIdx < numItems - 1) {
-                    // prefetch the next item once the current one rendered
-                    toRender.add(nextItemId);
-                }
-                if (
-                    currentItemIdx > 0 &&
-                    (currentItemIdx >= numItems - 1 ||
-                        itemsRendered.includes(nextItemId))
-                ) {
-                    // then the previous item
-                    toRender.add(itemSequence[currentItemIdx - 1]);
-                }
-            }
-        } else {
-            const visibleSet = new Set(itemsVisible);
-            for (const id of itemSequence) {
-                // `toRender` still equals the rendered set here (nothing was
-                // added in this branch), so it doubles as the fast
-                // membership test.
-                if (!toRender.has(id) && visibleSet.has(id)) {
-                    toRender.add(id);
-                    break;
-                }
-            }
-        }
-        return toRender;
-    }, [
-        paginate,
-        itemsRendered,
-        itemsVisible,
-        itemSequence,
-        currentItemIdx,
-        numItems,
-    ]);
-
-    const checkRender = useCallback(
+    // Every item's viewer is always mounted; the windowed mounting policy
+    // (`mountPolicy`) decides which of them are actually booted, parking the
+    // rest as placeholders. In paginated mode the current page and its
+    // neighbors are marked `keepLive` so they boot eagerly (hidden pages
+    // never intersect the viewport) and page flips within the window are
+    // instant; in scroll mode visibility alone governs.
+    const checkKeepLive = useCallback(
         (state: ActivityState) => {
-            if (state.type === "singleDoc") {
-                return itemIdsToRender.has(state.id);
-            } else {
-                return true;
+            if (!paginate || state.type !== "singleDoc") {
+                return false;
             }
+            const itemIdx = itemIndexById.get(state.id);
+            return (
+                itemIdx !== undefined && Math.abs(itemIdx - currentItemIdx) <= 1
+            );
         },
-        [itemIdsToRender],
+        [paginate, itemIndexById, currentItemIdx],
     );
 
     const checkHidden = useCallback(
@@ -401,25 +368,6 @@ export function Viewer({
     const hasRenderedCallback = useCallback((id: string) => {
         setItemsRendered((was) => (was.includes(id) ? was : [...was, id]));
     }, []);
-
-    const reportVisibilityCallback = useCallback(
-        (id: string, isVisible: boolean) => {
-            setItemsVisible((was) => {
-                if (isVisible) {
-                    return was.includes(id) ? was : [...was, id];
-                } else {
-                    const idx = was.indexOf(id);
-                    if (idx === -1) {
-                        return was;
-                    }
-                    const obj = [...was];
-                    obj.splice(idx, 1);
-                    return obj;
-                }
-            });
-        },
-        [],
-    );
 
     function generateActivityAttempt() {
         setItemsRendered([]);
@@ -627,7 +575,9 @@ export function Viewer({
                 forceShowCorrectness={forceShowCorrectness}
                 forceShowSolution={forceShowSolution}
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                doenetViewerUrl={doenetViewerUrl}
+                standaloneUrl={standaloneUrl}
+                cssUrl={cssUrl}
+                doenetmlVersion={doenetmlVersion}
                 fetchExternalDoenetML={fetchExternalDoenetML}
                 darkMode={darkMode}
                 showAnswerResponseMenu={showAnswerResponseMenu}
@@ -635,14 +585,14 @@ export function Viewer({
                 state={activityState}
                 doenetStates={activityDoenetState.doenetStates}
                 stateVersion={stateVersion}
+                mountPolicy={mountPolicy}
+                useSharedCoreWorker={useSharedCoreWorker}
                 reportScoreAndStateCallback={reportScoreAndStateCallback}
-                checkRender={checkRender}
                 checkHidden={checkHidden}
+                checkKeepLive={checkKeepLive}
                 allowItemAttemptButtons={itemLevelAttempts}
                 generateNewItemAttempt={generateNewItemAttemptPrompt}
                 hasRenderedCallback={hasRenderedCallback}
-                reportVisibility={!paginate}
-                reportVisibilityCallback={reportVisibilityCallback}
                 itemAttemptNumbers={activityDoenetState.itemAttemptNumbers}
                 itemIndexById={itemIndexById}
                 itemWord={itemWord}

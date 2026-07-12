@@ -9,6 +9,7 @@ import {
     useState,
 } from "react";
 import seedrandom from "seedrandom";
+import type { MountPolicy } from "@doenet/doenetml-iframe";
 import { Viewer } from "./Viewer/Viewer";
 import { DoenetMLFlags } from "./types";
 import {
@@ -17,6 +18,7 @@ import {
 } from "./Activity/activityState";
 import { useResolvedTheme } from "./utils/theme";
 import type { ThemeSetting } from "./utils/theme";
+import { useContentStable } from "./utils/hooks";
 
 /**
  * A condition in the provided activity worth surfacing to the user — passed
@@ -79,7 +81,11 @@ export function ActivityViewer({
     forceUnsuppressCheckwork = false,
     addVirtualKeyboard = true,
     externalVirtualKeyboardProvided = false,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- the deprecated alias must still be honored
     doenetViewerUrl,
+    standaloneUrl,
+    cssUrl,
+    doenetmlVersion,
     fetchExternalDoenetML,
     darkMode = "system",
     showAnswerResponseMenu = false,
@@ -88,6 +94,8 @@ export function ActivityViewer({
     showTitle = true,
     itemWord = "item",
     reportWarningsCallback,
+    mountPolicy,
+    useSharedCoreWorker = false,
 }: {
     source: ActivitySource;
     flags?: DoenetMLFlagsSubset;
@@ -105,7 +113,20 @@ export function ActivityViewer({
     forceUnsuppressCheckwork?: boolean;
     addVirtualKeyboard?: boolean;
     externalVirtualKeyboardProvided?: boolean;
+    /** @deprecated Use `standaloneUrl`. */
     doenetViewerUrl?: string;
+    /**
+     * URL of a standalone DoenetML bundle to use for every document,
+     * instead of the CDN bundle for each document's `version`.
+     */
+    standaloneUrl?: string;
+    /** URL of the CSS file that styles the standalone bundle. */
+    cssUrl?: string;
+    /**
+     * Render every document with this DoenetML version, overriding each
+     * document's own `version`.
+     */
+    doenetmlVersion?: string;
     fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: ThemeSetting;
     showAnswerResponseMenu?: boolean;
@@ -122,6 +143,21 @@ export function ActivityViewer({
      * developers.
      */
     reportWarningsCallback?: (warnings: ActivityViewerWarning[]) => void;
+    /**
+     * Overrides for the windowed mounting policy every document's viewer
+     * registers with (see `MountPolicy` in `@doenet/doenetml-iframe`):
+     * at most `maxLiveViewers` viewers stay booted, the rest are parked
+     * losslessly as placeholders and restored near the viewport. Parking
+     * requires `flags.allowSaveState` or `flags.allowLocalState`; without
+     * them viewers still mount lazily but stay live once booted.
+     */
+    mountPolicy?: Partial<Omit<MountPolicy, "mode">>;
+    /**
+     * Serve all documents' cores from a shared worker pool instead of one
+     * dedicated ~100 MB worker per document (see `useSharedCoreWorker` in
+     * `@doenet/doenetml-iframe`). Default off.
+     */
+    useSharedCoreWorker?: boolean;
 }) {
     const [initialVariantIndex, setInitialVariantIndex] = useState<
         number | null
@@ -189,6 +225,15 @@ export function ActivityViewer({
         [specifiedFlags],
     );
 
+    // Windowed mounting is the default: memory tracks what the student can
+    // see (the pagination window / viewport) instead of assignment length.
+    // Content-stable so a consumer passing an inline `mountPolicy` object
+    // doesn't hand the memoized item subtrees a fresh identity every render.
+    const resolvedMountPolicy = useContentStable<MountPolicy>(
+        useMemo(() => ({ mode: "windowed", ...mountPolicy }), [mountPolicy]),
+        JSON.stringify(mountPolicy ?? {}),
+    );
+
     // Normalize variant index to an integer.
     // Generate a random variant index if the requested variant index is undefined.
     // To preserve the generated variant index on rerender, regenerate only
@@ -234,13 +279,17 @@ export function ActivityViewer({
                     externalVirtualKeyboardProvided={
                         externalVirtualKeyboardProvided
                     }
-                    doenetViewerUrl={doenetViewerUrl}
+                    standaloneUrl={standaloneUrl ?? doenetViewerUrl}
+                    cssUrl={cssUrl}
+                    doenetmlVersion={doenetmlVersion}
                     fetchExternalDoenetML={fetchExternalDoenetML}
                     darkMode={resolvedTheme}
                     showAnswerResponseMenu={showAnswerResponseMenu}
                     answerResponseCountsByItem={answerResponseCountsByItem}
                     showTitle={showTitle}
                     itemWord={itemWord}
+                    mountPolicy={resolvedMountPolicy}
+                    useSharedCoreWorker={useSharedCoreWorker}
                 />
             </div>
         </ErrorBoundary>
