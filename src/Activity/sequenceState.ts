@@ -166,7 +166,7 @@ export function initializeSequenceState({
     numActivityVariants: ActivityVariantRecord;
     restrictToVariantSlice?: RestrictToVariantSlice;
 }): SequenceState {
-    const rngSeed = variant.toString() + "|" + source.id.toString();
+    const rngSeed = variant.toString() + "|" + source.id;
 
     const rng = rngClass(rngSeed);
 
@@ -233,7 +233,7 @@ export function generateNewSequenceAttempt({
         const rngSeed =
             state.initialVariant.toString() +
             "|" +
-            state.id.toString() +
+            state.id +
             "|" +
             state.attemptNumber.toString() +
             "|" +

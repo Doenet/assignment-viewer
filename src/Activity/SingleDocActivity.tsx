@@ -195,7 +195,8 @@ export function SingleDocActivity({
                         disabled={attemptButtonDisabled}
                         style={{
                             marginLeft: "20px",
-                            backgroundColor: "rgb(237, 242, 247)",
+                            backgroundColor: "var(--buttonSurfaceAlt)",
+                            color: "var(--canvasText)",
                             opacity: attemptButtonDisabled ? 0.4 : "inherit",
                             borderRadius: "10px",
                             padding: "5px 20px",

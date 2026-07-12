@@ -1,0 +1,29 @@
+.assignment-viewer-root {
+    --canvas: white;
+    --canvasText: black;
+    --mainGray: #e3e3e3;
+    --mainBorder: 2px solid black;
+    --mainBorderRadius: 5px;
+    --buttonSurface: #e3e3e3;
+    --buttonSurfaceAlt: rgb(237, 242, 247);
+}
+
+.assignment-viewer-root[data-theme="dark"] {
+    --canvas: #121212;
+    --canvasText: white;
+    --mainGray: #a9a9a9;
+    --mainBorder: 2px solid white;
+    --buttonSurface: #3a3a3a;
+    --buttonSurfaceAlt: #2d3748;
+}
+
+.assignment-viewer-root {
+    background-color: var(--canvas);
+    color: var(--canvasText);
+}
+
+/* Give iframes the canvas background color so there's no white flash
+   while the standalone bundle loads its own dark-mode styles. */
+.assignment-viewer-root iframe {
+    background-color: var(--canvas);
+}

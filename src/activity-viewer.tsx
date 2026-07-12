@@ -1,8 +1,11 @@
+import "./assignment-viewer.css";
 import { Component, ErrorInfo, ReactNode, useRef, useState } from "react";
 import seedrandom from "seedrandom";
 import { Viewer } from "./Viewer/Viewer";
 import { DoenetMLFlags } from "./types";
 import { ActivitySource } from "./Activity/activityState";
+import { useResolvedTheme } from "./utils/theme";
+import type { ThemeSetting } from "./utils/theme";
 
 type DoenetMLFlagsSubset = Partial<DoenetMLFlags>;
 
@@ -47,7 +50,7 @@ export function ActivityViewer({
     externalVirtualKeyboardProvided = false,
     doenetViewerUrl,
     fetchExternalDoenetML,
-    darkMode = "light",
+    darkMode = "system",
     showAnswerResponseMenu = false,
     answerResponseCountsByItem = [],
     includeVariantSelector: _includeVariantSelector = false,
@@ -72,7 +75,7 @@ export function ActivityViewer({
     externalVirtualKeyboardProvided?: boolean;
     doenetViewerUrl?: string;
     fetchExternalDoenetML?: (arg: string) => Promise<string>;
-    darkMode?: "dark" | "light";
+    darkMode?: ThemeSetting;
     showAnswerResponseMenu?: boolean;
     answerResponseCountsByItem?: Record<string, number>[];
     includeVariantSelector?: boolean;
@@ -88,6 +91,8 @@ export function ActivityViewer({
     const [initialVariantIndex, setInitialVariantIndex] = useState<
         number | null
     >(null);
+
+    const resolvedTheme = useResolvedTheme(darkMode);
 
     const thisPropSet: PropSet = {
         source: JSON.stringify(source),
@@ -105,10 +110,12 @@ export function ActivityViewer({
     let foundPropChange = false;
     let key: keyof PropSet;
     for (key in thisPropSet) {
+        // eslint-disable-next-line react-hooks/refs
         if (thisPropSet[key] !== lastPropSet.current[key]) {
             foundPropChange = true;
         }
     }
+    // eslint-disable-next-line react-hooks/refs
     lastPropSet.current = thisPropSet;
 
     if (foundPropChange) {
@@ -130,33 +137,38 @@ export function ActivityViewer({
 
     return (
         <ErrorBoundary>
-            <Viewer
-                source={source}
-                flags={flags}
-                activityId={activityId}
-                userId={userId}
-                initialVariantIndex={initialVariantIndex}
-                maxAttemptsAllowed={maxAttemptsAllowed}
-                itemLevelAttempts={itemLevelAttempts}
-                activityLevelAttempts={activityLevelAttempts}
-                paginate={paginate}
-                showFinishButton={showFinishButton}
-                forceDisable={forceDisable}
-                forceShowCorrectness={forceShowCorrectness}
-                forceShowSolution={forceShowSolution}
-                forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                addVirtualKeyboard={addVirtualKeyboard}
-                externalVirtualKeyboardProvided={
-                    externalVirtualKeyboardProvided
-                }
-                doenetViewerUrl={doenetViewerUrl}
-                fetchExternalDoenetML={fetchExternalDoenetML}
-                darkMode={darkMode}
-                showAnswerResponseMenu={showAnswerResponseMenu}
-                answerResponseCountsByItem={answerResponseCountsByItem}
-                showTitle={showTitle}
-                itemWord={itemWord}
-            />
+            <div
+                className="assignment-viewer-root"
+                data-theme={resolvedTheme}
+            >
+                <Viewer
+                    source={source}
+                    flags={flags}
+                    activityId={activityId}
+                    userId={userId}
+                    initialVariantIndex={initialVariantIndex}
+                    maxAttemptsAllowed={maxAttemptsAllowed}
+                    itemLevelAttempts={itemLevelAttempts}
+                    activityLevelAttempts={activityLevelAttempts}
+                    paginate={paginate}
+                    showFinishButton={showFinishButton}
+                    forceDisable={forceDisable}
+                    forceShowCorrectness={forceShowCorrectness}
+                    forceShowSolution={forceShowSolution}
+                    forceUnsuppressCheckwork={forceUnsuppressCheckwork}
+                    addVirtualKeyboard={addVirtualKeyboard}
+                    externalVirtualKeyboardProvided={
+                        externalVirtualKeyboardProvided
+                    }
+                    doenetViewerUrl={doenetViewerUrl}
+                    fetchExternalDoenetML={fetchExternalDoenetML}
+                    darkMode={resolvedTheme}
+                    showAnswerResponseMenu={showAnswerResponseMenu}
+                    answerResponseCountsByItem={answerResponseCountsByItem}
+                    showTitle={showTitle}
+                    itemWord={itemWord}
+                />
+            </div>
         </ErrorBoundary>
     );
 }

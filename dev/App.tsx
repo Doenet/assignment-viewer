@@ -11,6 +11,7 @@ import {
     validateStateAndSource,
 } from "../src/Activity/activityState";
 import { isReportScoreByItemMessage, isReportStateMessage } from "../src/types";
+import type { ThemeSetting } from "../src/utils/theme";
 
 function App() {
     const defaultTestSettings: {
@@ -23,6 +24,7 @@ function App() {
         activityLevelAttempts: boolean;
         paginate: boolean;
         maxAttempts: number;
+        darkMode: ThemeSetting;
     } = {
         requestedVariantIndex: 1,
         showCorrectness: true,
@@ -33,6 +35,7 @@ function App() {
         activityLevelAttempts: true,
         paginate: false,
         maxAttempts: 4,
+        darkMode: "system",
     };
 
     const [controlsVisible, setControlsVisible] = useState(false);
@@ -49,6 +52,7 @@ function App() {
         activityLevelAttempts,
         paginate,
         maxAttempts,
+        darkMode,
     } = testSettings;
 
     let controls = null;
@@ -224,6 +228,27 @@ function App() {
                         />
                     </label>
                 </div>
+                <div>
+                    <label>
+                        Dark mode:
+                        <select
+                            style={{ marginLeft: "5px" }}
+                            value={darkMode}
+                            onChange={(e) => {
+                                setTestSettings((was) => ({
+                                    ...was,
+                                    darkMode: e.target
+                                        .value as ThemeSetting,
+                                }));
+                                setUpdateNumber((was) => was + 1);
+                            }}
+                        >
+                            <option value="system">system</option>
+                            <option value="light">light</option>
+                            <option value="dark">dark</option>
+                        </select>
+                    </label>
+                </div>
             </div>
         );
     }
@@ -277,6 +302,7 @@ function App() {
                 if (haveState) {
                     window.postMessage({
                         subject: "SPLICE.getState.response",
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         message_id: e.data.message_id,
                         state: initialAssignmentState,
                     });
@@ -304,6 +330,7 @@ function App() {
             <div
                 style={{
                     backgroundColor: "lightGray",
+                    color: "black",
                     width: "800px",
                     padding: "20px",
                 }}
@@ -366,6 +393,7 @@ function App() {
                 activityLevelAttempts={activityLevelAttempts}
                 maxAttemptsAllowed={maxAttempts}
                 itemWord="question"
+                darkMode={darkMode}
             />
         </div>
     );

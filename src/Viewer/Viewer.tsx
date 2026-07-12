@@ -22,8 +22,6 @@ import {
     gatherDocumentStructure,
     initializeActivityAndDoenetState,
     getNumItems,
-    ActivityAndDoenetState,
-    isActivityAndDoenetState,
     createSourceHash,
 } from "../Activity/activityState";
 import { Activity } from "../Activity/Activity";
@@ -91,6 +89,7 @@ export function Viewer({
             return { ...docStructure, sourceHash, numItems };
         } catch (e) {
             const message = e instanceof Error ? e.message : "";
+            // eslint-disable-next-line react-hooks/set-state-in-render
             setErrMsg(`Error in activity source: ${message}`);
             return {
                 numActivityVariants: {},
@@ -483,7 +482,8 @@ export function Viewer({
                         }}
                         style={{
                             marginLeft: "30px",
-                            backgroundColor: "lightgray",
+                            backgroundColor: "var(--buttonSurface)",
+                            color: "var(--canvasText)",
                             borderRadius: "10px",
                             padding: "5px 20px",
                         }}
@@ -502,7 +502,8 @@ export function Viewer({
                         }}
                         style={{
                             marginLeft: "30px",
-                            backgroundColor: "lightgray",
+                            backgroundColor: "var(--buttonSurface)",
+                            color: "var(--canvasText)",
                             borderRadius: "10px",
                             padding: "5px 20px",
                         }}
@@ -524,7 +525,8 @@ export function Viewer({
                             style={{
                                 marginLeft: "20px",
                                 marginRight: "10px",
-                                backgroundColor: "lightgray",
+                                backgroundColor: "var(--buttonSurface)",
+                                color: "var(--canvasText)",
                                 borderRadius: "10px",
                                 padding: "5px 20px",
                             }}
@@ -537,7 +539,8 @@ export function Viewer({
                             onClick={clickNext}
                             style={{
                                 marginLeft: "10px",
-                                backgroundColor: "lightgray",
+                                backgroundColor: "var(--buttonSurface)",
+                                color: "var(--canvasText)",
                                 borderRadius: "10px",
                                 padding: "5px 20px",
                             }}
@@ -555,7 +558,8 @@ export function Viewer({
                             disabled={newAttemptDisabled}
                             style={{
                                 marginLeft: "30px",
-                                backgroundColor: "rgb(237, 242, 247)",
+                                backgroundColor: "var(--buttonSurfaceAlt)",
+                                color: "var(--canvasText)",
                                 opacity: newAttemptDisabled ? 0.4 : "inherit",
                                 borderRadius: "10px",
                                 padding: "5px 20px",
