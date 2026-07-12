@@ -38,7 +38,7 @@
         "prettier:check": "prettier --check ."
     },
     "peerDependencies": {
-        "@doenet/doenetml-iframe": "^0.7.20-dev.20260627181531.cafd571",
+        "@doenet/doenetml-iframe": "^0.7.20-dev.326",
         "react": "^19.2.3",
         "react-dom": "^19.2.3"
     },
