@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { SequenceSource } from "../Activity/sequenceState";
 import {
     ActivityAndDoenetState,
+    ActivityAndDoenetStateCore,
     createSourceHash,
     gatherDocumentStructure,
     initializeActivityState,
@@ -15,12 +16,112 @@ import seq2sel from "./testSources/seq2sel.json";
 import doc from "./testSources/doc.json";
 import seqShuf from "./testSources/seqShuf.json";
 import selMult2docs from "./testSources/selMult2docs.json";
+import selMult1docNoVariant from "./testSources/selMult1docNoVariant.json";
 import { SingleDocSource, SingleDocState } from "../Activity/singleDocState";
 import { SelectSource, SelectState } from "../Activity/selectState";
+
+/**
+ * Build a full reducer state from its core fields (the reducer owns the
+ * `stateVersion`/`errMsg` bookkeeping fields).
+ */
+function mkState(
+    core: ActivityAndDoenetStateCore &
+        Partial<Pick<ActivityAndDoenetState, "stateVersion" | "errMsg">>,
+): ActivityAndDoenetState {
+    return { stateVersion: 0, errMsg: null, ...core };
+}
 
 describe("Activity reducer tests", () => {
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    it("attempt-generation error lands in errMsg and self-clears on the next successful action", () => {
+        const source = selMult1docNoVariant as SelectSource;
+        const { numActivityVariants } = gatherDocumentStructure(source);
+        const sourceHash = createSourceHash(source);
+
+        const state0 = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        });
+
+        const initial = mkState({
+            activityState: state0,
+            doenetStates: [],
+            itemAttemptNumbers: [1, 1, 1],
+        });
+
+        // This source cannot generate an attempt (selects more copies than
+        // available activities); the reducer captures the error instead of
+        // throwing (a throw during React's render-phase reducer run would
+        // unmount the viewer via an error boundary).
+        const errored = activityDoenetStateReducer(initial, {
+            type: "generateNewActivityAttempt",
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            allowSaveState: false,
+            baseId: "err",
+            sourceHash,
+            initialAttempt: true,
+        });
+        expect(errored.errMsg).toContain("Error in activity:");
+        expect(errored.errMsg).toContain(
+            "larger than the number of available activities",
+        );
+        // The rest of the state is untouched.
+        expect(errored.activityState).eq(initial.activityState);
+        expect(errored.stateVersion).eq(0);
+
+        // A later successful action clears the error.
+        const docSource = doc as SingleDocSource;
+        const cleared = activityDoenetStateReducer(errored, {
+            type: "initialize",
+            source: docSource,
+            variantIndex: 5,
+            numActivityVariants:
+                gatherDocumentStructure(docSource).numActivityVariants,
+        });
+        expect(cleared.errMsg).eq(null);
+        expect(cleared.stateVersion).eq(1);
+    });
+
+    it("ignores a report from a document that is not in the activity", () => {
+        vi.stubGlobal("window", {
+            postMessage: vi.fn(() => null),
+        });
+        const spy = vi.spyOn(window, "postMessage");
+
+        const source = doc as SingleDocSource;
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
+        const state = mkState({
+            activityState: initializeActivityState({
+                source,
+                variant: 5,
+                parentId: null,
+                numActivityVariants,
+            }),
+            doenetStates: [],
+            itemAttemptNumbers: [1],
+        });
+
+        // e.g. an in-flight save from a just-regenerated attempt, or a
+        // select that re-picked its children
+        const newState = activityDoenetStateReducer(state, {
+            type: "updateSingleState",
+            docId: "no-longer-present",
+            doenetState: { some: "state" },
+            creditAchieved: 1,
+            allowSaveState: true,
+            baseId: "stale",
+            sourceHash: createSourceHash(source),
+        });
+
+        expect(newState).eq(state);
+        expect(spy).toHaveBeenCalledTimes(0);
     });
 
     it("initialize", () => {
@@ -36,11 +137,11 @@ describe("Activity reducer tests", () => {
         const { numActivityVariants } = gatherDocumentStructure(source);
 
         const newState = activityDoenetStateReducer(
-            {
+            mkState({
                 activityState: state0,
                 doenetStates: [],
                 itemAttemptNumbers: [1],
-            },
+            }),
             {
                 type: "initialize",
                 source,
@@ -68,6 +169,8 @@ describe("Activity reducer tests", () => {
             activityState: expectedActivityState,
             doenetStates: [],
             itemAttemptNumbers: [1],
+            stateVersion: 1,
+            errMsg: null,
         });
     });
 
@@ -102,11 +205,11 @@ describe("Activity reducer tests", () => {
         };
 
         let newState = activityDoenetStateReducer(
-            {
+            mkState({
                 activityState: state0,
                 doenetStates: [],
                 itemAttemptNumbers: [1],
-            },
+            }),
             {
                 type: "set",
                 state,
@@ -115,11 +218,15 @@ describe("Activity reducer tests", () => {
             },
         );
 
-        expect(newState).eqls(state);
+        expect(newState).eqls(mkState({ ...state, stateVersion: 1 }));
         expect(spy).toHaveBeenCalledTimes(0);
 
         newState = activityDoenetStateReducer(
-            { activityState, doenetStates: [], itemAttemptNumbers: [1] },
+            mkState({
+                activityState,
+                doenetStates: [],
+                itemAttemptNumbers: [1],
+            }),
             {
                 type: "set",
                 state,
@@ -128,7 +235,7 @@ describe("Activity reducer tests", () => {
             },
         );
 
-        expect(newState).eqls(state);
+        expect(newState).eqls(mkState({ ...state, stateVersion: 1 }));
         expect(spy).toHaveBeenCalledTimes(1);
 
         expect(spy.mock.lastCall).eqls([
@@ -171,11 +278,11 @@ describe("Activity reducer tests", () => {
         state0.creditAchieved = 0.8;
 
         let state = activityDoenetStateReducer(
-            {
+            mkState({
                 activityState: state0,
                 doenetStates: [],
                 itemAttemptNumbers: [1],
-            },
+            }),
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -205,11 +312,11 @@ describe("Activity reducer tests", () => {
 
         // repeat creation of first attempt, this time with `allowSaveState`
         state = activityDoenetStateReducer(
-            {
+            mkState({
                 activityState: state0,
                 doenetStates: [],
                 itemAttemptNumbers: [1],
-            },
+            }),
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -299,7 +406,6 @@ describe("Activity reducer tests", () => {
             },
         ]);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
     });
 
@@ -321,11 +427,11 @@ describe("Activity reducer tests", () => {
         });
 
         let state = activityDoenetStateReducer(
-            {
+            mkState({
                 activityState: state0,
                 doenetStates: [],
                 itemAttemptNumbers: [1],
-            },
+            }),
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -340,9 +446,7 @@ describe("Activity reducer tests", () => {
         state = activityDoenetStateReducer(state, {
             type: "updateSingleState",
             docId: "doc5",
-            doenetStateIdx: 0,
             doenetState: "DoenetML state 1",
-            itemSequence: ["doc5"],
             creditAchieved: 0.2,
             allowSaveState: true,
             baseId: "newId",
@@ -392,9 +496,8 @@ describe("Activity reducer tests", () => {
             },
         ]);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // decrease score
@@ -402,8 +505,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: "doc5",
             doenetState: "DoenetML state 2",
-            doenetStateIdx: 0,
-            itemSequence: ["doc5"],
             creditAchieved: 0.1,
             allowSaveState: true,
             baseId: "newId",
@@ -453,9 +554,8 @@ describe("Activity reducer tests", () => {
             },
         ]);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // increase score
@@ -463,8 +563,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: "doc5",
             doenetState: "DoenetML state 3",
-            doenetStateIdx: 0,
-            itemSequence: ["doc5"],
             creditAchieved: 0.3,
             allowSaveState: true,
             baseId: "newId",
@@ -514,9 +612,8 @@ describe("Activity reducer tests", () => {
             },
         ]);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // generate new attempt
@@ -565,7 +662,6 @@ describe("Activity reducer tests", () => {
             },
         ]);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // start attempt with low score
@@ -573,8 +669,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: "doc5",
             doenetState: "DoenetML state 4",
-            doenetStateIdx: 0,
-            itemSequence: ["doc5"],
             creditAchieved: 0.1,
             allowSaveState: true,
             baseId: "newId",
@@ -624,9 +718,8 @@ describe("Activity reducer tests", () => {
             },
         ]);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
 
         // increase score
@@ -634,8 +727,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: "doc5",
             doenetState: "DoenetML state 5",
-            doenetStateIdx: 0,
-            itemSequence: ["doc5"],
             creditAchieved: 0.5,
             allowSaveState: true,
             baseId: "newId",
@@ -685,9 +776,8 @@ describe("Activity reducer tests", () => {
             },
         ]);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
     });
 
@@ -804,11 +894,9 @@ describe("Activity reducer tests", () => {
         ]);
 
         if (!new_attempt) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         }
         if (!new_attempt_for_item) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
         }
     }
@@ -834,11 +922,11 @@ describe("Activity reducer tests", () => {
         const itemAttemptNumbers = [1, 1, 1];
 
         let state = activityDoenetStateReducer(
-            {
+            mkState({
                 activityState: state0,
                 doenetStates: [],
                 itemAttemptNumbers,
-            },
+            }),
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -869,8 +957,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[0],
             doenetState: docStates[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -898,8 +984,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -926,8 +1010,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -982,8 +1064,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[2],
             doenetState: docStates[2],
-            doenetStateIdx: 2,
-            itemSequence: docIds,
             creditAchieved: docCredits[2],
             allowSaveState: true,
             baseId: "newId",
@@ -1028,7 +1108,11 @@ describe("Activity reducer tests", () => {
         const itemAttemptNumbers = [1, 1, 1];
 
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [], itemAttemptNumbers },
+            mkState({
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers,
+            }),
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -1059,8 +1143,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[0],
             doenetState: docStates[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1088,8 +1170,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1116,8 +1196,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1141,8 +1219,6 @@ describe("Activity reducer tests", () => {
         state = activityDoenetStateReducer(state, {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             allowSaveState: true,
@@ -1177,8 +1253,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[0],
             doenetState: docStates[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1206,8 +1280,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[2],
             doenetState: docStates[2],
-            doenetStateIdx: 2,
-            itemSequence: docIds,
             creditAchieved: docCredits[2],
             allowSaveState: true,
             baseId: "newId",
@@ -1235,8 +1307,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1261,8 +1331,6 @@ describe("Activity reducer tests", () => {
         state = activityDoenetStateReducer(state, {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             allowSaveState: true,
@@ -1297,8 +1365,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1447,11 +1513,9 @@ describe("Activity reducer tests", () => {
         ]);
 
         if (!new_attempt) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         }
         if (!new_attempt_for_item) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
         }
     }
@@ -1476,7 +1540,11 @@ describe("Activity reducer tests", () => {
 
         const itemAttemptNumbers = [1, 1];
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [], itemAttemptNumbers },
+            mkState({
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers,
+            }),
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -1519,8 +1587,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[0],
             doenetState: docStates[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1552,8 +1618,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1585,8 +1649,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1671,8 +1733,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1719,7 +1779,11 @@ describe("Activity reducer tests", () => {
         const itemAttemptNumbers = [1, 1];
 
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [], itemAttemptNumbers },
+            mkState({
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers,
+            }),
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -1762,8 +1826,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[0],
             doenetState: docStates[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -1795,8 +1857,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1828,8 +1888,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1857,8 +1915,6 @@ describe("Activity reducer tests", () => {
         state = activityDoenetStateReducer(state, {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             allowSaveState: true,
@@ -1912,8 +1968,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1945,8 +1999,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -1974,8 +2026,6 @@ describe("Activity reducer tests", () => {
         state = activityDoenetStateReducer(state, {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             allowSaveState: true,
@@ -2029,8 +2079,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[0],
             doenetState: docStates[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -2170,11 +2218,9 @@ describe("Activity reducer tests", () => {
         ]);
 
         if (!new_attempt) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect("new_attempt" in spy.mock.lastCall![0]).eq(false);
         }
         if (!new_attempt_for_item) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect("new_attempt_for_item" in spy.mock.lastCall![0]).eq(false);
         }
     }
@@ -2200,7 +2246,11 @@ describe("Activity reducer tests", () => {
         const itemAttemptNumbers = [1, 1];
 
         let state = activityDoenetStateReducer(
-            { activityState: state0, doenetStates: [], itemAttemptNumbers },
+            mkState({
+                activityState: state0,
+                doenetStates: [],
+                itemAttemptNumbers,
+            }),
             {
                 type: "generateNewActivityAttempt",
                 numActivityVariants,
@@ -2232,8 +2282,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[0],
             doenetState: docStates[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",
@@ -2261,8 +2309,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -2290,8 +2336,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -2316,8 +2360,6 @@ describe("Activity reducer tests", () => {
         state = activityDoenetStateReducer(state, {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             allowSaveState: true,
@@ -2362,8 +2404,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -2391,8 +2431,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[1],
             doenetState: docStates[1],
-            doenetStateIdx: 1,
-            itemSequence: docIds,
             creditAchieved: docCredits[1],
             allowSaveState: true,
             baseId: "newId",
@@ -2417,8 +2455,6 @@ describe("Activity reducer tests", () => {
         state = activityDoenetStateReducer(state, {
             type: "generateSingleDocSubActivityAttempt",
             docId: docIds[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             numActivityVariants,
             initialQuestionCounter: 0,
             allowSaveState: true,
@@ -2462,8 +2498,6 @@ describe("Activity reducer tests", () => {
             type: "updateSingleState",
             docId: docIds[0],
             doenetState: docStates[0],
-            doenetStateIdx: 0,
-            itemSequence: docIds,
             creditAchieved: docCredits[0],
             allowSaveState: true,
             baseId: "newId",

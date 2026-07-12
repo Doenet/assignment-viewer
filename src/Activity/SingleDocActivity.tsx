@@ -1,10 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { DoenetMLFlags } from "../types";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { DoenetViewer } from "@doenet/doenetml-iframe";
 import { SingleDocState } from "./singleDocState";
-import { ActivityState } from "./activityState";
+import type { ActivityCommonProps } from "./Activity";
 
-export function SingleDocActivity({
+type SingleDocActivityProps = Omit<
+    ActivityCommonProps,
+    | "doenetStates"
+    | "itemAttemptNumbers"
+    | "answerResponseCountsByItem"
+    | "itemIndexById"
+> & {
+    state: SingleDocState;
+    /** This item's saved Doenet state (its slice of `doenetStates`). */
+    doenetState: unknown;
+    itemAttemptNumber: number;
+    answerResponseCounts?: Record<string, number>;
+};
+
+export const SingleDocActivity = memo(function SingleDocActivity({
     flags,
     baseId,
     maxAttemptsAllowed,
@@ -16,10 +29,10 @@ export function SingleDocActivity({
     fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
-    answerResponseCountsByItem = [],
+    answerResponseCounts,
     state,
-    doenetStates,
-    loadedStateNum,
+    doenetState,
+    stateVersion,
     reportScoreAndStateCallback,
     checkRender,
     checkHidden,
@@ -28,55 +41,19 @@ export function SingleDocActivity({
     hasRenderedCallback,
     reportVisibility = false,
     reportVisibilityCallback,
-    itemAttemptNumbers,
-    itemSequence,
+    itemAttemptNumber,
     itemWord,
-}: {
-    flags: DoenetMLFlags;
-    baseId: string;
-    maxAttemptsAllowed: number;
-    forceDisable?: boolean;
-    forceShowCorrectness?: boolean;
-    forceShowSolution?: boolean;
-    forceUnsuppressCheckwork?: boolean;
-    doenetViewerUrl?: string;
-    fetchExternalDoenetML?: (arg: string) => Promise<string>;
-    darkMode?: "dark" | "light";
-    showAnswerResponseMenu?: boolean;
-    answerResponseCountsByItem?: Record<string, number>[];
-    state: SingleDocState;
-    doenetStates: unknown[];
-    loadedStateNum: number;
-    reportScoreAndStateCallback: (args: unknown) => void;
-    checkRender: (state: ActivityState) => boolean;
-    checkHidden: (state: ActivityState) => boolean;
-    allowItemAttemptButtons?: boolean;
-    generateNewItemAttempt?: (
-        id: string,
-        initialQuestionCounter: number,
-    ) => void;
-    hasRenderedCallback: (id: string) => void;
-    reportVisibility?: boolean;
-    reportVisibilityCallback: (id: string, isVisible: boolean) => void;
-    itemAttemptNumbers: number[];
-    itemSequence: string[];
-    itemWord: string;
-}) {
+}: SingleDocActivityProps) {
     const [rendered, setRendered] = useState(false);
 
     const [attemptNumber, setAttemptNumber] = useState(state.attemptNumber);
-    const [loadedStateNumUsed, setLoadedStateNumUsed] = useState(0);
+    const [stateVersionUsed, setStateVersionUsed] = useState(stateVersion);
     const [initialDoenetState, setInitialDoenetState] = useState<Record<
         string,
         unknown
     > | null>(
-        (state.doenetStateIdx === null
-            ? null
-            : (doenetStates[state.doenetStateIdx] ?? null)) as Record<
-            string,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            any
-        > | null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (doenetState ?? null) as Record<string, any> | null,
     );
 
     const [requestedVariantIndex, setRequestedVariantIndex] = useState(
@@ -84,13 +61,6 @@ export function SingleDocActivity({
     );
 
     const ref = useRef<HTMLDivElement>(null);
-
-    const itemIdx = useMemo(
-        () => itemSequence.indexOf(state.id),
-        [itemSequence, state.id],
-    );
-
-    const itemAttemptNumber = itemAttemptNumbers[itemIdx];
 
     useEffect(() => {
         if (reportVisibility && ref.current) {
@@ -109,34 +79,33 @@ export function SingleDocActivity({
         }
     }, [reportVisibility, ref, reportVisibilityCallback, state.id]);
 
-    // Note: given the way the `<DoenetViewer>` iframe is set up, any changes in props
-    // will reinitialize the activity. Hence, we make sure that no props change
-    // unless the attempt number has changed.
+    // The initial Doenet state is deliberately *frozen*: it seeds the viewer
+    // and must not follow every subsequent report (the viewer owns the live
+    // state). It is re-read only when the item gets a new attempt or the
+    // whole activity's state is externally (re)loaded (`stateVersion`).
     if (
         state.attemptNumber !== attemptNumber ||
-        loadedStateNumUsed !== loadedStateNum
+        stateVersionUsed !== stateVersion
     ) {
         setAttemptNumber(state.attemptNumber);
-        setLoadedStateNumUsed(loadedStateNum);
+        setStateVersionUsed(stateVersion);
 
         setInitialDoenetState(
-            (state.doenetStateIdx === null
-                ? null
-                : (doenetStates[state.doenetStateIdx] ?? null)) as Record<
-                string,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                any
-            > | null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (doenetState ?? null) as Record<string, any> | null,
         );
 
         setRequestedVariantIndex(state.currentVariant);
     }
 
-    const initialCounters = {
-        question: state.initialQuestionCounter,
-        problem: state.initialQuestionCounter,
-        exercise: state.initialQuestionCounter,
-    };
+    const initialCounters = useMemo(
+        () => ({
+            question: state.initialQuestionCounter,
+            problem: state.initialQuestionCounter,
+            exercise: state.initialQuestionCounter,
+        }),
+        [state.initialQuestionCounter],
+    );
 
     const source = state.source;
 
@@ -157,7 +126,12 @@ export function SingleDocActivity({
         <div ref={ref}>
             <div hidden={!render || hidden} style={{ minHeight: "100px" }}>
                 <DoenetViewer
-                    key={state.attemptNumber}
+                    // `initialState` is seed-only for the viewer, so applying
+                    // a re-read one (new item attempt, or externally loaded
+                    // state — which may not change the attempt number)
+                    // requires a remount. Built from the *frozen* values so
+                    // the key and the seed always change in the same commit.
+                    key={`${attemptNumber.toString()}-${stateVersionUsed.toString()}`}
                     doenetML={source.doenetML}
                     doenetmlVersion={source.version}
                     render={render}
@@ -173,7 +147,7 @@ export function SingleDocActivity({
                     fetchExternalDoenetML={fetchExternalDoenetML}
                     darkMode={darkMode}
                     showAnswerResponseMenu={showAnswerResponseMenu}
-                    answerResponseCounts={answerResponseCountsByItem[itemIdx]}
+                    answerResponseCounts={answerResponseCounts}
                     addVirtualKeyboard={false}
                     initialState={initialDoenetState}
                     initializeCounters={initialCounters}
@@ -215,4 +189,4 @@ export function SingleDocActivity({
             </div>
         </div>
     );
-}
+});
