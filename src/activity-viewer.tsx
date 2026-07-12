@@ -114,10 +114,12 @@ export function ActivityViewer({
     showTitle?: boolean;
     itemWord?: string;
     /**
-     * Called (once per `source` analysis) with conditions worth surfacing
-     * to the user, e.g. an assignment mixing DoenetML versions. The
-     * containing page decides how to display them; a `console.warn` is
-     * also emitted for developers.
+     * Called with conditions in `source` worth surfacing to the user, e.g.
+     * an assignment mixing DoenetML versions. Invoked once per distinct set
+     * of warnings — not on every render, and not again when the consumer
+     * passes a fresh-but-equal `source` each render. The containing page
+     * decides how to display them; a `console.warn` is also emitted for
+     * developers.
      */
     reportWarningsCallback?: (warnings: ActivityViewerWarning[]) => void;
 }) {
