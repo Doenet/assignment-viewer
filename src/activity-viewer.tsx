@@ -1,11 +1,42 @@
 import "./assignment-viewer.css";
-import { Component, ErrorInfo, ReactNode, useMemo, useState } from "react";
+import {
+    Component,
+    ErrorInfo,
+    ReactNode,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import seedrandom from "seedrandom";
 import { Viewer } from "./Viewer/Viewer";
 import { DoenetMLFlags } from "./types";
-import { ActivitySource } from "./Activity/activityState";
+import {
+    ActivitySource,
+    collectDoenetmlVersions,
+} from "./Activity/activityState";
 import { useResolvedTheme } from "./utils/theme";
 import type { ThemeSetting } from "./utils/theme";
+
+/**
+ * A condition in the provided activity worth surfacing to the user — passed
+ * to `reportWarningsCallback`, since a console warning is invisible to the
+ * site's visitors. How (and whether) to display it is the containing page's
+ * decision.
+ */
+export type ActivityViewerWarning = {
+    type: "mixedDoenetmlVersions";
+    /**
+     * The distinct DoenetML versions the assignment's documents request, in
+     * first-appearance order. Every embedded viewer downloads and parses
+     * the multi-MB standalone bundle for its document's version, so mixing
+     * versions multiplies that cost by the number of distinct versions.
+     * (Normalizing the `version` fields in the source avoids it; saved
+     * student state is keyed on a hash that ignores `version`, so it
+     * survives such a change.)
+     */
+    versions: string[];
+};
 
 type DoenetMLFlagsSubset = Partial<DoenetMLFlags>;
 
@@ -56,6 +87,7 @@ export function ActivityViewer({
     includeVariantSelector: _includeVariantSelector = false,
     showTitle = true,
     itemWord = "item",
+    reportWarningsCallback,
 }: {
     source: ActivitySource;
     flags?: DoenetMLFlagsSubset;
@@ -81,12 +113,54 @@ export function ActivityViewer({
     includeVariantSelector?: boolean;
     showTitle?: boolean;
     itemWord?: string;
+    /**
+     * Called (once per `source` analysis) with conditions worth surfacing
+     * to the user, e.g. an assignment mixing DoenetML versions. The
+     * containing page decides how to display them; a `console.warn` is
+     * also emitted for developers.
+     */
+    reportWarningsCallback?: (warnings: ActivityViewerWarning[]) => void;
 }) {
     const [initialVariantIndex, setInitialVariantIndex] = useState<
         number | null
     >(null);
 
     const resolvedTheme = useResolvedTheme(darkMode);
+
+    const warnings = useMemo<ActivityViewerWarning[]>(() => {
+        let versions: string[];
+        try {
+            versions = collectDoenetmlVersions(source);
+        } catch {
+            // An unwalkable source produces its own error screen.
+            return [];
+        }
+        if (versions.length > 1) {
+            return [{ type: "mixedDoenetmlVersions", versions }];
+        }
+        return [];
+    }, [source]);
+
+    // Report warnings once per source analysis (not once per render, and
+    // not re-reported when only the callback identity changes — hence the
+    // ref indirection).
+    const reportWarningsCallbackRef = useRef(reportWarningsCallback);
+    useEffect(() => {
+        reportWarningsCallbackRef.current = reportWarningsCallback;
+    });
+    useEffect(() => {
+        if (warnings.length > 0) {
+            for (const warning of warnings) {
+                // `mixedDoenetmlVersions` is currently the only type.
+                console.warn(
+                    `ActivityViewer: this assignment mixes DoenetML versions (${warning.versions.join(
+                        ", ",
+                    )}). Each distinct version loads its own multi-MB standalone bundle; normalize the documents' \`version\` fields to avoid the multiplied download/parse cost (saved state survives, as its hash ignores \`version\`).`,
+                );
+            }
+            reportWarningsCallbackRef.current?.(warnings);
+        }
+    }, [warnings]);
 
     // Serializing the source is how prop "sameness" is detected for
     // consumers that pass a fresh `source` object each render; memoize it so

@@ -145,6 +145,27 @@ export function isExportedActivityState(
 }
 
 /**
+ * Collect the distinct DoenetML `version` values of all documents in
+ * `source`, in first-appearance order. An assignment mixing versions makes
+ * the embedded viewers download and parse a separate multi-MB standalone
+ * bundle per distinct version.
+ */
+export function collectDoenetmlVersions(source: ActivitySource): string[] {
+    if (source.type === "singleDoc") {
+        return [source.version];
+    }
+    const versions: string[] = [];
+    for (const item of source.items) {
+        for (const version of collectDoenetmlVersions(item)) {
+            if (!versions.includes(version)) {
+                versions.push(version);
+            }
+        }
+    }
+    return versions;
+}
+
+/**
  * Initialize activity state from `source` so that it is ready to generate attempts.
  *
  * Populates all the activities through the `allChildren` field.
