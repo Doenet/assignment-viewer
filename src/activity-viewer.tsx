@@ -81,8 +81,8 @@ export function ActivityViewer({
     forceUnsuppressCheckwork = false,
     addVirtualKeyboard = true,
     externalVirtualKeyboardProvided = false,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- the deprecated alias must still be honored
     doenetViewerUrl,
+    doenetMediaUrl,
     standaloneUrl,
     cssUrl,
     doenetmlVersion,
@@ -113,8 +113,18 @@ export function ActivityViewer({
     forceUnsuppressCheckwork?: boolean;
     addVirtualKeyboard?: boolean;
     externalVirtualKeyboardProvided?: boolean;
-    /** @deprecated Use `standaloneUrl`. */
+    /**
+     * URL the `<ref>` renderer uses to build links to other Doenet
+     * activities. Forwarded to each document's viewer, which defaults it to
+     * `https://doenet.org/activityViewer`.
+     */
     doenetViewerUrl?: string;
+    /**
+     * URL used to resolve `<image source="doenet:…">` media references.
+     * Forwarded to each document's viewer, which defaults it to
+     * `https://doenet.org/api/media`.
+     */
+    doenetMediaUrl?: string;
     /**
      * URL of a standalone DoenetML bundle to use for every document,
      * instead of the CDN bundle for each document's `version`.
@@ -279,7 +289,9 @@ export function ActivityViewer({
                     externalVirtualKeyboardProvided={
                         externalVirtualKeyboardProvided
                     }
-                    standaloneUrl={standaloneUrl ?? doenetViewerUrl}
+                    doenetViewerUrl={doenetViewerUrl}
+                    doenetMediaUrl={doenetMediaUrl}
+                    standaloneUrl={standaloneUrl}
                     cssUrl={cssUrl}
                     doenetmlVersion={doenetmlVersion}
                     fetchExternalDoenetML={fetchExternalDoenetML}

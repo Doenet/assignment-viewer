@@ -14,6 +14,10 @@ export type ActivityCommonProps = {
     forceShowCorrectness?: boolean;
     forceShowSolution?: boolean;
     forceUnsuppressCheckwork?: boolean;
+    /** URL the `<ref>` renderer uses to link to other Doenet activities. */
+    doenetViewerUrl?: string;
+    /** URL used to resolve `<image source="doenet:…">` media references. */
+    doenetMediaUrl?: string;
     standaloneUrl?: string;
     cssUrl?: string;
     doenetmlVersion?: string;
