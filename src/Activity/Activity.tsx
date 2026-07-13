@@ -17,7 +17,7 @@ export type ActivityCommonProps = {
     /** URL the `<ref>` renderer uses to link to other Doenet activities. */
     doenetViewerUrl?: string;
     /** URL used to resolve `<image source="doenet:…">` media references. */
-    doenetMediaUrl?: string;
+    doenetImagesUrl?: string;
     standaloneUrl?: string;
     cssUrl?: string;
     doenetmlVersion?: string;

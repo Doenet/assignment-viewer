@@ -46,7 +46,7 @@ export function Viewer({
     addVirtualKeyboard: _addVirtualKeyboard = true,
     externalVirtualKeyboardProvided: _externalVirtualKeyboardProvided = false,
     doenetViewerUrl,
-    doenetMediaUrl,
+    doenetImagesUrl,
     standaloneUrl,
     cssUrl,
     doenetmlVersion,
@@ -76,7 +76,7 @@ export function Viewer({
     addVirtualKeyboard?: boolean;
     externalVirtualKeyboardProvided?: boolean;
     doenetViewerUrl?: string;
-    doenetMediaUrl?: string;
+    doenetImagesUrl?: string;
     standaloneUrl?: string;
     cssUrl?: string;
     doenetmlVersion?: string;
@@ -580,7 +580,7 @@ export function Viewer({
                 forceShowSolution={forceShowSolution}
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                 doenetViewerUrl={doenetViewerUrl}
-                doenetMediaUrl={doenetMediaUrl}
+                doenetImagesUrl={doenetImagesUrl}
                 standaloneUrl={standaloneUrl}
                 cssUrl={cssUrl}
                 doenetmlVersion={doenetmlVersion}
