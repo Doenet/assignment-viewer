@@ -8,7 +8,7 @@ import {
 } from "./helpers";
 
 // `doenetViewerUrl` (the `<ref>` renderer's activity-link base) and
-// `doenetMediaUrl` (the `<image source="doenet:…">` base, DoenetML#1457) are
+// `doenetImagesUrl` (the `<image source="doenet:…">` base, DoenetML#1457) are
 // props of the inner DoenetViewer. ActivityViewer must thread them through
 // Viewer → Activity → SingleDocActivity to each embedded `<DoenetViewer>`.
 // The iframe wrapper bakes a booted viewer's props into the iframe `srcdoc`,
@@ -16,7 +16,7 @@ import {
 // the bundle rendering a ref/image.
 
 const VIEWER_URL = "https://viewer.example.test/activityViewer";
-const MEDIA_URL = "https://media.example.test/api/media";
+const IMAGES_URL = "https://images.example.test/api/media";
 
 const SOURCE: ActivitySource = {
     type: "singleDoc",
@@ -27,7 +27,7 @@ const SOURCE: ActivitySource = {
     numVariants: 1,
 } as ActivitySource;
 
-describe("ActivityViewer — forwards doenetViewerUrl and doenetMediaUrl to the viewer", () => {
+describe("ActivityViewer — forwards doenetViewerUrl and doenetImagesUrl to the viewer", () => {
     it("bakes both URLs into the embedded DoenetViewer's iframe", () => {
         cy.mount(
             <ActivityViewer
@@ -37,13 +37,13 @@ describe("ActivityViewer — forwards doenetViewerUrl and doenetMediaUrl to the 
                 standaloneUrl={STANDALONE_URL}
                 cssUrl={STANDALONE_CSS_URL}
                 doenetViewerUrl={VIEWER_URL}
-                doenetMediaUrl={MEDIA_URL}
+                doenetImagesUrl={IMAGES_URL}
             />,
         );
 
         cy.get("iframe", { timeout: IFRAME_READY_TIMEOUT })
             .should("have.attr", "srcdoc")
             .and("include", VIEWER_URL)
-            .and("include", MEDIA_URL);
+            .and("include", IMAGES_URL);
     });
 });

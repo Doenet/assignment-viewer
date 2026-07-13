@@ -26,7 +26,7 @@ export const SingleDocActivity = memo(function SingleDocActivity({
     forceShowSolution = false,
     forceUnsuppressCheckwork = false,
     doenetViewerUrl,
-    doenetMediaUrl,
+    doenetImagesUrl,
     standaloneUrl,
     cssUrl,
     doenetmlVersion,
@@ -126,7 +126,7 @@ export const SingleDocActivity = memo(function SingleDocActivity({
                 forceShowSolution={forceShowSolution}
                 forceUnsuppressCheckwork={forceUnsuppressCheckwork}
                 doenetViewerUrl={doenetViewerUrl}
-                doenetMediaUrl={doenetMediaUrl}
+                doenetImagesUrl={doenetImagesUrl}
                 standaloneUrl={standaloneUrl}
                 cssUrl={cssUrl}
                 fetchExternalDoenetML={fetchExternalDoenetML}

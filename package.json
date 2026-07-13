@@ -38,7 +38,7 @@
         "prettier:check": "prettier --check ."
     },
     "peerDependencies": {
-        "@doenet/doenetml-iframe": "^0.7.20-dev.332",
+        "@doenet/doenetml-iframe": "^0.7.20-dev.334",
         "react": "^19.2.3",
         "react-dom": "^19.2.3"
     },
@@ -49,7 +49,7 @@
         "seedrandom": "^3.0.5"
     },
     "devDependencies": {
-        "@doenet/doenetml-iframe": "0.7.20-dev.332",
+        "@doenet/doenetml-iframe": "0.7.20-dev.334",
         "@eslint/js": "^9.39.1",
         "@types/object-hash": "^3.0.6",
         "@types/react": "^19.2.7",

@@ -82,7 +82,7 @@ export function ActivityViewer({
     addVirtualKeyboard = true,
     externalVirtualKeyboardProvided = false,
     doenetViewerUrl,
-    doenetMediaUrl,
+    doenetImagesUrl,
     standaloneUrl,
     cssUrl,
     doenetmlVersion,
@@ -124,7 +124,7 @@ export function ActivityViewer({
      * Forwarded to each document's viewer, which defaults it to
      * `https://doenet.org/api/media`.
      */
-    doenetMediaUrl?: string;
+    doenetImagesUrl?: string;
     /**
      * URL of a standalone DoenetML bundle to use for every document,
      * instead of the CDN bundle for each document's `version`.
@@ -290,7 +290,7 @@ export function ActivityViewer({
                         externalVirtualKeyboardProvided
                     }
                     doenetViewerUrl={doenetViewerUrl}
-                    doenetMediaUrl={doenetMediaUrl}
+                    doenetImagesUrl={doenetImagesUrl}
                     standaloneUrl={standaloneUrl}
                     cssUrl={cssUrl}
                     doenetmlVersion={doenetmlVersion}
