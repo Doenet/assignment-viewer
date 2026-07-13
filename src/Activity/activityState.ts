@@ -55,7 +55,30 @@ export type ActivityAndDoenetState = {
     activityState: ActivityState;
     doenetStates: unknown[];
     itemAttemptNumbers: number[];
+    /**
+     * Bumped whenever the whole activity's state is (re)initialized or
+     * replaced from outside — a new activity attempt, loaded saved state —
+     * so items know to re-read their initial Doenet state. (Per-item
+     * attempts are covered by the item's own `attemptNumber`.)
+     */
+    stateVersion: number;
+    /**
+     * Message of the error that interrupted the last attempt generation,
+     * or `null` when healthy. Kept in reducer state (rather than component
+     * state set from an effect) so it self-clears on the next successful
+     * action.
+     */
+    errMsg: string | null;
 };
+
+/**
+ * The core fields of {@link ActivityAndDoenetState} that callers supply;
+ * the reducer owns the bookkeeping fields (`stateVersion`, `errMsg`).
+ */
+export type ActivityAndDoenetStateCore = Omit<
+    ActivityAndDoenetState,
+    "stateVersion" | "errMsg"
+>;
 
 /**
  * The current state of an activity, where references to the source have been eliminated.
@@ -91,21 +114,6 @@ export function isActivitySource(obj: unknown): obj is ActivitySource {
 
 export function isActivityState(obj: unknown): obj is ActivityState {
     return isSingleDocState(obj) || isSelectState(obj) || isSequenceState(obj);
-}
-
-export function isActivityAndDoenetState(
-    obj: unknown,
-): obj is ActivityAndDoenetState {
-    const typedObj = obj as ActivityAndDoenetState;
-    return (
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        typedObj !== null &&
-        typeof typedObj === "object" &&
-        isActivityState(typedObj.activityState) &&
-        Array.isArray(typedObj.doenetStates) &&
-        Array.isArray(typedObj.itemAttemptNumbers) &&
-        typedObj.itemAttemptNumbers.every((x) => Number.isInteger(x) && x > 0)
-    );
 }
 
 export function isActivityStateNoSource(
@@ -213,7 +221,13 @@ export function initializeActivityAndDoenetState({
 
     const numItems = getNumItems(source);
     const itemAttemptNumbers = Array<number>(numItems).fill(1);
-    return { activityState, doenetStates: [], itemAttemptNumbers };
+    return {
+        activityState,
+        doenetStates: [],
+        itemAttemptNumbers,
+        stateVersion: 1,
+        errMsg: null,
+    };
 }
 
 /**

@@ -1,5 +1,5 @@
 import "./assignment-viewer.css";
-import { Component, ErrorInfo, ReactNode, useRef, useState } from "react";
+import { Component, ErrorInfo, ReactNode, useMemo, useState } from "react";
 import seedrandom from "seedrandom";
 import { Viewer } from "./Viewer/Viewer";
 import { DoenetMLFlags } from "./types";
@@ -25,15 +25,15 @@ const defaultFlags: DoenetMLFlags = {
 
 const rngClass = seedrandom.alea;
 
-type PropSet = {
-    source: string;
-    activityId?: string;
-    requestedVariantIndex?: number;
-};
+// A stable default identity: an inline `= {}` default would be a fresh
+// object every render, making the `flags` memo below recompute (and hand the
+// memoized Activity tree a fresh `flags` identity) whenever the consumer
+// omits the prop.
+const NO_FLAGS: DoenetMLFlagsSubset = {};
 
 export function ActivityViewer({
     source,
-    flags: specifiedFlags = {},
+    flags: specifiedFlags = NO_FLAGS,
     activityId = "a",
     userId = null,
     requestedVariantIndex,
@@ -82,43 +82,34 @@ export function ActivityViewer({
     showTitle?: boolean;
     itemWord?: string;
 }) {
-    // const [variants, setVariants] = useState({
-    //     index: 1,
-    //     numVariants: 1,
-    //     allPossibleVariants: ["a"],
-    // });
-
     const [initialVariantIndex, setInitialVariantIndex] = useState<
         number | null
     >(null);
 
     const resolvedTheme = useResolvedTheme(darkMode);
 
-    const thisPropSet: PropSet = {
-        source: JSON.stringify(source),
-        activityId,
-        requestedVariantIndex,
-    };
-    const lastPropSet = useRef<PropSet>({ source: "" });
+    // Serializing the source is how prop "sameness" is detected for
+    // consumers that pass a fresh `source` object each render; memoize it so
+    // the (potentially large) assignment is only serialized when the
+    // identity actually changes.
+    const propSetKey = useMemo(
+        () => JSON.stringify([source, activityId, requestedVariantIndex]),
+        [source, activityId, requestedVariantIndex],
+    );
+    const [lastPropSetKey, setLastPropSetKey] = useState<string | null>(null);
 
-    const flags: DoenetMLFlags = { ...defaultFlags, ...specifiedFlags };
+    const flags: DoenetMLFlags = useMemo(
+        () => ({ ...defaultFlags, ...specifiedFlags }),
+        [specifiedFlags],
+    );
 
     // Normalize variant index to an integer.
     // Generate a random variant index if the requested variant index is undefined.
-    // To preserve the generated variant index on rerender,
-    // regenerate only if one of the props in propSet has changed
-    let foundPropChange = false;
-    let key: keyof PropSet;
-    for (key in thisPropSet) {
-        // eslint-disable-next-line react-hooks/refs
-        if (thisPropSet[key] !== lastPropSet.current[key]) {
-            foundPropChange = true;
-        }
-    }
-    // eslint-disable-next-line react-hooks/refs
-    lastPropSet.current = thisPropSet;
-
-    if (foundPropChange) {
+    // To preserve the generated variant index on rerender, regenerate only
+    // when one of the identifying props changed (the sanctioned
+    // adjust-state-during-render pattern).
+    if (propSetKey !== lastPropSetKey) {
+        setLastPropSetKey(propSetKey);
         if (requestedVariantIndex === undefined) {
             const rng = rngClass(new Date().toString());
             setInitialVariantIndex(Math.floor(rng() * 1000000) + 1);
@@ -137,10 +128,7 @@ export function ActivityViewer({
 
     return (
         <ErrorBoundary>
-            <div
-                className="assignment-viewer-root"
-                data-theme={resolvedTheme}
-            >
+            <div className="assignment-viewer-root" data-theme={resolvedTheme}>
                 <Viewer
                     source={source}
                     flags={flags}

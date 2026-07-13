@@ -6,11 +6,13 @@ import {
 } from "../types";
 import {
     ActivityAndDoenetState,
+    ActivityAndDoenetStateCore,
     ActivitySource,
     extractActivityItemCredit,
     gatherStates,
     generateNewActivityAttempt,
     generateNewSingleDocSubAttempt,
+    getItemSequence,
     getNumItems,
     initializeActivityState,
     propagateStateChangeToRoot,
@@ -26,7 +28,7 @@ type InitializeStateAction = {
 
 type SetStateAction = {
     type: "set";
-    state: ActivityAndDoenetState;
+    state: ActivityAndDoenetStateCore;
     allowSaveState: boolean;
     baseId: string;
 };
@@ -44,8 +46,6 @@ type GenerateActivityAttemptAction = {
 type GenerateSingleDocSubAttemptAction = {
     type: "generateSingleDocSubActivityAttempt";
     docId: string;
-    doenetStateIdx: number;
-    itemSequence: string[];
     numActivityVariants: ActivityVariantRecord;
     initialQuestionCounter: number;
     allowSaveState: boolean;
@@ -57,8 +57,6 @@ type UpdateSingleDocStateAction = {
     type: "updateSingleState";
     docId: string;
     doenetState: unknown;
-    doenetStateIdx: number;
-    itemSequence: string[];
     creditAchieved: number;
     allowSaveState: boolean;
     baseId: string;
@@ -89,6 +87,8 @@ export function activityDoenetStateReducer(
                 }),
                 doenetStates: [],
                 itemAttemptNumbers: Array<number>(numItems).fill(1),
+                stateVersion: state.stateVersion + 1,
+                errMsg: null,
             };
         }
         case "set": {
@@ -105,15 +105,30 @@ export function activityDoenetStateReducer(
                 };
                 window.postMessage(message);
             }
-            return action.state;
+            return {
+                ...action.state,
+                stateVersion: state.stateVersion + 1,
+                errMsg: null,
+            };
         }
         case "generateNewActivityAttempt": {
-            const { state: newActivityState } = generateNewActivityAttempt({
-                state: activityState,
-                numActivityVariants: action.numActivityVariants,
-                initialQuestionCounter: action.initialQuestionCounter,
-                parentAttempt: 1,
-            });
+            let newActivityState;
+            try {
+                ({ state: newActivityState } = generateNewActivityAttempt({
+                    state: activityState,
+                    numActivityVariants: action.numActivityVariants,
+                    initialQuestionCounter: action.initialQuestionCounter,
+                    parentAttempt: 1,
+                }));
+            } catch (e) {
+                // Surface the failure through state rather than throwing:
+                // React runs reducers during render, where a throw would
+                // unmount the viewer via an error boundary instead of
+                // showing the error message — and a later successful action
+                // self-clears it.
+                const message = e instanceof Error ? e.message : "";
+                return { ...state, errMsg: `Error in activity: ${message}` };
+            }
 
             // reset all item attempt numbers to 1
             const newItemAttemptNumbers = state.itemAttemptNumbers.map(() => 1);
@@ -143,6 +158,8 @@ export function activityDoenetStateReducer(
                 activityState: newActivityState,
                 doenetStates: [],
                 itemAttemptNumbers: newItemAttemptNumbers,
+                stateVersion: state.stateVersion + 1,
+                errMsg: null,
             };
         }
 
@@ -153,20 +170,34 @@ export function activityDoenetStateReducer(
                 );
             }
 
-            const newActivityState = generateNewSingleDocSubAttempt({
-                singleDocId: action.docId,
-                state: activityState,
-                numActivityVariants: action.numActivityVariants,
-                initialQuestionCounter: action.initialQuestionCounter,
-            });
+            // The document's position in the item sequence is derived from
+            // the reducer's own state (callers used to pass it in, which
+            // required them to track the current sequence).
+            const doenetStateIdx = getItemSequence(activityState).indexOf(
+                action.docId,
+            );
+
+            let newActivityState;
+            try {
+                newActivityState = generateNewSingleDocSubAttempt({
+                    singleDocId: action.docId,
+                    state: activityState,
+                    numActivityVariants: action.numActivityVariants,
+                    initialQuestionCounter: action.initialQuestionCounter,
+                });
+            } catch (e) {
+                // Same treatment as generateNewActivityAttempt: surface
+                // through state instead of throwing out of the dispatch.
+                const message = e instanceof Error ? e.message : "";
+                return { ...state, errMsg: `Error in activity: ${message}` };
+            }
 
             const newDoenetMLStates = [...state.doenetStates];
-            newDoenetMLStates[action.doenetStateIdx] = null;
+            newDoenetMLStates[doenetStateIdx] = null;
 
             // increment the item attempt number corresponding to the document
-            const itemIdx = action.itemSequence.indexOf(action.docId);
             const newItemAttemptNumbers = [...state.itemAttemptNumbers];
-            newItemAttemptNumbers[itemIdx]++;
+            newItemAttemptNumbers[doenetStateIdx]++;
 
             if (action.allowSaveState) {
                 const itemScores = extractActivityItemCredit(newActivityState);
@@ -190,7 +221,7 @@ export function activityDoenetStateReducer(
                     },
                     score: newActivityState.creditAchieved,
                     item_scores: itemScores,
-                    new_doenet_state_idx: action.doenetStateIdx,
+                    new_doenet_state_idx: doenetStateIdx,
                     subject: "SPLICE.reportScoreAndState",
                     activity_id: action.baseId,
                     message_id: nanoid(),
@@ -205,17 +236,34 @@ export function activityDoenetStateReducer(
                 activityState: newActivityState,
                 doenetStates: newDoenetMLStates,
                 itemAttemptNumbers: newItemAttemptNumbers,
+                // Not a stateVersion bump: the remount is driven by the
+                // item's own attemptNumber.
+                stateVersion: state.stateVersion,
+                errMsg: null,
             };
         }
         case "updateSingleState": {
-            const newActivityDoenetState = updateSingleDocState(action, state);
+            // A report can arrive from a document that is no longer part of
+            // the activity — e.g. an in-flight save from a just-regenerated
+            // attempt, or after a select re-picked its children. Ignore it:
+            // recording it would corrupt another item's slot, and throwing
+            // would unmount the whole viewer via an error boundary.
+            const doenetStateIdx = getItemSequence(activityState).indexOf(
+                action.docId,
+            );
+            if (doenetStateIdx === -1) {
+                return state;
+            }
+
+            const newActivityDoenetState = updateSingleDocState(
+                action,
+                doenetStateIdx,
+                state,
+            );
 
             if (action.allowSaveState) {
                 const newActivityState = newActivityDoenetState.activityState;
                 const itemScores = extractActivityItemCredit(newActivityState);
-
-                const itemUpdated =
-                    action.itemSequence.indexOf(action.docId) + 1;
 
                 const message: ReportStateMessage = {
                     state: {
@@ -227,8 +275,8 @@ export function activityDoenetStateReducer(
                     },
                     score: newActivityState.creditAchieved,
                     item_scores: itemScores,
-                    item_updated: itemUpdated,
-                    new_doenet_state_idx: action.doenetStateIdx,
+                    item_updated: doenetStateIdx + 1,
+                    new_doenet_state_idx: doenetStateIdx,
                     subject: "SPLICE.reportScoreAndState",
                     activity_id: action.baseId,
                     message_id: nanoid(),
@@ -245,12 +293,13 @@ export function activityDoenetStateReducer(
 }
 
 /**
- * Update the latest attempt of the single doc activity `action.id` to `action.doenetState` and `action.creditAchieved`.
+ * Update the latest attempt of the single doc activity `action.docId` to `action.doenetState` and `action.creditAchieved`.
  * Propagate this change upward in the activity tree to the root activity,
  * obtaining the new overall activity state and credit achieved.
  */
 function updateSingleDocState(
     action: UpdateSingleDocStateAction,
+    doenetStateIdx: number,
     activityDoenetState: ActivityAndDoenetState,
 ): ActivityAndDoenetState {
     const allStates = gatherStates(activityDoenetState.activityState);
@@ -268,8 +317,8 @@ function updateSingleDocState(
     newSingleDocState.creditAchieved = action.creditAchieved;
 
     const doenetStates = [...activityDoenetState.doenetStates];
-    doenetStates[action.doenetStateIdx] = action.doenetState;
-    newSingleDocState.doenetStateIdx = action.doenetStateIdx;
+    doenetStates[doenetStateIdx] = action.doenetState;
+    newSingleDocState.doenetStateIdx = doenetStateIdx;
 
     const rootActivityState = propagateStateChangeToRoot({
         allStates,
@@ -280,5 +329,7 @@ function updateSingleDocState(
         activityState: rootActivityState,
         doenetStates,
         itemAttemptNumbers: activityDoenetState.itemAttemptNumbers,
+        stateVersion: activityDoenetState.stateVersion,
+        errMsg: null,
     };
 }
