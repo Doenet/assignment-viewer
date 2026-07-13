@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { DoenetViewer } from "@doenet/doenetml-iframe";
 import { SingleDocState } from "./singleDocState";
 import type { ActivityCommonProps } from "./Activity";
@@ -26,6 +26,10 @@ export const SingleDocActivity = memo(function SingleDocActivity({
     forceShowSolution = false,
     forceUnsuppressCheckwork = false,
     doenetViewerUrl,
+    doenetMediaUrl,
+    standaloneUrl,
+    cssUrl,
+    doenetmlVersion,
     fetchExternalDoenetML,
     darkMode = "light",
     showAnswerResponseMenu = false,
@@ -33,14 +37,14 @@ export const SingleDocActivity = memo(function SingleDocActivity({
     state,
     doenetState,
     stateVersion,
+    mountPolicy,
+    useSharedCoreWorker = false,
     reportScoreAndStateCallback,
-    checkRender,
     checkHidden,
+    checkKeepLive,
     allowItemAttemptButtons = false,
     generateNewItemAttempt,
     hasRenderedCallback,
-    reportVisibility = false,
-    reportVisibilityCallback,
     itemAttemptNumber,
     itemWord,
 }: SingleDocActivityProps) {
@@ -59,25 +63,6 @@ export const SingleDocActivity = memo(function SingleDocActivity({
     const [requestedVariantIndex, setRequestedVariantIndex] = useState(
         state.currentVariant,
     );
-
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (reportVisibility && ref.current) {
-            const observer = new IntersectionObserver(
-                ([entry]) => {
-                    reportVisibilityCallback(state.id, entry.isIntersecting);
-                },
-                { rootMargin: "1000px 1000px 1000px 1000px" },
-            );
-
-            observer.observe(ref.current);
-
-            return () => {
-                observer.disconnect();
-            };
-        }
-    }, [reportVisibility, ref, reportVisibilityCallback, state.id]);
 
     // The initial Doenet state is deliberately *frozen*: it seeds the viewer
     // and must not follow every subsequent report (the viewer owns the live
@@ -115,7 +100,6 @@ export const SingleDocActivity = memo(function SingleDocActivity({
         !source.isDescription &&
         maxAttemptsAllowed !== 1;
 
-    const render = checkRender(state);
     const hidden = checkHidden(state);
 
     const newAttemptsLeft = Math.max(maxAttemptsAllowed - itemAttemptNumber, 0);
@@ -123,70 +107,73 @@ export const SingleDocActivity = memo(function SingleDocActivity({
         maxAttemptsAllowed > 0 && newAttemptsLeft <= 0;
 
     return (
-        <div ref={ref}>
-            <div hidden={!render || hidden} style={{ minHeight: "100px" }}>
-                <DoenetViewer
-                    // `initialState` is seed-only for the viewer, so applying
-                    // a re-read one (new item attempt, or externally loaded
-                    // state — which may not change the attempt number)
-                    // requires a remount. Built from the *frozen* values so
-                    // the key and the seed always change in the same commit.
-                    key={`${attemptNumber.toString()}-${stateVersionUsed.toString()}`}
-                    doenetML={source.doenetML}
-                    doenetmlVersion={source.version}
-                    render={render}
-                    requestedVariantIndex={requestedVariantIndex}
-                    flags={flags}
-                    activityId={baseId}
-                    docId={state.id}
-                    forceDisable={forceDisable}
-                    forceShowCorrectness={forceShowCorrectness}
-                    forceShowSolution={forceShowSolution}
-                    forceUnsuppressCheckwork={forceUnsuppressCheckwork}
-                    doenetViewerUrl={doenetViewerUrl}
-                    fetchExternalDoenetML={fetchExternalDoenetML}
-                    darkMode={darkMode}
-                    showAnswerResponseMenu={showAnswerResponseMenu}
-                    answerResponseCounts={answerResponseCounts}
-                    addVirtualKeyboard={false}
-                    initialState={initialDoenetState}
-                    initializeCounters={initialCounters}
-                    reportScoreAndStateCallback={reportScoreAndStateCallback}
-                    initializedCallback={() => {
-                        setRendered(true);
-                        hasRenderedCallback(state.id);
+        <div hidden={hidden} style={{ minHeight: "100px" }}>
+            <DoenetViewer
+                // `initialState` is seed-only for the viewer, so applying
+                // a re-read one (new item attempt, or externally loaded
+                // state — which may not change the attempt number)
+                // requires a remount. Built from the *frozen* values so
+                // the key and the seed always change in the same commit.
+                key={`${attemptNumber.toString()}-${stateVersionUsed.toString()}`}
+                doenetML={source.doenetML}
+                doenetmlVersion={doenetmlVersion ?? source.version}
+                requestedVariantIndex={requestedVariantIndex}
+                flags={flags}
+                activityId={baseId}
+                docId={state.id}
+                forceDisable={forceDisable}
+                forceShowCorrectness={forceShowCorrectness}
+                forceShowSolution={forceShowSolution}
+                forceUnsuppressCheckwork={forceUnsuppressCheckwork}
+                doenetViewerUrl={doenetViewerUrl}
+                doenetMediaUrl={doenetMediaUrl}
+                standaloneUrl={standaloneUrl}
+                cssUrl={cssUrl}
+                fetchExternalDoenetML={fetchExternalDoenetML}
+                darkMode={darkMode}
+                showAnswerResponseMenu={showAnswerResponseMenu}
+                answerResponseCounts={answerResponseCounts}
+                addVirtualKeyboard={false}
+                initialState={initialDoenetState}
+                initializeCounters={initialCounters}
+                mountPolicy={mountPolicy}
+                keepLive={checkKeepLive(state)}
+                useSharedCoreWorker={useSharedCoreWorker}
+                reportScoreAndStateCallback={reportScoreAndStateCallback}
+                initializedCallback={() => {
+                    setRendered(true);
+                    hasRenderedCallback(state.id);
+                }}
+            />
+            {showAttemptButton ? (
+                <button
+                    hidden={!rendered}
+                    onClick={() => {
+                        generateNewItemAttempt(
+                            state.id,
+                            state.initialQuestionCounter,
+                        );
                     }}
-                />
-                {showAttemptButton ? (
-                    <button
-                        hidden={!rendered}
-                        onClick={() => {
-                            generateNewItemAttempt(
-                                state.id,
-                                state.initialQuestionCounter,
-                            );
-                        }}
-                        disabled={attemptButtonDisabled}
-                        style={{
-                            marginLeft: "20px",
-                            backgroundColor: "var(--buttonSurfaceAlt)",
-                            color: "var(--canvasText)",
-                            opacity: attemptButtonDisabled ? 0.4 : "inherit",
-                            borderRadius: "10px",
-                            padding: "5px 20px",
-                            cursor: attemptButtonDisabled
-                                ? "not-allowed"
-                                : "pointer",
-                        }}
-                        data-test="New Item Attempt"
-                    >
-                        New {itemWord} attempt{" "}
-                        {maxAttemptsAllowed > 0
-                            ? `(${newAttemptsLeft.toString()} left)`
-                            : null}
-                    </button>
-                ) : null}
-            </div>
+                    disabled={attemptButtonDisabled}
+                    style={{
+                        marginLeft: "20px",
+                        backgroundColor: "var(--buttonSurfaceAlt)",
+                        color: "var(--canvasText)",
+                        opacity: attemptButtonDisabled ? 0.4 : "inherit",
+                        borderRadius: "10px",
+                        padding: "5px 20px",
+                        cursor: attemptButtonDisabled
+                            ? "not-allowed"
+                            : "pointer",
+                    }}
+                    data-test="New Item Attempt"
+                >
+                    New {itemWord} attempt{" "}
+                    {maxAttemptsAllowed > 0
+                        ? `(${newAttemptsLeft.toString()} left)`
+                        : null}
+                </button>
+            ) : null}
         </div>
     );
 });

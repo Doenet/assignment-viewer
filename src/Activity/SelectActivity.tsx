@@ -15,7 +15,7 @@ export const SelectActivity = memo(function SelectActivity({
     }
 
     return (
-        <div key={state.attemptNumber} hidden={!props.checkRender(state)}>
+        <div key={state.attemptNumber}>
             <div>{selectedActivities}</div>
         </div>
     );

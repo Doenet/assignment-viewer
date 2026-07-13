@@ -34,3 +34,37 @@ and the page decides how to display it:
 To consolidate, normalize the documents' `version` fields in the assignment
 source. Saved student state survives such a change: it is keyed on a source
 hash that deliberately ignores `version`.
+
+## Windowed mounting
+
+Every item's viewer component is always mounted, but memory tracks what the
+student can see — the pagination window or viewport — instead of the
+assignment's length. The embedded viewers register with a page-wide
+_windowed mounting_ policy (`mountPolicy` from `@doenet/doenetml-iframe`):
+items only boot their iframe (a multi-MB bundle parse plus a core worker)
+when near the viewport or within the pagination window, simultaneous boots
+are capped, and at most `maxLiveViewers` stay live — the rest are **parked**:
+their state is flushed, their iframe is replaced by a placeholder, and they
+are restored (student's typed work intact) when the student returns to them.
+In paginated mode the current page and its neighbors are kept live, so page
+flips within the window stay instant.
+
+This is the default. Tune it with the `mountPolicy` prop (overrides for
+`maxLiveViewers`, `visibleMargin`, `parkDelayMs`, `flushTimeoutMs`,
+`maxConcurrentBoots`):
+
+```tsx
+<ActivityViewer
+    source={source}
+    flags={{ allowSaveState: true }}
+    mountPolicy={{ maxLiveViewers: 5 }}
+/>
+```
+
+Parking requires a persistence path (`flags.allowSaveState` or
+`flags.allowLocalState`) so no student work can be lost; without one,
+viewers still mount lazily but stay live once booted.
+
+To cut the per-document core cost further, `useSharedCoreWorker` serves all
+documents' cores from a shared worker pool instead of one dedicated ~100 MB
+worker per document (default off; see `@doenet/doenetml-iframe`).
