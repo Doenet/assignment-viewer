@@ -11,6 +11,7 @@ import {
     validateStateAndSource,
 } from "../src/Activity/activityState";
 import { isReportScoreByItemMessage, isReportStateMessage } from "../src/types";
+import { useResolvedTheme } from "../src/utils/theme";
 import type { ThemeSetting } from "../src/utils/theme";
 
 function App() {
@@ -55,6 +56,35 @@ function App() {
         darkMode,
     } = testSettings;
 
+    // Resolve the selected dark-mode setting so the dev-harness chrome (the
+    // gray header box and its controls) tracks the same theme as the viewer
+    // below it, rather than staying light.
+    const resolvedTheme = useResolvedTheme(darkMode);
+
+    // Keep the whole dev page — the body backdrop and native form controls —
+    // in step with the selection, not just the OS preference that index.css
+    // keys off of. Match the backdrop to the viewer's `--canvas` color so the
+    // area below/around the activities doesn't read as a lighter black.
+    useEffect(() => {
+        const root = document.documentElement;
+        root.style.colorScheme = resolvedTheme;
+        root.style.backgroundColor =
+            resolvedTheme === "dark" ? "#121212" : "#ffffff";
+        return () => {
+            root.style.colorScheme = "";
+            root.style.backgroundColor = "";
+        };
+    }, [resolvedTheme]);
+
+    // Native <button>s take their background from dev/index.css, which keys off
+    // the OS `prefers-color-scheme` and so drifts out of sync with the selected
+    // theme (e.g. a white button background under a dark selection, giving
+    // white-on-white). Pin the dev-chrome buttons to the resolved selection.
+    const devButtonColors = {
+        backgroundColor: resolvedTheme === "dark" ? "#1a1a1a" : "#f9f9f9",
+        color: resolvedTheme === "dark" ? "white" : "black",
+    };
+
     let controls = null;
     let buttonText = "show";
     if (controlsVisible) {
@@ -73,6 +103,7 @@ function App() {
                             setUpdateNumber((was) => was + 1);
                         }}
                         style={{
+                            ...devButtonColors,
                             padding: "2px",
                             marginLeft: "12px",
                             width: "80px",
@@ -237,8 +268,7 @@ function App() {
                             onChange={(e) => {
                                 setTestSettings((was) => ({
                                     ...was,
-                                    darkMode: e.target
-                                        .value as ThemeSetting,
+                                    darkMode: e.target.value as ThemeSetting,
                                 }));
                                 setUpdateNumber((was) => was + 1);
                             }}
@@ -329,8 +359,10 @@ function App() {
         <div style={{ marginBottom: "50vh" }}>
             <div
                 style={{
-                    backgroundColor: "lightGray",
-                    color: "black",
+                    backgroundColor:
+                        resolvedTheme === "dark" ? "#2a2a2a" : "lightGray",
+                    color: resolvedTheme === "dark" ? "white" : "black",
+                    colorScheme: resolvedTheme,
                     width: "800px",
                     padding: "20px",
                 }}
@@ -343,6 +375,7 @@ function App() {
                                 setControlsVisible((was) => !was);
                             }}
                             style={{
+                                ...devButtonColors,
                                 padding: "2px",
                                 marginLeft: "12px",
                                 width: "160px",
