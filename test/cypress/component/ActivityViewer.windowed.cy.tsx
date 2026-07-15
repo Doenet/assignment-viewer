@@ -2,12 +2,7 @@ import React from "react";
 import { ActivityViewer } from "../../../src/activity-viewer";
 import type { ActivitySource } from "../../../src/Activity/activityState";
 import type { SingleDocSource } from "../../../src/Activity/singleDocState";
-import {
-    WINDOWED_STANDALONE_URL,
-    WINDOWED_STANDALONE_CSS_URL,
-    IFRAME_READY_TIMEOUT,
-    PARK_TIMEOUT,
-} from "./helpers";
+import { IFRAME_READY_TIMEOUT, PARK_TIMEOUT } from "./helpers";
 
 // Windowed mounting (#35, #36, #37): every item's DoenetViewer is mounted,
 // but the wrapper's mountPolicy decides which are booted — memory tracks the
@@ -20,7 +15,10 @@ function mkDoc(id: string, label: string): SingleDocSource {
         type: "singleDoc",
         isDescription: false,
         doenetML: `<p>${label}: <textInput name="ti" /></p><p>typed: $ti.value</p>`,
-        version: "0.7.4",
+        // 0.7.21 is the first version the iframe wrapper gates parking on
+        // (PARK_MIN_VERSION), so parking works without a host-specified
+        // standaloneUrl — the bundle/CSS auto-resolve from this version.
+        version: "0.7.21",
         numVariants: 1,
     };
 }
@@ -68,8 +66,6 @@ describe("ActivityViewer — windowed mounting", () => {
                 activityId="windowed-paginated"
                 flags={{ allowSaveState: true }}
                 paginate={true}
-                standaloneUrl={WINDOWED_STANDALONE_URL}
-                cssUrl={WINDOWED_STANDALONE_CSS_URL}
                 addVirtualKeyboard={false}
                 mountPolicy={{ parkDelayMs: 300, flushTimeoutMs: 15_000 }}
             />,
@@ -122,8 +118,6 @@ describe("ActivityViewer — windowed mounting", () => {
                 activityId="windowed-scroll"
                 flags={{ allowSaveState: true }}
                 paginate={false}
-                standaloneUrl={WINDOWED_STANDALONE_URL}
-                cssUrl={WINDOWED_STANDALONE_CSS_URL}
                 addVirtualKeyboard={false}
                 mountPolicy={{
                     maxLiveViewers: 2,
