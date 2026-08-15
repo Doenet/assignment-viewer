@@ -131,6 +131,41 @@ describe("Activity reducer tests", () => {
         expect(spy).toHaveBeenCalledTimes(0);
     });
 
+    it("ignores a new item attempt for a document that is not in the activity", () => {
+        vi.stubGlobal("window", {
+            postMessage: vi.fn(() => null),
+        });
+        const spy = vi.spyOn(window, "postMessage");
+
+        const source = doc as SingleDocSource;
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
+        const state = mkState({
+            activityState: initializeActivityState({
+                source,
+                variant: 5,
+                parentId: null,
+                numActivityVariants,
+            }),
+            doenetStates: [],
+            itemAttemptNumbers: [1],
+        });
+
+        const newState = activityDoenetStateReducer(state, {
+            type: "generateSingleDocSubActivityAttempt",
+            docId: "no-longer-present",
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            allowSaveState: true,
+            baseId: "stale",
+            sourceHash: createSourceHash(source),
+        });
+
+        expect(newState).eq(state);
+        expect(newState.errMsg).eq(null);
+        expect(spy).toHaveBeenCalledTimes(0);
+    });
+
     it("initialize", () => {
         const source0 = seq2sel as SequenceSource;
         const state0 = initializeActivityState({

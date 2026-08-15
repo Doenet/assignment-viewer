@@ -453,14 +453,7 @@ export function calcNumVariantsSequence(
  * Return the number of documents that will be rendered by this sequence.
  */
 export function getNumDocsInSequence(source: SequenceSource): number {
-    const numDocumentsForEachItem = source.items.map(getNumDocs);
-
-    const totalNumDocuments = numDocumentsForEachItem.reduce(
-        (a, c) => a + c,
-        0,
-    );
-
-    return totalNumDocuments;
+    return source.items.reduce((total, item) => total + getNumDocs(item), 0);
 }
 
 /**
@@ -468,5 +461,8 @@ export function getNumDocsInSequence(source: SequenceSource): number {
  * i.e., all rendered documents except the descriptions.
  */
 export function getNumScoredItemsInSequence(source: SequenceSource): number {
-    return source.items.map(getNumScoredItems).reduce((a, c) => a + c, 0);
+    return source.items.reduce(
+        (total, item) => total + getNumScoredItems(item),
+        0,
+    );
 }

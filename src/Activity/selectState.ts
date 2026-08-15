@@ -772,12 +772,14 @@ export function getNumDocsInSelect(source: SelectSource): number {
  * filtering out descriptions. Rather than silently miscount, throw.
  */
 export function getNumScoredItemsInSelect(source: SelectSource): number {
-    for (const item of source.items) {
-        if (getNumScoredItems(item) !== getNumDocs(item)) {
-            throw Error(
-                "The case where a select contains a description is not implemented",
-            );
-        }
+    if (
+        source.items.some(
+            (item) => getNumScoredItems(item) !== getNumDocs(item),
+        )
+    ) {
+        throw Error(
+            "The case where a select contains a description is not implemented",
+        );
     }
 
     return getNumDocsInSelect(source);

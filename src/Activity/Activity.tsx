@@ -67,7 +67,8 @@ export const Activity = memo(function Activity({
                 scoredItemIndexById,
                 ...leafProps
             } = props;
-            // A description holds no slot in the per-item arrays.
+            // A description holds no slot in the per-item arrays, so it gets
+            // an out-of-range index and falls back to the defaults below.
             const itemIdx = scoredItemIndexById.get(state.id) ?? -1;
             return (
                 <SingleDocActivity
@@ -78,14 +79,8 @@ export const Activity = memo(function Activity({
                             ? null
                             : (doenetStates[state.doenetStateIdx] ?? null)
                     }
-                    itemAttemptNumber={
-                        itemIdx === -1 ? 1 : (itemAttemptNumbers[itemIdx] ?? 1)
-                    }
-                    answerResponseCounts={
-                        itemIdx === -1
-                            ? undefined
-                            : answerResponseCountsByItem[itemIdx]
-                    }
+                    itemAttemptNumber={itemAttemptNumbers[itemIdx] ?? 1}
+                    answerResponseCounts={answerResponseCountsByItem[itemIdx]}
                 />
             );
         }

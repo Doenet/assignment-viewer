@@ -99,7 +99,9 @@ describe("ActivityViewer — descriptions", () => {
     });
 
     it("only scored items report state to the host", () => {
-        const reports: { docId: string; itemUpdated?: number }[] = [];
+        // reports of an item update; the initial `new_attempt` report carries
+        // no `item_updated` and is not collected
+        const reports: { itemDocIds: string[]; itemUpdated: number }[] = [];
 
         cy.viewport(900, 700);
         cy.mount(
@@ -121,11 +123,14 @@ describe("ActivityViewer — descriptions", () => {
                     item_updated?: number;
                     item_scores?: { docId: string }[];
                 };
-                if (data.subject === "SPLICE.reportScoreAndState") {
+                if (
+                    data.subject === "SPLICE.reportScoreAndState" &&
+                    data.item_updated !== undefined
+                ) {
                     reports.push({
-                        docId:
-                            data.item_scores?.map((s) => s.docId).join(",") ??
-                            "",
+                        itemDocIds: (data.item_scores ?? []).map(
+                            (s) => s.docId,
+                        ),
                         itemUpdated: data.item_updated,
                     });
                 }
@@ -148,7 +153,7 @@ describe("ActivityViewer — descriptions", () => {
             for (const report of reports) {
                 expect(report.itemUpdated).to.eq(1);
                 // The description never appears among the scored items.
-                expect(report.docId).to.not.contain("des1");
+                expect(report.itemDocIds).to.eql(["doc1", "doc2"]);
             }
         });
     });

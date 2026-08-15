@@ -12,7 +12,6 @@ import {
     gatherStates,
     generateNewActivityAttempt,
     generateNewSingleDocSubAttempt,
-    getDocSequence,
     getNumScoredItems,
     getScoredItemSequence,
     initializeActivityState,
@@ -172,10 +171,11 @@ export function activityDoenetStateReducer(
             }
 
             // The document's position in the scored item sequence is derived
-            // from the reducer's own state (callers used to pass it in, which
-            // required them to track the current sequence). Descriptions hold
-            // no slot in `doenetStates`/`itemAttemptNumbers` and offer no
-            // attempt button, so there is nothing to regenerate for them.
+            // from the reducer's own state, so callers need not track the
+            // current sequence themselves. An id absent from that sequence is
+            // either stale or a description; descriptions hold no slot in
+            // `doenetStates`/`itemAttemptNumbers` and offer no attempt button,
+            // so either way there is nothing to regenerate.
             const doenetStateIdx = getScoredItemSequence(activityState).indexOf(
                 action.docId,
             );
@@ -249,18 +249,16 @@ export function activityDoenetStateReducer(
             };
         }
         case "updateSingleState": {
-            // A report can arrive from a document that is no longer part of
-            // the activity — e.g. an in-flight save from a just-regenerated
-            // attempt, or after a select re-picked its children. Ignore it:
-            // recording it would corrupt another item's slot, and throwing
-            // would unmount the whole viewer via an error boundary.
-            if (!getDocSequence(activityState).includes(action.docId)) {
-                return state;
-            }
-
-            // Descriptions are not scored, hold no slot in `doenetStates`, and
-            // their state is not persisted, so there is nothing to record or
-            // report. Their credit is already excluded from the activity score.
+            // Two kinds of report have no slot to be recorded in, and both are
+            // silently ignored: recording one would corrupt another item's
+            // slot, and throwing would unmount the whole viewer via an error
+            // boundary.
+            //
+            // 1. A document that is no longer part of the activity — e.g. an
+            //    in-flight save from a just-regenerated attempt, or after a
+            //    select re-picked its children.
+            // 2. A description: unscored, unpersisted, and already excluded
+            //    from the activity's credit.
             const doenetStateIdx = getScoredItemSequence(activityState).indexOf(
                 action.docId,
             );
