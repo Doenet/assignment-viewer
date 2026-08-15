@@ -13,7 +13,8 @@ import {
     extractActivityItemCredit,
     extractSourceId,
     generateNewActivityAttempt,
-    getNumItems,
+    getNumDocs,
+    getNumScoredItems,
     initializeActivityState,
     isActivitySource,
     isActivityState,
@@ -742,16 +743,16 @@ export function calcNumVariantsSelect(
  *
  * Throw an error if this select has options with different numbers of documents.
  */
-export function getNumItemsInSelect(source: SelectSource): number {
+export function getNumDocsInSelect(source: SelectSource): number {
     if (source.items.length === 0) {
         return 0;
     }
 
-    const numDocumentsPerItem = getNumItems(source.items[0]);
+    const numDocumentsPerItem = getNumDocs(source.items[0]);
 
     if (source.items.length > 1) {
         for (const item of source.items.slice(1)) {
-            if (getNumItems(item) !== numDocumentsPerItem) {
+            if (getNumDocs(item) !== numDocumentsPerItem) {
                 throw Error(
                     "The case where a select has options with different numbers of documents is not implemented",
                 );
@@ -760,4 +761,26 @@ export function getNumItemsInSelect(source: SelectSource): number {
     }
 
     return source.numToSelect * numDocumentsPerItem;
+}
+
+/**
+ * Return the number of documents of this select that count as scored items.
+ *
+ * Descriptions inside a select are not supported: `extractSelectItemCredit` scores a
+ * single-document select regardless of `isDescription`, and the select branch of
+ * `propagateStateChangeToRoot` averages credit over all selected children without
+ * filtering out descriptions. Rather than silently miscount, throw.
+ */
+export function getNumScoredItemsInSelect(source: SelectSource): number {
+    if (
+        source.items.some(
+            (item) => getNumScoredItems(item) !== getNumDocs(item),
+        )
+    ) {
+        throw Error(
+            "The case where a select contains a description is not implemented",
+        );
+    }
+
+    return getNumDocsInSelect(source);
 }

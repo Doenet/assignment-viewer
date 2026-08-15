@@ -12,8 +12,8 @@ import {
     gatherStates,
     generateNewActivityAttempt,
     generateNewSingleDocSubAttempt,
-    getItemSequence,
-    getNumItems,
+    getNumScoredItems,
+    getScoredItemSequence,
     initializeActivityState,
     propagateStateChangeToRoot,
     pruneActivityStateForSave,
@@ -77,7 +77,7 @@ export function activityDoenetStateReducer(
     const activityState = state.activityState;
     switch (action.type) {
         case "initialize": {
-            const numItems = getNumItems(action.source);
+            const numScoredItems = getNumScoredItems(action.source);
             return {
                 activityState: initializeActivityState({
                     source: action.source,
@@ -86,7 +86,7 @@ export function activityDoenetStateReducer(
                     numActivityVariants: action.numActivityVariants,
                 }),
                 doenetStates: [],
-                itemAttemptNumbers: Array<number>(numItems).fill(1),
+                itemAttemptNumbers: Array<number>(numScoredItems).fill(1),
                 stateVersion: state.stateVersion + 1,
                 errMsg: null,
             };
@@ -170,12 +170,17 @@ export function activityDoenetStateReducer(
                 );
             }
 
-            // The document's position in the item sequence is derived from
-            // the reducer's own state (callers used to pass it in, which
-            // required them to track the current sequence).
-            const doenetStateIdx = getItemSequence(activityState).indexOf(
+            // The document's position in the scored item sequence is derived
+            // from the reducer's own state, so callers need not track the
+            // current sequence themselves. An id absent from that sequence is
+            // either stale or a description, and neither has a slot in
+            // `doenetStates`/`itemAttemptNumbers` to regenerate.
+            const doenetStateIdx = getScoredItemSequence(activityState).indexOf(
                 action.docId,
             );
+            if (doenetStateIdx === -1) {
+                return state;
+            }
 
             let newActivityState;
             try {
@@ -243,12 +248,14 @@ export function activityDoenetStateReducer(
             };
         }
         case "updateSingleState": {
-            // A report can arrive from a document that is no longer part of
-            // the activity — e.g. an in-flight save from a just-regenerated
-            // attempt, or after a select re-picked its children. Ignore it:
-            // recording it would corrupt another item's slot, and throwing
-            // would unmount the whole viewer via an error boundary.
-            const doenetStateIdx = getItemSequence(activityState).indexOf(
+            // A report with no slot in the scored item sequence is silently
+            // ignored: recording it would corrupt another item's slot, and
+            // throwing would unmount the whole viewer via an error boundary.
+            // Either the document is no longer part of the activity (an
+            // in-flight save from a just-regenerated attempt, or a select that
+            // re-picked its children), or it is a description, which is
+            // unscored and unpersisted.
+            const doenetStateIdx = getScoredItemSequence(activityState).indexOf(
                 action.docId,
             );
             if (doenetStateIdx === -1) {

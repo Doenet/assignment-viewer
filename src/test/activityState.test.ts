@@ -6,8 +6,11 @@ import {
     calcNumVariantsFromState,
     gatherDocumentStructure,
     generateNewActivityAttempt,
-    getItemSequence,
-    getNumItems,
+    extractActivityItemCredit,
+    getDocSequence,
+    getNumDocs,
+    getNumScoredItems,
+    getScoredItemSequence,
     initializeActivityState,
     pruneActivityStateForSave,
     validateIds,
@@ -23,6 +26,7 @@ import seq0 from "./testSources/seq0.json";
 import seq2Sel0 from "./testSources/seq2Sel0.json";
 import seqSel0Sel from "./testSources/seqSel0Sel.json";
 import seqWithDes from "./testSources/seqWithDes.json";
+import selWithDes from "./testSources/selWithDes.json";
 
 import {
     SelectSource,
@@ -537,7 +541,7 @@ describe("Activity state tests", () => {
         }
     });
 
-    it("get item sequence", () => {
+    it("get document sequence", () => {
         const source = seq2sel as SequenceSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -566,19 +570,19 @@ describe("Activity state tests", () => {
         expect(["doc3", "doc2", "doc1"].includes(docFromSecondSelect)).eq(true);
 
         if (state.orderedChildren[0].id === firstSelectState.id) {
-            expect(getItemSequence(state)).eqls([
+            expect(getDocSequence(state)).eqls([
                 docFromFirstSelect,
                 docFromSecondSelect,
             ]);
         } else {
-            expect(getItemSequence(state)).eqls([
+            expect(getDocSequence(state)).eqls([
                 docFromSecondSelect,
                 docFromFirstSelect,
             ]);
         }
     });
 
-    it("get item sequence, select from 0", () => {
+    it("get document sequence, select from 0", () => {
         const source = sel0 as SelectSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -596,10 +600,10 @@ describe("Activity state tests", () => {
             parentAttempt: 1,
         });
 
-        expect(getItemSequence(state)).eqls([]);
+        expect(getDocSequence(state)).eqls([]);
     });
 
-    it("get item sequence, sequence of 0", () => {
+    it("get document sequence, sequence of 0", () => {
         const source = seq0 as SequenceSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -617,10 +621,10 @@ describe("Activity state tests", () => {
             parentAttempt: 1,
         });
 
-        expect(getItemSequence(state)).eqls([]);
+        expect(getDocSequence(state)).eqls([]);
     });
 
-    it("get item sequence, sequence of two selects from 0", () => {
+    it("get document sequence, sequence of two selects from 0", () => {
         const source = seq2Sel0 as SequenceSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -638,10 +642,10 @@ describe("Activity state tests", () => {
             parentAttempt: 1,
         });
 
-        expect(getItemSequence(state)).eqls([]);
+        expect(getDocSequence(state)).eqls([]);
     });
 
-    it("get item sequence, sequence of select from 0 and select", () => {
+    it("get document sequence, sequence of select from 0 and select", () => {
         const source = seqSel0Sel as SequenceSource;
         const { numActivityVariants } = gatherDocumentStructure(source);
 
@@ -666,7 +670,7 @@ describe("Activity state tests", () => {
         const docFromSecondSelect = secondSelectState.selectedChildren[0].id;
         expect(["doc3", "doc2", "doc1"].includes(docFromSecondSelect)).eq(true);
 
-        expect(getItemSequence(state)).eqls([docFromSecondSelect]);
+        expect(getDocSequence(state)).eqls([docFromSecondSelect]);
     });
 
     it("error when select multiple from a single doc with selectByVariant=false", () => {
@@ -691,14 +695,198 @@ describe("Activity state tests", () => {
     });
 
     it("return number of documents", () => {
-        expect(getNumItems(seq2sel as SequenceSource)).eq(2);
+        expect(getNumDocs(seq2sel as SequenceSource)).eq(2);
 
-        expect(getNumItems(selMult2docs as SelectSource)).eq(2);
-        expect(getNumItems(selMult1doc as SelectSource)).eq(3);
+        expect(getNumDocs(selMult2docs as SelectSource)).eq(2);
+        expect(getNumDocs(selMult1doc as SelectSource)).eq(3);
 
         // handle cases with no items
-        expect(getNumItems(sel0 as SelectSource)).eq(0);
-        expect(getNumItems(seq0 as SequenceSource)).eq(0);
+        expect(getNumDocs(sel0 as SelectSource)).eq(0);
+        expect(getNumDocs(seq0 as SequenceSource)).eq(0);
+    });
+
+    it("descriptions count as documents but not as scored items", () => {
+        const source = seqWithDes as SequenceSource;
+
+        // two of the seven documents are descriptions
+        expect(getNumDocs(source)).eq(7);
+        expect(getNumScoredItems(source)).eq(5);
+
+        // without descriptions, the two counts agree
+        expect(getNumScoredItems(seq2sel as SequenceSource)).eq(2);
+        expect(getNumScoredItems(selMult1doc as SelectSource)).eq(3);
+        expect(getNumScoredItems(seq0 as SequenceSource)).eq(0);
+    });
+
+    it("error when a select contains a description", () => {
+        expect(() =>
+            getNumScoredItems(selWithDes as SelectSource),
+        ).toThrowError("select contains a description");
+    });
+
+    it("scored item sequence is the document sequence without the descriptions", () => {
+        const source = seqWithDes as SequenceSource;
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
+        let state = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        });
+
+        // check over several attempts, as the sequence is shuffled
+        for (let attempt = 1; attempt <= 4; attempt++) {
+            ({ state } = generateNewActivityAttempt({
+                state,
+                numActivityVariants,
+                initialQuestionCounter: 1,
+                parentAttempt: attempt,
+            }));
+
+            const docSeq = getDocSequence(state);
+            const scoredSeq = getScoredItemSequence(state);
+
+            expect(docSeq.length).eq(getNumDocs(source));
+            expect(scoredSeq.length).eq(getNumScoredItems(source));
+
+            expect(
+                docSeq.filter((id) => !["doc1a", "doc3a"].includes(id)),
+            ).eqls(scoredSeq);
+        }
+    });
+
+    it("scored item sequence is indexed by shuffledOrder", () => {
+        // `doenetStates` and `itemAttemptNumbers` are indexed by position in
+        // the scored item sequence, while the host stores them by the
+        // `shuffledOrder` reported in `item_scores`. The two must agree.
+        const source = seqWithDes as SequenceSource;
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
+        let state = initializeActivityState({
+            source,
+            variant: 1,
+            parentId: null,
+            numActivityVariants,
+        });
+
+        for (let attempt = 1; attempt <= 4; attempt++) {
+            ({ state } = generateNewActivityAttempt({
+                state,
+                numActivityVariants,
+                initialQuestionCounter: 1,
+                parentAttempt: attempt,
+            }));
+
+            const scoredSeq = getScoredItemSequence(state);
+            const itemScores = extractActivityItemCredit(state);
+
+            expect(itemScores.length).eq(scoredSeq.length);
+
+            for (const [idx, id] of scoredSeq.entries()) {
+                const itemScore = itemScores.find((s) => s.docId === id);
+                expect(itemScore?.shuffledOrder, `item score for ${id}`).eq(
+                    idx + 1,
+                );
+            }
+        }
+    });
+
+    it("scored item indexing handles descriptions at the edges of a sequence", () => {
+        function doc(id: string, isDescription = false): SingleDocSource {
+            return {
+                id,
+                type: "singleDoc",
+                isDescription,
+                doenetML: isDescription
+                    ? "Some instructions"
+                    : "<question><answer name='ans'>x</answer></question>",
+                version: "0.7.4",
+                numVariants: 1,
+            };
+        }
+        function seq(id: string, items: ActivitySource[]): SequenceSource {
+            return { id, type: "sequence", shuffle: true, items };
+        }
+
+        const cases: { source: ActivitySource; scored: string[] }[] = [
+            // a bare description, with no sequence around it
+            { source: doc("d0", true), scored: [] },
+            // nothing but descriptions
+            {
+                source: seq("s", [doc("d0", true), doc("d1", true)]),
+                scored: [],
+            },
+            // a description as the last child, so the shufflable run ends at it
+            {
+                source: seq("s", [doc("q1"), doc("q2"), doc("d1", true)]),
+                scored: ["q1", "q2"],
+            },
+            // descriptions on both ends
+            {
+                source: seq("s", [
+                    doc("d0", true),
+                    doc("q1"),
+                    doc("q2"),
+                    doc("d1", true),
+                ]),
+                scored: ["q1", "q2"],
+            },
+            // a sequence nested in a sequence, each with a description
+            {
+                source: seq("s", [
+                    doc("d0", true),
+                    seq("s2", [doc("q1"), doc("d1", true), doc("q2")]),
+                    doc("q3"),
+                ]),
+                scored: ["q1", "q2", "q3"],
+            },
+        ];
+
+        for (const { source, scored } of cases) {
+            const { numActivityVariants } = gatherDocumentStructure(source);
+
+            let state = initializeActivityState({
+                source,
+                variant: 1,
+                parentId: null,
+                numActivityVariants,
+            });
+
+            expect(getNumScoredItems(source), source.id).eq(scored.length);
+
+            // check over several attempts, as the sequences are shuffled
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                ({ state } = generateNewActivityAttempt({
+                    state,
+                    numActivityVariants,
+                    initialQuestionCounter: 1,
+                    parentAttempt: attempt,
+                }));
+
+                const docSeq = getDocSequence(state);
+                const scoredSeq = getScoredItemSequence(state);
+
+                expect(docSeq.length, source.id).eq(getNumDocs(source));
+                expect([...scoredSeq].sort(), source.id).eqls(
+                    [...scored].sort(),
+                );
+                expect(
+                    docSeq.filter((id) => scoredSeq.includes(id)),
+                    source.id,
+                ).eqls(scoredSeq);
+
+                // the scored item positions match the reported `shuffledOrder`
+                for (const [idx, id] of scoredSeq.entries()) {
+                    const itemScore = extractActivityItemCredit(state).find(
+                        (s) => s.docId === id,
+                    );
+                    expect(itemScore?.shuffledOrder, `${source.id}: ${id}`).eq(
+                        idx + 1,
+                    );
+                }
+            }
+        }
     });
 
     it("count each document as a question for initialQuestionCounter", () => {

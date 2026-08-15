@@ -25,14 +25,16 @@ import {
     SelectSource,
     SelectState,
     SelectStateNoSource,
-    getNumItemsInSelect,
+    getNumDocsInSelect,
+    getNumScoredItemsInSelect,
 } from "./selectState";
 import {
     addSourceToSequenceState,
     calcNumVariantsSequence,
     extractSequenceItemCredit,
     generateNewSequenceAttempt,
-    getNumItemsInSequence,
+    getNumDocsInSequence,
+    getNumScoredItemsInSequence,
     initializeSequenceState,
     isSequenceSource,
     isSequenceState,
@@ -240,8 +242,7 @@ export function initializeActivityAndDoenetState({
         restrictToVariantSlice,
     });
 
-    const numItems = getNumItems(source);
-    const itemAttemptNumbers = Array<number>(numItems).fill(1);
+    const itemAttemptNumbers = Array<number>(getNumScoredItems(source)).fill(1);
     return {
         activityState,
         doenetStates: [],
@@ -514,8 +515,11 @@ export function extractSourceId(compositeId: string): string {
 /**
  * Returns an array of the activity ids of the single document activities,
  * in the order they will appear.
+ *
+ * Includes descriptions, which are rendered like any other document.
+ * Use `getScoredItemSequence` for the sequence of scored items.
  */
-export function getItemSequence(state: ActivityState): string[] {
+export function getDocSequence(state: ActivityState): string[] {
     if (state.type === "singleDoc") {
         return [state.id];
     } else {
@@ -525,7 +529,7 @@ export function getItemSequence(state: ActivityState): string[] {
                 return [];
             } else {
                 const prelimResult = state.allChildren.flatMap((a) =>
-                    getItemSequence(a),
+                    getDocSequence(a),
                 );
                 if (state.type === "sequence") {
                     return prelimResult;
@@ -535,11 +539,28 @@ export function getItemSequence(state: ActivityState): string[] {
             }
         }
         if (state.type === "sequence") {
-            return state.orderedChildren.flatMap((a) => getItemSequence(a));
+            return state.orderedChildren.flatMap((a) => getDocSequence(a));
         } else {
-            return state.selectedChildren.flatMap((a) => getItemSequence(a));
+            return state.selectedChildren.flatMap((a) => getDocSequence(a));
         }
     }
+}
+
+/**
+ * Returns an array of the activity ids of the single document activities that count
+ * as scored items, i.e., `getDocSequence` with the descriptions removed.
+ *
+ * The index of an id in this array is its `shuffledOrder` from
+ * `extractActivityItemCredit` minus one, which is the indexing used by
+ * `doenetStates` and `itemAttemptNumbers`.
+ */
+export function getScoredItemSequence(state: ActivityState): string[] {
+    const allStates = gatherStates(state);
+
+    return getDocSequence(state).filter((id) => {
+        const docState = allStates[id];
+        return docState.type !== "singleDoc" || !docState.source.isDescription;
+    });
 }
 
 /**
@@ -594,16 +615,39 @@ export function calcNumVariantsFromState(
  *
  * Throw an error if a select has options with different numbers of documents.
  */
-export function getNumItems(source: ActivitySource): number {
+export function getNumDocs(source: ActivitySource): number {
     switch (source.type) {
         case "singleDoc": {
             return 1;
         }
         case "select": {
-            return getNumItemsInSelect(source);
+            return getNumDocsInSelect(source);
         }
         case "sequence": {
-            return getNumItemsInSequence(source);
+            return getNumDocsInSequence(source);
+        }
+    }
+
+    throw Error("Invalid activity type");
+}
+
+/**
+ * Return the number of documents of this activity that count as scored items,
+ * i.e., all rendered documents except the descriptions.
+ *
+ * Throw an error if a select has options with different numbers of documents,
+ * or if a select contains a description.
+ */
+export function getNumScoredItems(source: ActivitySource): number {
+    switch (source.type) {
+        case "singleDoc": {
+            return source.isDescription ? 0 : 1;
+        }
+        case "select": {
+            return getNumScoredItemsInSelect(source);
+        }
+        case "sequence": {
+            return getNumScoredItemsInSequence(source);
         }
     }
 

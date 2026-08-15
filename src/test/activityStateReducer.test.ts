@@ -7,7 +7,12 @@ import {
     ActivityAndDoenetState,
     ActivityAndDoenetStateCore,
     createSourceHash,
+    extractActivityItemCredit,
     gatherDocumentStructure,
+    generateNewActivityAttempt,
+    getDocSequence,
+    getNumScoredItems,
+    getScoredItemSequence,
     initializeActivityState,
     pruneActivityStateForSave,
 } from "../Activity/activityState";
@@ -15,10 +20,12 @@ import { activityDoenetStateReducer } from "../Activity/activityStateReducer";
 import seq2sel from "./testSources/seq2sel.json";
 import doc from "./testSources/doc.json";
 import seqShuf from "./testSources/seqShuf.json";
+import seqWithDes from "./testSources/seqWithDes.json";
 import selMult2docs from "./testSources/selMult2docs.json";
 import selMult1docNoVariant from "./testSources/selMult1docNoVariant.json";
 import { SingleDocSource, SingleDocState } from "../Activity/singleDocState";
 import { SelectSource, SelectState } from "../Activity/selectState";
+import { ReportStateMessage } from "../types";
 
 /**
  * Build a full reducer state from its core fields (the reducer owns the
@@ -121,6 +128,41 @@ describe("Activity reducer tests", () => {
         });
 
         expect(newState).eq(state);
+        expect(spy).toHaveBeenCalledTimes(0);
+    });
+
+    it("ignores a new item attempt for a document that is not in the activity", () => {
+        vi.stubGlobal("window", {
+            postMessage: vi.fn(() => null),
+        });
+        const spy = vi.spyOn(window, "postMessage");
+
+        const source = doc as SingleDocSource;
+        const { numActivityVariants } = gatherDocumentStructure(source);
+
+        const state = mkState({
+            activityState: initializeActivityState({
+                source,
+                variant: 5,
+                parentId: null,
+                numActivityVariants,
+            }),
+            doenetStates: [],
+            itemAttemptNumbers: [1],
+        });
+
+        const newState = activityDoenetStateReducer(state, {
+            type: "generateSingleDocSubActivityAttempt",
+            docId: "no-longer-present",
+            numActivityVariants,
+            initialQuestionCounter: 1,
+            allowSaveState: true,
+            baseId: "stale",
+            sourceHash: createSourceHash(source),
+        });
+
+        expect(newState).eq(state);
+        expect(newState.errMsg).eq(null);
         expect(spy).toHaveBeenCalledTimes(0);
     });
 
@@ -2516,6 +2558,171 @@ describe("Activity reducer tests", () => {
             new_doenet_state_idx: 0,
             sourceHash,
             spy,
+        });
+    });
+
+    describe("descriptions", () => {
+        /** A `seqWithDes` state with one attempt generated. */
+        function setUp() {
+            const source = seqWithDes as SequenceSource;
+            const { numActivityVariants } = gatherDocumentStructure(source);
+
+            const { state: activityState } = generateNewActivityAttempt({
+                state: initializeActivityState({
+                    source,
+                    variant: 1,
+                    parentId: null,
+                    numActivityVariants,
+                }),
+                numActivityVariants,
+                initialQuestionCounter: 1,
+                parentAttempt: 1,
+            });
+
+            return {
+                source,
+                numActivityVariants,
+                sourceHash: createSourceHash(source),
+                activityState,
+                state: mkState({
+                    activityState,
+                    doenetStates: [],
+                    itemAttemptNumbers: Array<number>(
+                        getNumScoredItems(source),
+                    ).fill(1),
+                }),
+            };
+        }
+
+        it("a report from a description is ignored", () => {
+            vi.stubGlobal("window", { postMessage: vi.fn(() => null) });
+            const spy = vi.spyOn(window, "postMessage");
+
+            const { state, sourceHash } = setUp();
+
+            const newState = activityDoenetStateReducer(state, {
+                type: "updateSingleState",
+                docId: "doc1a",
+                doenetState: { some: "state" },
+                creditAchieved: 1,
+                allowSaveState: true,
+                baseId: "base",
+                sourceHash,
+            });
+
+            // A description holds no slot in `doenetStates`, so there is
+            // nothing to record and nothing to report.
+            expect(newState).eq(state);
+            expect(spy).toHaveBeenCalledTimes(0);
+        });
+
+        it("item numbers reported skip the descriptions", () => {
+            vi.stubGlobal("window", { postMessage: vi.fn(() => null) });
+            const spy = vi.spyOn(window, "postMessage");
+
+            const { state, activityState, sourceHash } = setUp();
+
+            const docSeq = getDocSequence(activityState);
+            const scoredSeq = getScoredItemSequence(activityState);
+
+            // pick a scored document that follows a description, so that its
+            // document index and its item index differ
+            const docId = scoredSeq.find(
+                (id) => docSeq.indexOf(id) > scoredSeq.indexOf(id),
+            )!;
+            expect(docId).not.eq(undefined);
+            const scoredIdx = scoredSeq.indexOf(docId);
+
+            const newState = activityDoenetStateReducer(state, {
+                type: "updateSingleState",
+                docId,
+                doenetState: { some: "state" },
+                creditAchieved: 1,
+                allowSaveState: true,
+                baseId: "base",
+                sourceHash,
+            });
+
+            expect(spy).toHaveBeenCalledTimes(1);
+            const message = spy.mock.lastCall![0] as ReportStateMessage;
+
+            expect(message.item_updated).eq(scoredIdx + 1);
+            expect(message.new_doenet_state_idx).eq(scoredIdx);
+            // the document index is larger, as descriptions precede it
+            expect(message.item_updated).lessThan(docSeq.indexOf(docId) + 1);
+
+            // this is the indexing the host stores state by
+            const itemScore = message.item_scores.find(
+                (s) => s.docId === docId,
+            );
+            expect(itemScore?.shuffledOrder).eq(message.item_updated);
+
+            expect(newState.doenetStates[scoredIdx]).eqls({ some: "state" });
+            expect(newState.doenetStates.length).lessThanOrEqual(
+                scoredSeq.length,
+            );
+        });
+
+        it("new item attempt uses the scored item indexing", () => {
+            vi.stubGlobal("window", { postMessage: vi.fn(() => null) });
+            const spy = vi.spyOn(window, "postMessage");
+
+            const { state, activityState, sourceHash, numActivityVariants } =
+                setUp();
+
+            const scoredSeq = getScoredItemSequence(activityState);
+            const docSeq = getDocSequence(activityState);
+            const docId = scoredSeq.find(
+                (id) => docSeq.indexOf(id) > scoredSeq.indexOf(id),
+            )!;
+            const scoredIdx = scoredSeq.indexOf(docId);
+
+            const newState = activityDoenetStateReducer(state, {
+                type: "generateSingleDocSubActivityAttempt",
+                docId,
+                numActivityVariants,
+                initialQuestionCounter: 1,
+                allowSaveState: true,
+                baseId: "base",
+                sourceHash,
+            });
+
+            // only the one item's attempt number is bumped
+            expect(newState.itemAttemptNumbers.length).eq(scoredSeq.length);
+            expect(newState.itemAttemptNumbers).eqls(
+                scoredSeq.map((_, i) => (i === scoredIdx ? 2 : 1)),
+            );
+
+            const message = spy.mock.lastCall![0] as ReportStateMessage;
+            expect(message.new_doenet_state_idx).eq(scoredIdx);
+
+            // `new_attempt_for_item` is in the *original* (unshuffled) order,
+            // so it need not equal the shuffled `new_doenet_state_idx + 1`
+            const originalOrder =
+                extractActivityItemCredit(activityState).findIndex(
+                    (s) => s.docId === docId || s.id === docId,
+                ) + 1;
+            expect(message.new_attempt_for_item).eq(originalOrder);
+        });
+
+        it("a new item attempt for a description is ignored", () => {
+            vi.stubGlobal("window", { postMessage: vi.fn(() => null) });
+            const spy = vi.spyOn(window, "postMessage");
+
+            const { state, sourceHash, numActivityVariants } = setUp();
+
+            const newState = activityDoenetStateReducer(state, {
+                type: "generateSingleDocSubActivityAttempt",
+                docId: "doc3a",
+                numActivityVariants,
+                initialQuestionCounter: 1,
+                allowSaveState: true,
+                baseId: "base",
+                sourceHash,
+            });
+
+            expect(newState).eq(state);
+            expect(spy).toHaveBeenCalledTimes(0);
         });
     });
 });
