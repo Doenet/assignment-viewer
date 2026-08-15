@@ -173,9 +173,8 @@ export function activityDoenetStateReducer(
             // The document's position in the scored item sequence is derived
             // from the reducer's own state, so callers need not track the
             // current sequence themselves. An id absent from that sequence is
-            // either stale or a description; descriptions hold no slot in
-            // `doenetStates`/`itemAttemptNumbers` and offer no attempt button,
-            // so either way there is nothing to regenerate.
+            // either stale or a description, and neither has a slot in
+            // `doenetStates`/`itemAttemptNumbers` to regenerate.
             const doenetStateIdx = getScoredItemSequence(activityState).indexOf(
                 action.docId,
             );
@@ -249,16 +248,13 @@ export function activityDoenetStateReducer(
             };
         }
         case "updateSingleState": {
-            // Two kinds of report have no slot to be recorded in, and both are
-            // silently ignored: recording one would corrupt another item's
-            // slot, and throwing would unmount the whole viewer via an error
-            // boundary.
-            //
-            // 1. A document that is no longer part of the activity — e.g. an
-            //    in-flight save from a just-regenerated attempt, or after a
-            //    select re-picked its children.
-            // 2. A description: unscored, unpersisted, and already excluded
-            //    from the activity's credit.
+            // A report with no slot in the scored item sequence is silently
+            // ignored: recording it would corrupt another item's slot, and
+            // throwing would unmount the whole viewer via an error boundary.
+            // Either the document is no longer part of the activity (an
+            // in-flight save from a just-regenerated attempt, or a select that
+            // re-picked its children), or it is a description, which is
+            // unscored and unpersisted.
             const doenetStateIdx = getScoredItemSequence(activityState).indexOf(
                 action.docId,
             );
