@@ -27,13 +27,13 @@ export type ActivityCommonProps = {
     answerResponseCountsByItem?: Record<string, number>[];
     doenetStates: unknown[];
     stateVersion: number;
-    /** The windowed mounting policy every item's viewer registers with. */
+    /** The windowed mounting policy every document's viewer registers with. */
     mountPolicy: MountPolicy;
     useSharedCoreWorker?: boolean;
     reportScoreAndStateCallback: (args: unknown) => void;
     checkHidden: (state: ActivityState) => boolean;
     /**
-     * Whether an item's viewer should stay booted even while hidden or
+     * Whether a document's viewer should stay booted even while hidden or
      * off-screen (the paginator marks the current page and its neighbors
      * so page flips are instant).
      */
@@ -56,10 +56,10 @@ export const Activity = memo(function Activity({
 }: ActivityCommonProps & { state: ActivityState }) {
     switch (state.type) {
         case "singleDoc": {
-            // Extract this item's slice of the per-item arrays so the leaf's
-            // props only change when *its* data changes: the arrays get a
-            // fresh identity on every report from any document, which would
-            // otherwise defeat SingleDocActivity's memo for all N items.
+            // Extract this document's slice of the per-item arrays so the
+            // leaf's props only change when *its* data changes: the arrays get
+            // a fresh identity on every report from any document, which would
+            // otherwise defeat SingleDocActivity's memo for all N documents.
             const {
                 doenetStates,
                 itemAttemptNumbers,
@@ -69,7 +69,7 @@ export const Activity = memo(function Activity({
             } = props;
             // A description holds no slot in the per-item arrays, so it gets
             // an out-of-range index and falls back to the defaults below.
-            const itemIdx = scoredItemIndexById.get(state.id) ?? -1;
+            const scoredItemIdx = scoredItemIndexById.get(state.id) ?? -1;
             return (
                 <SingleDocActivity
                     {...leafProps}
@@ -79,8 +79,10 @@ export const Activity = memo(function Activity({
                             ? null
                             : (doenetStates[state.doenetStateIdx] ?? null)
                     }
-                    itemAttemptNumber={itemAttemptNumbers[itemIdx] ?? 1}
-                    answerResponseCounts={answerResponseCountsByItem[itemIdx]}
+                    itemAttemptNumber={itemAttemptNumbers[scoredItemIdx] ?? 1}
+                    answerResponseCounts={
+                        answerResponseCountsByItem[scoredItemIdx]
+                    }
                 />
             );
         }

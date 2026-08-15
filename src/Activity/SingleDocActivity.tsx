@@ -11,7 +11,10 @@ type SingleDocActivityProps = Omit<
     | "scoredItemIndexById"
 > & {
     state: SingleDocState;
-    /** This item's saved Doenet state (its slice of `doenetStates`). */
+    /**
+     * This document's saved Doenet state (its slice of `doenetStates`).
+     * Always null for a description, which has no slot in `doenetStates`.
+     */
     doenetState: unknown;
     itemAttemptNumber: number;
     answerResponseCounts?: Record<string, number>;

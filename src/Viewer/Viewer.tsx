@@ -140,9 +140,9 @@ export function Viewer({
 
     const activityState = activityDoenetState.activityState;
 
-    // Identifies the state generation items were seeded from: bumped by the
-    // reducer when the whole activity re-initializes or loads saved state,
-    // telling items to re-read their initial Doenet state.
+    // Identifies the state generation documents were seeded from: bumped by
+    // the reducer when the whole activity re-initializes or loads saved state,
+    // telling documents to re-read their initial Doenet state.
     const stateVersion = activityDoenetState.stateVersion;
 
     // A runtime (attempt-generation) error leaves the previous activity
@@ -155,7 +155,7 @@ export function Viewer({
     // rebuilds `activityState`, but the sequence of document ids rarely
     // changes. Keeping the previous identity when the ids match lets
     // everything derived from it (`docIndexById`, the callbacks, the memoized
-    // item subtrees) stay stable across reports.
+    // document subtrees) stay stable across reports.
     const computedDocSequence = useMemo(
         () => getDocSequence(activityState),
         [activityState],
@@ -192,7 +192,7 @@ export function Viewer({
     const [currentDocIdx, setCurrentDocIdx] = useState(0);
     const currentDocId = docSequence[currentDocIdx];
 
-    const [itemsRendered, setItemsRendered] = useState<string[]>([]);
+    const [docsRendered, setDocsRendered] = useState<string[]>([]);
 
     const [newAttemptNum, setNewAttemptNum] = useState(0);
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -200,7 +200,7 @@ export function Viewer({
 
     const attemptNumber = activityState.attemptNumber;
 
-    // Every item's viewer is always mounted; the windowed mounting policy
+    // Every document's viewer is always mounted; the windowed mounting policy
     // (`mountPolicy`) decides which of them are actually booted, parking the
     // rest as placeholders. In paginated mode the current page and its
     // neighbors are marked `keepLive` so they boot eagerly (hidden pages
@@ -385,7 +385,7 @@ export function Viewer({
             baseId: activityId,
             sourceHash,
         });
-        setItemsRendered((was) => {
+        setDocsRendered((was) => {
             const idx = was.indexOf(id);
             if (idx === -1) {
                 return was;
@@ -398,11 +398,11 @@ export function Viewer({
     }
 
     const hasRenderedCallback = useCallback((id: string) => {
-        setItemsRendered((was) => (was.includes(id) ? was : [...was, id]));
+        setDocsRendered((was) => (was.includes(id) ? was : [...was, id]));
     }, []);
 
     function generateActivityAttempt() {
-        setItemsRendered([]);
+        setDocsRendered([]);
         setCurrentDocIdx(0);
         activityDoenetStateDispatch({
             type: "generateNewActivityAttempt",
@@ -595,7 +595,7 @@ export function Viewer({
                 </div>
             ) : null}
             <div
-                hidden={itemsRendered.length > 0 || numDocs === 0}
+                hidden={docsRendered.length > 0 || numDocs === 0}
                 style={{ marginLeft: "20px", marginTop: "20px" }}
             >
                 Initializing...
