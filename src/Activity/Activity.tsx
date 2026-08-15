@@ -45,7 +45,8 @@ export type ActivityCommonProps = {
     ) => void;
     hasRenderedCallback: (id: string) => void;
     itemAttemptNumbers: number[];
-    itemIndexById: ReadonlyMap<string, number>;
+    /** Position of each scored item, i.e. of each document that isn't a description. */
+    scoredItemIndexById: ReadonlyMap<string, number>;
     itemWord: string;
 };
 
@@ -63,10 +64,11 @@ export const Activity = memo(function Activity({
                 doenetStates,
                 itemAttemptNumbers,
                 answerResponseCountsByItem = [],
-                itemIndexById,
+                scoredItemIndexById,
                 ...leafProps
             } = props;
-            const itemIdx = itemIndexById.get(state.id) ?? -1;
+            // A description holds no slot in the per-item arrays.
+            const itemIdx = scoredItemIndexById.get(state.id) ?? -1;
             return (
                 <SingleDocActivity
                     {...leafProps}
@@ -76,8 +78,14 @@ export const Activity = memo(function Activity({
                             ? null
                             : (doenetStates[state.doenetStateIdx] ?? null)
                     }
-                    itemAttemptNumber={itemAttemptNumbers[itemIdx]}
-                    answerResponseCounts={answerResponseCountsByItem[itemIdx]}
+                    itemAttemptNumber={
+                        itemIdx === -1 ? 1 : (itemAttemptNumbers[itemIdx] ?? 1)
+                    }
+                    answerResponseCounts={
+                        itemIdx === -1
+                            ? undefined
+                            : answerResponseCountsByItem[itemIdx]
+                    }
                 />
             );
         }

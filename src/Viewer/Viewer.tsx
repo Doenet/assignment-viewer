@@ -14,13 +14,15 @@ import {
     ActivitySource,
     ActivityState,
     addSourceToActivityState,
-    getItemSequence,
+    getDocSequence,
     validateIds,
     isExportedActivityState,
     validateStateAndSource,
     gatherDocumentStructure,
     initializeActivityAndDoenetState,
-    getNumItems,
+    getNumDocs,
+    getNumScoredItems,
+    getScoredItemSequence,
     createSourceHash,
 } from "../Activity/activityState";
 import type { MountPolicy } from "@doenet/doenetml-iframe";
@@ -93,29 +95,37 @@ export function Viewer({
 
     // Source analysis. A source error is *derived* from the memo (not set
     // into state), so a later valid `source` self-clears it.
-    const { numActivityVariants, sourceHash, numItems, sourceErrMsg } =
-        useMemo(() => {
-            try {
-                validateIds(source);
-                const docStructure = gatherDocumentStructure(source);
-                const sourceHash = createSourceHash(source);
-                const numItems = getNumItems(source);
-                return {
-                    ...docStructure,
-                    sourceHash,
-                    numItems,
-                    sourceErrMsg: null,
-                };
-            } catch (e) {
-                const message = e instanceof Error ? e.message : "";
-                return {
-                    numActivityVariants: {},
-                    sourceHash: "",
-                    numItems: 0,
-                    sourceErrMsg: `Error in activity source: ${message}`,
-                };
-            }
-        }, [source]);
+    const {
+        numActivityVariants,
+        sourceHash,
+        numDocs,
+        numScoredItems,
+        sourceErrMsg,
+    } = useMemo(() => {
+        try {
+            validateIds(source);
+            const docStructure = gatherDocumentStructure(source);
+            const sourceHash = createSourceHash(source);
+            const numDocs = getNumDocs(source);
+            const numScoredItems = getNumScoredItems(source);
+            return {
+                ...docStructure,
+                sourceHash,
+                numDocs,
+                numScoredItems,
+                sourceErrMsg: null,
+            };
+        } catch (e) {
+            const message = e instanceof Error ? e.message : "";
+            return {
+                numActivityVariants: {},
+                sourceHash: "",
+                numDocs: 0,
+                numScoredItems: 0,
+                sourceErrMsg: `Error in activity source: ${message}`,
+            };
+        }
+    }, [source]);
 
     const [activityDoenetState, activityDoenetStateDispatch] = useReducer(
         activityDoenetStateReducer,
@@ -142,27 +152,45 @@ export function Viewer({
     const runtimeErrMsg = activityDoenetState.errMsg;
 
     // Content-stable: every reducer action (each score report included)
-    // rebuilds `activityState`, but the sequence of item ids rarely changes.
-    // Keeping the previous identity when the ids match lets everything
-    // derived from it (`itemIndexById`, the callbacks, the memoized item
-    // subtrees) stay stable across reports.
-    const computedItemSequence = useMemo(
-        () => getItemSequence(activityState),
+    // rebuilds `activityState`, but the sequence of document ids rarely
+    // changes. Keeping the previous identity when the ids match lets
+    // everything derived from it (`docIndexById`, the callbacks, the memoized
+    // item subtrees) stay stable across reports.
+    const computedDocSequence = useMemo(
+        () => getDocSequence(activityState),
         [activityState],
     );
-    const itemSequence = useContentStable(
-        computedItemSequence,
-        JSON.stringify(computedItemSequence),
+    const docSequence = useContentStable(
+        computedDocSequence,
+        JSON.stringify(computedDocSequence),
     );
 
-    const itemIndexById = useMemo(
-        () => new Map(itemSequence.map((id, idx) => [id, idx])),
-        [itemSequence],
+    // Pagination and mounting run over every document, descriptions included.
+    const docIndexById = useMemo(
+        () => new Map(docSequence.map((id, idx) => [id, idx])),
+        [docSequence],
     );
 
-    // The index of the current item
-    const [currentItemIdx, setCurrentItemIdx] = useState(0);
-    const currentItemId = itemSequence[currentItemIdx];
+    // Item numbering, per-item attempts, and the indices into `doenetStates`
+    // run over the scored items only, i.e. the documents that aren't
+    // descriptions.
+    const computedScoredItemSequence = useMemo(
+        () => getScoredItemSequence(activityState),
+        [activityState],
+    );
+    const scoredItemSequence = useContentStable(
+        computedScoredItemSequence,
+        JSON.stringify(computedScoredItemSequence),
+    );
+
+    const scoredItemIndexById = useMemo(
+        () => new Map(scoredItemSequence.map((id, idx) => [id, idx])),
+        [scoredItemSequence],
+    );
+
+    // The index of the currently displayed document
+    const [currentDocIdx, setCurrentDocIdx] = useState(0);
+    const currentDocId = docSequence[currentDocIdx];
 
     const [itemsRendered, setItemsRendered] = useState<string[]>([]);
 
@@ -183,23 +211,23 @@ export function Viewer({
             if (!paginate || state.type !== "singleDoc") {
                 return false;
             }
-            const itemIdx = itemIndexById.get(state.id);
+            const docIdx = docIndexById.get(state.id);
             return (
-                itemIdx !== undefined && Math.abs(itemIdx - currentItemIdx) <= 1
+                docIdx !== undefined && Math.abs(docIdx - currentDocIdx) <= 1
             );
         },
-        [paginate, itemIndexById, currentItemIdx],
+        [paginate, docIndexById, currentDocIdx],
     );
 
     const checkHidden = useCallback(
         (state: ActivityState) => {
             if (state.type === "singleDoc") {
-                return paginate && currentItemId !== state.id;
+                return paginate && currentDocId !== state.id;
             } else {
                 return false;
             }
         },
-        [currentItemId, paginate],
+        [currentDocId, paginate],
     );
 
     useEffect(() => {
@@ -312,10 +340,10 @@ export function Viewer({
     ]);
 
     function clickNext() {
-        setCurrentItemIdx((was) => Math.min(numItems - 1, was + 1));
+        setCurrentDocIdx((was) => Math.min(numDocs - 1, was + 1));
     }
     function clickPrevious() {
-        setCurrentItemIdx((was) => Math.max(0, was - 1));
+        setCurrentDocIdx((was) => Math.max(0, was - 1));
     }
 
     const reportScoreAndStateCallback = useCallback(
@@ -340,10 +368,10 @@ export function Viewer({
     const generateNewItemAttemptPrompt = useCallback(
         (id: string, initialQuestionCounter: number) => {
             newItemAttemptInfo.current = { id, initialQuestionCounter };
-            setNewAttemptNum((itemIndexById.get(id) ?? 0) + 1);
+            setNewAttemptNum((scoredItemIndexById.get(id) ?? 0) + 1);
             dialogRef.current?.showModal();
         },
-        [itemIndexById],
+        [scoredItemIndexById],
     );
 
     function generateNewItemAttempt() {
@@ -375,7 +403,7 @@ export function Viewer({
 
     function generateActivityAttempt() {
         setItemsRendered([]);
-        setCurrentItemIdx(0);
+        setCurrentDocIdx(0);
         activityDoenetStateDispatch({
             type: "generateNewActivityAttempt",
             numActivityVariants,
@@ -422,7 +450,8 @@ export function Viewer({
               );
 
     const newAttemptDisabled =
-        numItems === 0 || (maxAttemptsAllowed > 0 && activityAttemptsLeft <= 0);
+        numScoredItems === 0 ||
+        (maxAttemptsAllowed > 0 && activityAttemptsLeft <= 0);
 
     return (
         <div>
@@ -506,11 +535,11 @@ export function Viewer({
                                 borderRadius: "10px",
                                 padding: "5px 20px",
                             }}
-                            disabled={currentItemIdx <= 0}
+                            disabled={currentDocIdx <= 0}
                         >
                             Previous
                         </button>
-                        Page {currentItemIdx + 1} of {numItems}
+                        Page {currentDocIdx + 1} of {numDocs}
                         <button
                             onClick={clickNext}
                             style={{
@@ -520,7 +549,7 @@ export function Viewer({
                                 borderRadius: "10px",
                                 padding: "5px 20px",
                             }}
-                            disabled={currentItemIdx >= numItems - 1}
+                            disabled={currentDocIdx >= numDocs - 1}
                         >
                             Next
                         </button>
@@ -566,7 +595,7 @@ export function Viewer({
                 </div>
             ) : null}
             <div
-                hidden={itemsRendered.length > 0 || numItems === 0}
+                hidden={itemsRendered.length > 0 || numDocs === 0}
                 style={{ marginLeft: "20px", marginTop: "20px" }}
             >
                 Initializing...
@@ -600,7 +629,7 @@ export function Viewer({
                 generateNewItemAttempt={generateNewItemAttemptPrompt}
                 hasRenderedCallback={hasRenderedCallback}
                 itemAttemptNumbers={activityDoenetState.itemAttemptNumbers}
-                itemIndexById={itemIndexById}
+                scoredItemIndexById={scoredItemIndexById}
                 itemWord={itemWord}
             />
         </div>

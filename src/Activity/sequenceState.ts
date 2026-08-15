@@ -7,7 +7,8 @@ import {
     extractActivityItemCredit,
     extractSourceId,
     generateNewActivityAttempt,
-    getNumItems,
+    getNumDocs,
+    getNumScoredItems,
     initializeActivityState,
     isActivitySource,
     isActivityState,
@@ -241,14 +242,14 @@ export function generateNewSequenceAttempt({
 
         const rng = rngClass(rngSeed);
 
-        // randomly shuffle `numItems` components of `arr` starting with `startInd`
+        // randomly shuffle `runLength` components of `arr` starting with `startInd`
         function shuffle_ids(
             arr: string[],
             startInd: number,
-            numItems: number,
+            runLength: number,
         ) {
             // https://stackoverflow.com/a/12646864
-            for (let i = numItems - 1; i > 0; i--) {
+            for (let i = runLength - 1; i > 0; i--) {
                 const j = Math.floor(rng() * (i + 1));
                 [arr[startInd + i], arr[startInd + j]] = [
                     arr[startInd + j],
@@ -272,23 +273,23 @@ export function generateNewSequenceAttempt({
             }
 
             // find the next item that is a description
-            let numItems = 1;
+            let runLength = 1;
             while (
-                state.allChildren[startInd + numItems] &&
-                (state.allChildren[startInd + numItems].type !== "singleDoc" ||
+                state.allChildren[startInd + runLength] &&
+                (state.allChildren[startInd + runLength].type !== "singleDoc" ||
                     !(
-                        state.allChildren[startInd + numItems]
+                        state.allChildren[startInd + runLength]
                             .source as SingleDocSource
                     ).isDescription)
             ) {
-                numItems++;
+                runLength++;
             }
 
-            if (numItems > 1) {
+            if (runLength > 1) {
                 // shuffle the group of activities that were found between descriptions
-                shuffle_ids(childOrder, startInd, numItems);
+                shuffle_ids(childOrder, startInd, runLength);
             }
-            startInd += numItems;
+            startInd += runLength;
         }
     }
 
@@ -451,8 +452,8 @@ export function calcNumVariantsSequence(
 /**
  * Return the number of documents that will be rendered by this sequence.
  */
-export function getNumItemsInSequence(source: SequenceSource): number {
-    const numDocumentsForEachItem = source.items.map(getNumItems);
+export function getNumDocsInSequence(source: SequenceSource): number {
+    const numDocumentsForEachItem = source.items.map(getNumDocs);
 
     const totalNumDocuments = numDocumentsForEachItem.reduce(
         (a, c) => a + c,
@@ -460,4 +461,12 @@ export function getNumItemsInSequence(source: SequenceSource): number {
     );
 
     return totalNumDocuments;
+}
+
+/**
+ * Return the number of documents of this sequence that count as scored items,
+ * i.e., all rendered documents except the descriptions.
+ */
+export function getNumScoredItemsInSequence(source: SequenceSource): number {
+    return source.items.map(getNumScoredItems).reduce((a, c) => a + c, 0);
 }

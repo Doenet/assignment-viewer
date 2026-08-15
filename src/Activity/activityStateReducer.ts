@@ -12,8 +12,9 @@ import {
     gatherStates,
     generateNewActivityAttempt,
     generateNewSingleDocSubAttempt,
-    getItemSequence,
-    getNumItems,
+    getDocSequence,
+    getNumScoredItems,
+    getScoredItemSequence,
     initializeActivityState,
     propagateStateChangeToRoot,
     pruneActivityStateForSave,
@@ -77,7 +78,7 @@ export function activityDoenetStateReducer(
     const activityState = state.activityState;
     switch (action.type) {
         case "initialize": {
-            const numItems = getNumItems(action.source);
+            const numScoredItems = getNumScoredItems(action.source);
             return {
                 activityState: initializeActivityState({
                     source: action.source,
@@ -86,7 +87,7 @@ export function activityDoenetStateReducer(
                     numActivityVariants: action.numActivityVariants,
                 }),
                 doenetStates: [],
-                itemAttemptNumbers: Array<number>(numItems).fill(1),
+                itemAttemptNumbers: Array<number>(numScoredItems).fill(1),
                 stateVersion: state.stateVersion + 1,
                 errMsg: null,
             };
@@ -170,12 +171,17 @@ export function activityDoenetStateReducer(
                 );
             }
 
-            // The document's position in the item sequence is derived from
-            // the reducer's own state (callers used to pass it in, which
-            // required them to track the current sequence).
-            const doenetStateIdx = getItemSequence(activityState).indexOf(
+            // The document's position in the scored item sequence is derived
+            // from the reducer's own state (callers used to pass it in, which
+            // required them to track the current sequence). Descriptions hold
+            // no slot in `doenetStates`/`itemAttemptNumbers` and offer no
+            // attempt button, so there is nothing to regenerate for them.
+            const doenetStateIdx = getScoredItemSequence(activityState).indexOf(
                 action.docId,
             );
+            if (doenetStateIdx === -1) {
+                return state;
+            }
 
             let newActivityState;
             try {
@@ -248,7 +254,14 @@ export function activityDoenetStateReducer(
             // attempt, or after a select re-picked its children. Ignore it:
             // recording it would corrupt another item's slot, and throwing
             // would unmount the whole viewer via an error boundary.
-            const doenetStateIdx = getItemSequence(activityState).indexOf(
+            if (!getDocSequence(activityState).includes(action.docId)) {
+                return state;
+            }
+
+            // Descriptions are not scored, hold no slot in `doenetStates`, and
+            // their state is not persisted, so there is nothing to record or
+            // report. Their credit is already excluded from the activity score.
+            const doenetStateIdx = getScoredItemSequence(activityState).indexOf(
                 action.docId,
             );
             if (doenetStateIdx === -1) {

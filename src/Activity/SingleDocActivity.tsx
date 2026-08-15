@@ -8,7 +8,7 @@ type SingleDocActivityProps = Omit<
     | "doenetStates"
     | "itemAttemptNumbers"
     | "answerResponseCountsByItem"
-    | "itemIndexById"
+    | "scoredItemIndexById"
 > & {
     state: SingleDocState;
     /** This item's saved Doenet state (its slice of `doenetStates`). */
