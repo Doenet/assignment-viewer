@@ -23,6 +23,11 @@ export type ActivityCommonProps = {
     doenetmlVersion?: string;
     fetchExternalDoenetML?: (arg: string) => Promise<string>;
     darkMode?: "dark" | "light";
+    /**
+     * Whether each document's viewer offers the Doenet virtual keyboard. The
+     * viewers share a single keyboard tray on the page.
+     */
+    addVirtualKeyboard?: boolean;
     showAnswerResponseMenu?: boolean;
     answerResponseCountsByItem?: Record<string, number>[];
     doenetStates: unknown[];

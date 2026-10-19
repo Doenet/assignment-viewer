@@ -68,3 +68,17 @@ viewers still mount lazily but stay live once booted.
 To cut the per-document core cost further, `useSharedCoreWorker` serves all
 documents' cores from a shared worker pool instead of one dedicated ~100 MB
 worker per document (default off; see `@doenet/doenetml-iframe`).
+
+## Virtual keyboard
+
+Each document's viewer offers the Doenet virtual keyboard for its math
+inputs, and all of them share one keyboard tray along the bottom of the
+page. The tray's styles come from `@doenet/doenetml-iframe`, so the page
+must import them once:
+
+```tsx
+import "@doenet/doenetml-iframe/style.css";
+```
+
+Without that stylesheet the tray's keys appear unstyled at the end of the
+page. Pass `addVirtualKeyboard={false}` to leave the keyboard out.
