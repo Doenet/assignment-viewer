@@ -45,7 +45,7 @@ export function Viewer({
     forceShowCorrectness = false,
     forceShowSolution = false,
     forceUnsuppressCheckwork = false,
-    addVirtualKeyboard: _addVirtualKeyboard = true,
+    addVirtualKeyboard = true,
     externalVirtualKeyboardProvided: _externalVirtualKeyboardProvided = false,
     doenetViewerUrl,
     doenetImagesUrl,
@@ -615,6 +615,7 @@ export function Viewer({
                 doenetmlVersion={doenetmlVersion}
                 fetchExternalDoenetML={fetchExternalDoenetML}
                 darkMode={darkMode}
+                addVirtualKeyboard={addVirtualKeyboard}
                 showAnswerResponseMenu={showAnswerResponseMenu}
                 answerResponseCountsByItem={answerResponseCountsByItem}
                 state={activityState}

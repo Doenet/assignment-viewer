@@ -35,6 +35,7 @@ export const SingleDocActivity = memo(function SingleDocActivity({
     doenetmlVersion,
     fetchExternalDoenetML,
     darkMode = "light",
+    addVirtualKeyboard = true,
     showAnswerResponseMenu = false,
     answerResponseCounts,
     state,
@@ -136,7 +137,7 @@ export const SingleDocActivity = memo(function SingleDocActivity({
                 darkMode={darkMode}
                 showAnswerResponseMenu={showAnswerResponseMenu}
                 answerResponseCounts={answerResponseCounts}
-                addVirtualKeyboard={false}
+                addVirtualKeyboard={addVirtualKeyboard}
                 initialState={initialDoenetState}
                 initializeCounters={initialCounters}
                 mountPolicy={mountPolicy}
